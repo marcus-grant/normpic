@@ -10,6 +10,9 @@ NormPic follows a manifest-centric, TDD-driven architecture with clear separatio
 - [Schema Versioning](schema-versioning.md) - Versioned schema approach using Python modules, serializer separation, and future migration system design
 - [Data Models](data-models.md) - Dataclass architecture, TDD implementation, and serialization layer design
 
+### Module Organization
+- [Module Organization](module-organization.md) - Functional module patterns, avoiding catch-all anti-patterns, and template/utility separation
+
 ## Architecture Principles
 
 - **Manifest-Centric Design**: All decisions flow through JSON Schema-validated manifests
@@ -22,11 +25,12 @@ NormPic follows a manifest-centric, TDD-driven architecture with clear separatio
 ```
 lib/
 ├── model/          # Data structures (Pic, Manifest, Config)
-│   └── schema_v1.py # JSON Schema definitions as Python constants
+│   └── schema_v0.py # JSON Schema definitions as Python constants
 ├── serializer/     # JSON serialization/validation layer
-├── core/           # Processing logic (EXIF, filename generation, organization)
+├── util/           # Generic utilities (EXIF extraction, filesystem ops)
+├── template/       # Template application (filename generation)
 ├── manager/        # High-level orchestration (manifest, config management)
-└── util/           # Filesystem utilities and helpers
+└── [future modules organized by function]
 ```
 
 This architecture enables clean testing, future schema evolution, and integration with external tools like Galleria.

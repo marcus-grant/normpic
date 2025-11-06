@@ -15,3 +15,6 @@
 - Created Pic, Manifest, Config dataclasses with validation
 - Implemented ManifestSerializer with JSON serialization and schema validation
 - Added comprehensive unit tests (20 passing tests)
+- Established versioned schema architecture (schema_v0.py approach)
+- Implemented serializer separation pattern (lib/serializer/ peer to lib/model/)
+- Documented data models architecture and schema design decisions
