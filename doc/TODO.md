@@ -198,24 +198,22 @@ normpic/
 
 **Next Tasks:** Documentation and cleanup (small commit after main feature)
 
-### Documentation Tasks (Next Developer)
+### Documentation Tasks (Next Developer) - COMPLETED
 
-#### Update Architecture Documentation
-- [ ] Update `doc/architecture/module-organization.md`
+#### Update Architecture Documentation - COMPLETED
+- [x] Update `doc/architecture/module-organization.md`
   - Document `lib/manager/photo_manager.py` implementation 
   - Reference burst preservation algorithm decisions
-- [ ] Create `doc/modules/organization.md` 
+- [x] Create `doc/modules/organization.md` 
   - Document ordering algorithm: EXIF timestamp → filename → mtime precedence
   - Document burst sequence preservation (no camera interleaving)
 
-#### Update Module Documentation  
-- [ ] Update `doc/modules/README.md`
+#### Update Module Documentation - COMPLETED
+- [x] Update `doc/modules/README.md`
   - Add link to new organization.md module documentation
-- [ ] Consider creating `doc/guides/ordering.md`
-  - User-facing guide on photo ordering behavior
 
-#### Cleanup Tasks
-- [ ] Review `deleteme-normpic-modules/` directory
+#### Cleanup Tasks - COMPLETED
+- [x] Review `deleteme-normpic-modules/` directory
   - Find content superseded by new `lib/manager/photo_manager.py` implementation
   - Look for ordering/organization test specs that are now obsolete 
   - Delete superseded content (especially any old organization/ordering logic)

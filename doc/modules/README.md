@@ -11,6 +11,7 @@ Technical documentation for each NormPic module, covering implementation details
 
 ### Core Processing  
 - [EXIF Module](exif.md) - EXIF data extraction, structured models, and testing patterns
+- [Organization Module](organization.md) - Photo ordering algorithm and burst preservation
 
 ## Coming Soon
 

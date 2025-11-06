@@ -36,7 +36,13 @@ NormPic normalizes photo collections by:
 
 ## Project Status
 
-Currently in pre-MVP development. See [TODO.md](TODO.md) for progress.
+**Photo Organization Workflow**: Complete implementation with 78 passing tests
+- Temporal ordering with burst sequence preservation
+- EXIF-based filename generation 
+- Symlink creation and manifest generation
+- Ready for CLI implementation
+
+See [TODO.md](TODO.md) for remaining tasks and [CHANGELOG.md](CHANGELOG.md) for detailed progress.
 
 ## Related Projects
 

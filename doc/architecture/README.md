@@ -30,8 +30,19 @@ lib/
 ├── serializer/     # JSON serialization/validation layer
 ├── util/           # Generic utilities (EXIF extraction, filesystem ops)
 ├── template/       # Template application (filename generation)
-├── manager/        # High-level orchestration (manifest, config management)
+├── manager/        # High-level workflow orchestration
+│   └── photo_manager.py # Complete photo organization workflow
 └── [future modules organized by function]
 ```
+
+## Implemented Workflows
+
+### Photo Organization (lib/manager/photo_manager.py)
+
+Complete photo collection processing workflow:
+- **Temporal Ordering**: EXIF timestamp → filename → mtime precedence with subsecond precision
+- **Burst Preservation**: No camera interleaving on shared timestamps to maintain burst sequence integrity
+- **Symlink Generation**: Creates standardized chronological filenames while preserving originals
+- **Manifest Production**: Schema-validated JSON with complete photo metadata for tool integration
 
 This architecture enables clean testing, future schema evolution, and integration with external tools like Galleria.

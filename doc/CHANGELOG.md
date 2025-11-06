@@ -2,6 +2,26 @@
 
 ## 2025-11-06
 
+### Documentation Update & Cleanup (Post-Feature)
+
+- **Architecture Documentation**: Comprehensive updates for photo organization workflow
+  - Updated `doc/architecture/README.md` with implemented photo_manager.py workflow
+  - Added Manager Pattern documentation for `lib/manager/photo_manager.py` 
+  - Documented temporal ordering, burst preservation, and workflow orchestration
+  - Updated system structure diagram to reflect actual implementation
+- **Organization Module Documentation**: Created comprehensive ordering algorithm docs
+  - Created `doc/modules/organization.md` with EXIF timestamp → filename → mtime precedence hierarchy
+  - Document burst sequence preservation (no camera interleaving)
+  - Explain subsecond precision handling and temporal ordering algorithms
+- **Project Status Updates**: Updated main documentation index
+  - Updated `doc/README.md` project status to reflect completed photo organization workflow
+  - Document 78 passing tests and readiness for CLI implementation
+- **Module Index Updates**: Added organization.md link to modules README
+- **Cleanup Superseded Content**: Removed obsolete ordering logic from deleteme directory
+  - Deleted `test_file_processing_dual.py` (complex batch processing superseded)
+  - Deleted `file_processing.py` (dual collection logic superseded by simple workflow)
+  - Focused cleanup on organization/ordering content replaced by new implementation
+
 ### Photo Organization and Processing Workflow (TDD)
 
 - **Architecture Decision**: Implemented proper module organization in `lib/manager/`

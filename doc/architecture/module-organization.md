@@ -32,6 +32,12 @@ NormPic organizes modules by function and responsibility rather than using gener
 - **Example**: `manifest.py` converts Manifest objects ↔ JSON
 - **Rationale**: Clean separation of data structures from formats
 
+### Manager Pattern (`lib/manager/`)
+- **Purpose**: High-level workflow orchestration and business logic coordination
+- **Example**: `photo_manager.py` orchestrates the complete photo organization workflow
+- **Implementation**: Coordinates EXIF extraction, temporal ordering, burst preservation, filename generation, symlink creation, and manifest generation
+- **Rationale**: Clear entry point for complex workflows, coordinates multiple modules without becoming a catch-all
+
 ## Current Structure
 
 ```
