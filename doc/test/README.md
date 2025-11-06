@@ -35,9 +35,9 @@ test/
 
 ## Documentation
 
+- [Integration Tests](integration-tests.md) - Complex end-to-end test scenarios and workflows
 - [Fixtures](fixtures.md) - Available fixtures and usage patterns
 - [Patterns](patterns.md) - Integration vs unit test patterns
-- [Examples](examples.md) - Common testing scenarios
 
 ## Key Principles
 

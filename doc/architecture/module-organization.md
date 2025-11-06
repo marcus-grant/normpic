@@ -50,6 +50,14 @@ lib/
 └── [future modules organized by function]
 ```
 
+## Implemented Modules
+
+### Current Implementation
+- **`lib/util/exif.py`** - EXIF metadata extraction with piexif integration
+- **`lib/template/filename.py`** - Template-based filename generation with camera mapping
+- **`lib/manager/photo_manager.py`** - Complete photo organization workflow orchestration
+- **`lib/serializer/manifest.py`** - JSON manifest serialization with schema validation
+
 ## Benefits
 
 1. **Clear Responsibility**: Each module has a specific, describable purpose

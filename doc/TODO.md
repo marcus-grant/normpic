@@ -1,5 +1,20 @@
 # NormPic - Photo Organization & Manifest Generator TODO
 
+## Handoff Message
+
+**Essential Reading (MANDATORY - in order):**
+1. [doc/CONTRIBUTE.md](CONTRIBUTE.md) - Development process, commit format, TDD approach
+2. [doc/README.md](README.md) - Documentation index and project status
+3. Follow documentation links as tasks demand them - all docs are properly linked
+
+**Current Status:** Photo organization workflow complete with 78 passing tests. Ready for CLI implementation.
+
+**Next Task:** CLI implementation (see below for details)
+
+**Instructions:** Delete this handoff section once you've read the essential documents.
+
+---
+
 ## Project Overview
 
 NormPic is a photo organization tool that normalizes photo collections by
@@ -43,55 +58,10 @@ normpic/
 - [ ] Performance discoveries documented in analysis/
 - [ ] Architecture decisions documented as they're made
 
-### Existing Work Reference
-
-- [ ] Review `deleteme-normpic-modules/README.md` for prior analysis
-- [ ] Extract useful test specs from `deleteme-normpic-modules/test/`
-  - Particularly timestamp and ordering logic
-  - Adapt to current architecture improvements
-- [ ] Reference `deleteme-normpic-modules/src/` for implementation patterns
-- [ ] Consult `deleteme-normpic-modules/doc/` for documentation patterns
-- [ ] Delete obsolete parts of deleteme directory as they're superseded
-- [ ] Complete deletion of deleteme directory should coincide with MVP completion
-
 ## Current Implementation Plan
-
-### Next Commit
-
-#### Next Commit: "Ft: Add photo organization and processing"
 
 ## MVP Implementation Tasks
 
-### Core Processing (`lib/core/`)
-
-#### EXIF Extraction (`exif_extractor.py`)
-
-- [ ] Review `deleteme-normpic-modules/test/` for EXIF test cases
-- [ ] Extract timestamp with subsecond precision
-- [ ] Extract camera make/model
-- [ ] Extract GPS coordinates
-- [ ] Handle missing EXIF gracefully
-- [ ] Return structured metadata dict
-- [ ] Document EXIF handling in `doc/modules/exif.md`
-
-#### Filename Generation (`filename_generator.py`)
-
-- [ ] Implement naming format: `{collection-?}{YY-MM-DDTHHMMSS}{-camera?}{-counter?}.ext`
-- [ ] Use Base32 hex (0-9, a-v) for burst counter
-- [ ] Handle timestamp conflicts with burst detection
-- [ ] Normalize extensions (.jpeg \u2192 .jpg)
-- [ ] Document naming conventions in `doc/guides/naming.md`
-
-#### Pic Organization (`pic_organizer.py`)
-
-- [ ] Review `deleteme-normpic-modules/test/` for ordering test specs
-- [ ] Implement ordering algorithm:
-  1. EXIF timestamp (with subsec)
-  2. Filename sequence
-  3. Filesystem mtime
-- [ ] Handle burst sequences (don't interrupt by other cameras)
-- [ ] Detect when processing needed (hash/timestamp changes)
-- [ ] Document ordering logic in `doc/modules/organization.md`
 
 ### Managers (`lib/manager/`)
 
@@ -198,30 +168,14 @@ normpic/
 
 **Next Tasks:** Documentation and cleanup (small commit after main feature)
 
-### Documentation Tasks (Next Developer) - COMPLETED
+### Photo Organization Workflow - COMPLETED
 
-#### Update Architecture Documentation - COMPLETED
-- [x] Update `doc/architecture/module-organization.md`
-  - Document `lib/manager/photo_manager.py` implementation 
-  - Reference burst preservation algorithm decisions
-- [x] Create `doc/modules/organization.md` 
-  - Document ordering algorithm: EXIF timestamp → filename → mtime precedence
-  - Document burst sequence preservation (no camera interleaving)
-
-#### Update Module Documentation - COMPLETED
-- [x] Update `doc/modules/README.md`
-  - Add link to new organization.md module documentation
-
-#### Cleanup Tasks - COMPLETED
-- [x] Review `deleteme-normpic-modules/` directory
-  - Find content superseded by new `lib/manager/photo_manager.py` implementation
-  - Look for ordering/organization test specs that are now obsolete 
-  - Delete superseded content (especially any old organization/ordering logic)
-
-**File Changes Made This Commit:**
-- Created: `lib/manager/photo_manager.py` (main workflow orchestration)
-- Created: `test/integration/test_photo_organization_workflow.py` (complete workflow tests)
-- Updated: `test/unit/test_pic_organizer.py` (unit tests for ordering logic)
+**Implementation Complete (Multiple commits with 78 passing tests)**
+- [x] Complete photo organization workflow in lib/manager/photo_manager.py
+- [x] EXIF extraction, filename generation, temporal ordering with burst preservation
+- [x] Comprehensive test coverage (integration + unit tests)
+- [x] Full documentation in doc/modules/, doc/test/, and doc/architecture/
+- [x] Cleanup of superseded deleteme content
 
 ### Next Major Feature
 **Ready for CLI Implementation:** Basic photo organization workflow complete
