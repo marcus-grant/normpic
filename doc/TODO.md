@@ -194,7 +194,39 @@ normpic/
 
 ### Current Status
 
-**Active Tasks:** Ready for Commit 2 - Schema and data models implementation
+**COMPLETED:** Photo organization and processing workflow (Commit: "Ft: Add photo organization and processing")
+
+**Next Tasks:** Documentation and cleanup (small commit after main feature)
+
+### Documentation Tasks (Next Developer)
+
+#### Update Architecture Documentation
+- [ ] Update `doc/architecture/module-organization.md`
+  - Document `lib/manager/photo_manager.py` implementation 
+  - Reference burst preservation algorithm decisions
+- [ ] Create `doc/modules/organization.md` 
+  - Document ordering algorithm: EXIF timestamp → filename → mtime precedence
+  - Document burst sequence preservation (no camera interleaving)
+
+#### Update Module Documentation  
+- [ ] Update `doc/modules/README.md`
+  - Add link to new organization.md module documentation
+- [ ] Consider creating `doc/guides/ordering.md`
+  - User-facing guide on photo ordering behavior
+
+#### Cleanup Tasks
+- [ ] Review `deleteme-normpic-modules/` directory
+  - Find content superseded by new `lib/manager/photo_manager.py` implementation
+  - Look for ordering/organization test specs that are now obsolete 
+  - Delete superseded content (especially any old organization/ordering logic)
+
+**File Changes Made This Commit:**
+- Created: `lib/manager/photo_manager.py` (main workflow orchestration)
+- Created: `test/integration/test_photo_organization_workflow.py` (complete workflow tests)
+- Updated: `test/unit/test_pic_organizer.py` (unit tests for ordering logic)
+
+### Next Major Feature
+**Ready for CLI Implementation:** Basic photo organization workflow complete
 
 ## Post-MVP Features (Future)
 

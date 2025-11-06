@@ -2,6 +2,27 @@
 
 ## 2025-11-06
 
+### Photo Organization and Processing Workflow (TDD)
+
+- **Architecture Decision**: Implemented proper module organization in `lib/manager/`
+  - `lib/manager/photo_manager.py` - High-level photo organization workflow orchestration
+  - Follows documented architecture patterns (manager for orchestration, not catch-all core)
+- **Ordering Algorithm**: EXIF timestamp → filename → mtime precedence
+  - Subsecond precision handling for fine-grained temporal ordering
+  - Graceful fallback when EXIF data unavailable
+- **Burst Sequence Preservation**: No camera interleaving on shared timestamps  
+  - Same camera photos stay together: [A1,A3,A5,B2,B4,B6] not [A1,B2,A3,B4,A5,B6]
+  - Critical for maintaining burst shot continuity
+- **Complete Workflow**: Source photos → organized symlinks + manifest.json
+  - Integrates EXIF extraction, filename generation, and manifest serialization
+  - Schema-validated JSON manifest with full photo metadata
+- **Test Coverage**: 78 tests passing (integration + unit tests)
+  - Integration tests for complete workflows with burst preservation
+  - Unit tests for ordering algorithms and filename generation
+  - Mock-based testing for file I/O isolation
+
+## 2025-11-06 (Earlier)
+
 ### EXIF Extraction and Filename Generation Implementation (TDD)
 
 - **Architecture Decision**: Implemented template/util split pattern
