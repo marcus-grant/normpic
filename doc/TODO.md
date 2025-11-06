@@ -56,14 +56,7 @@ normpic/
 
 ## Current Implementation Plan
 
-### Next 3 Commits
-
-#### Commit 1: "Pln: Update TODO with current architecture plan"
-- [x] Update TODO.md with refined architecture decisions
-- [x] Document versioned schema approach
-- [x] Add serializer layer planning
-- [x] Add future migration considerations
-- [x] Update directory structure to reflect current decisions
+### Next 2 Commits
 
 #### Commit 2: "Ft: Add JSON schema and data models"
 - [ ] Create `lib/model/schema_v1.py` with schema definitions as Python constants
@@ -268,7 +261,7 @@ normpic/
 
 ### Current Status
 
-**Active Tasks:** Commit 1 - Planning phase complete, updating TODO structure
+**Active Tasks:** Ready for Commit 2 - Schema and data models implementation
 
 ## Post-MVP Features (Future)
 

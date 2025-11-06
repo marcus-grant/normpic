@@ -32,11 +32,19 @@
   * Each test typically corresponds to a TODO task
   * Some tasks require multiple tests
   * After test(s) pass and refactors complete: update TODO.md, update documentation, git commit
+* Pre-commit documentation process:
+  * Mark completed TODO items as done
+  * Add entry to doc/CHANGELOG.md with H2 date header and bullet points
+  * Document architectural decisions in doc/architecture/ or doc/modules/
+  * Delete completed TODO entries to prevent size explosion
+  * TODO should shrink overall as MVP approaches completion
 * Documentation updates (Green phase):
   * When tests pass, update relevant documentation in `doc/`
   * Each subdirectory in `doc/` represents a topic
   * Follow documentation hierarchy: documents link to same-level README → subdirectory README → parent README
   * Only top-level README provides high-level overviews and links to directory-level or subdirectory READMEs
+  * **CRITICAL**: Every document must be linked in the documentation hierarchy starting from doc/README.md
+  * No document should be a link orphan - all must be discoverable through the hierarchy
 * Implement in small steps with clear logical breaks:
   * Add one test case or feature at a time
   * Test immediately after each testable addition

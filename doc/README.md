@@ -17,10 +17,9 @@ NormPic normalizes photo collections by:
 - [CONTRIBUTE.md](CONTRIBUTE.md) - Contribution guidelines (MUST READ for developers)
 - [CHANGELOG.md](CHANGELOG.md) - Daily development log
 
-### Architecture (Coming Soon)
+### Architecture
 
-- `architecture/overview.md` - System design and components
-- `architecture/decisions.md` - Key architectural decisions
+- [Architecture Overview](architecture/README.md) - System design and key decisions
 
 ### Modules (Coming Soon)
 
