@@ -1,0 +1,18 @@
+[project]
+name = "normpic"
+version = "0.1.0"
+description = "Organize and rename photo collections with a consistent schema"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "click>=8.3.0",
+    "jsonschema>=4.25.1",
+    "piexif>=1.1.3",
+    "pillow>=12.0.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.2",
+    "ruff>=0.14.3",
+]

@@ -5,6 +5,8 @@
 * NEVER EVER READ SHELL ENV VARIABLES
 * Don't commit code without ruff linting checks
 * Never implement without associated test
+* Delete parts of `deleteme-normpic-modules/` as they become obsolete
+* Consider `deleteme-normpic-modules/` when specs arise around ordering or timestamp precedence
 
 ## Testing Requirements
 
