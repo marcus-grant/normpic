@@ -54,47 +54,76 @@ normpic/
 - [ ] Delete obsolete parts of deleteme directory as they're superseded
 - [ ] Complete deletion of deleteme directory should coincide with MVP completion
 
+## Current Implementation Plan
+
+### Next 3 Commits
+
+#### Commit 1: "Pln: Update TODO with current architecture plan"
+- [x] Update TODO.md with refined architecture decisions
+- [x] Document versioned schema approach
+- [x] Add serializer layer planning
+- [x] Add future migration considerations
+- [x] Update directory structure to reflect current decisions
+
+#### Commit 2: "Ft: Add JSON schema and data models"
+- [ ] Create `lib/model/schema_v1.py` with schema definitions as Python constants
+- [ ] Create `lib/model/pic.py` dataclass for photo metadata
+- [ ] Create `lib/model/manifest.py` class for manifest structure
+- [ ] Create `lib/model/config.py` for collection configuration
+- [ ] Create `lib/serializer/manifest_serializer.py` with JSON serialization/validation
+- [ ] Include unit tests for models and serialization
+
+#### Commit 3: "Ft: Add EXIF extraction and filename generation"
+- [ ] Extract and adapt EXIF extraction from `deleteme-normpic-modules/src/services/exif.py`
+- [ ] Create `lib/core/exif_extractor.py` with timestamp/camera/GPS extraction
+- [ ] Create `lib/core/filename_generator.py` with naming format implementation
+- [ ] Handle Base32 counter for bursts, timestamp conflicts
+- [ ] Include comprehensive unit tests adapted from `deleteme-normpic-modules/test/`
+- [ ] Delete obsolete parts of deleteme folder as superseded
+
 ## MVP Implementation Tasks
 
-### 1. Project Setup
+### 1. Project Setup - ✅ COMPLETED
 
-- [ ] Initialize project with `uv` and `pyproject.toml`
-- [ ] Configure Python 3.12 as minimum version
-- [ ] Set up `ruff` for linting and formatting
-- [ ] Create directory structure:
+- [x] Initialize project with `uv` and `pyproject.toml`
+- [x] Configure Python 3.12 as minimum version
+- [x] Set up `ruff` for linting and formatting
+- [x] Create directory structure:
 
   ```txt
   normpic/
   |-- lib/
       |-- model/
+          |-- schema_v1.py     # JSON Schema as Python constants
       |-- core/
       |-- manager/
       |-- util/
+      |-- serializer/         # JSON serialization layer
   |-- cli/
   |-- test/
       |-- integration/
       |-- unit/
       |-- fixture/
-  |-- schema/
   |-- doc/
   |-- pyproject.toml
   ```
 
-- [ ] Add dependencies: click, Pillow/piexif, jsonschema, pytest
+- [x] Add dependencies: click, Pillow/piexif, jsonschema, pytest
+- [x] Add pre-commit hook with commit message validation
 - [ ] Create checkpoint branch for incomplete daily work
 - [ ] Initialize documentation structure
 
-### 2. JSON Schema Definition
+### 2. Schema & Models Architecture
 
-- [ ] Define manifest schema v1.0.0 with:
-  - Required fields: version, collection_name, generated_at, pics
-  - Optional fields: collection_description, config
-  - Pic entry schema with required: source_path, dest_path, hash, size_bytes
-  - Pic entry optionals: timestamp, timestamp_source, camera, gps, errors
-  - Enums for timestamp_source: ["exif", "filename", "filesystem", "unknown"]
-  - Enums for errors: ["no_exif", "corrupted_file", "unsupported_format"]
-- [ ] Create schema validation utility
-- [ ] Document schema in `doc/modules/schema.md`
+**Versioned Schema Approach:**
+- `lib/model/schema_v1.py` - JSON Schema definitions as Python constants
+- `lib/model/schema_v0.py` - Future: legacy compatibility schemas
+- Schema version evolution through code, not files
+
+**Serializer Pattern:**
+- `lib/serializer/` - Peer directory to `lib/model/`
+- Handles JSON serialization/deserialization separate from data models
+- Schema validation logic centralized in serializer layer
 
 ### 3. Data Models (`lib/model/`)
 
@@ -237,7 +266,20 @@ normpic/
 - [ ] Complete CHANGELOG.md with all development history
 - [ ] Verify all deleteme content is obsolete and remove directory
 
+### Current Status
+
+**Active Tasks:** Commit 1 - Planning phase complete, updating TODO structure
+
 ## Post-MVP Features (Future)
+
+### Schema Evolution Architecture
+
+**Migration System Design:**
+- `lib/migration/` directory for schema version migrations
+- Migration scripts handle manifest format evolution
+- Versioned schemas (`schema_v1.py`, `schema_v2.py`, etc.) support multiple formats
+- Automatic detection and upgrade of legacy manifests
+- Rollback capability for failed migrations
 
 ### Near-term Enhancements
 
@@ -263,7 +305,11 @@ normpic/
 - [ ] EXIF modification and copy creation
 - [ ] Camera name mapping configuration
 - [ ] Multiple error tracking per pic
-- [ ] Manifest migration between versions
+- [ ] **Schema Migration System** (`lib/migration/`)
+  - [ ] Automatic manifest version detection
+  - [ ] Migration scripts between schema versions
+  - [ ] Backward compatibility validation
+  - [ ] Migration rollback capability
 - [ ] Resume capability for failed builds
 - [ ] Webhook notifications on completion
 
