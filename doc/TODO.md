@@ -58,16 +58,7 @@ normpic/
 
 ### Next Commit
 
-#### Next Commit: "Ft: Add EXIF extraction and filename generation"
-
-**Architecture Decision: Split Generic vs Domain-Specific**
-- [ ] Create `lib/util/exif.py` - Generic EXIF extraction utility (reusable)
-- [ ] Create `lib/template/filename.py` - Template-based filename generation (domain-specific)
-- [ ] Extract and adapt EXIF logic from `deleteme-normpic-modules/src/services/exif.py`
-- [ ] Implement naming template: `{collection-?}{YY-MM-DDTHHMMSS}{-camera?}{-counter?}.ext`
-- [ ] Handle Base32 counter for bursts, timestamp conflicts
-- [ ] Include comprehensive unit tests adapted from `deleteme-normpic-modules/test/`
-- [ ] Delete obsolete parts of deleteme folder as superseded
+#### Next Commit: "Ft: Add photo organization and processing"
 
 ## MVP Implementation Tasks
 

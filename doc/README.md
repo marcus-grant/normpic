@@ -25,6 +25,10 @@ NormPic normalizes photo collections by:
 
 - [Module Documentation](modules/README.md) - Technical documentation for each module
 
+### Testing
+
+- [Testing Overview](test/README.md) - TDD approach, fixtures, and patterns
+
 ### Guides (Coming Soon)
 
 - `guides/quickstart.md` - Getting started

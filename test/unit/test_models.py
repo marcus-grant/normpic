@@ -1,9 +1,7 @@
 """Tests for data models."""
 
 from datetime import datetime
-from pathlib import Path
 
-import pytest
 
 from lib.model.pic import Pic
 from lib.model.manifest import Manifest

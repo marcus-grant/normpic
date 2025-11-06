@@ -12,6 +12,7 @@ NormPic follows a manifest-centric, TDD-driven architecture with clear separatio
 
 ### Module Organization
 - [Module Organization](module-organization.md) - Functional module patterns, avoiding catch-all anti-patterns, and template/utility separation
+- [Template/Util Split](template-util-split.md) - Architecture pattern for separating generic utilities from domain-specific templates
 
 ## Architecture Principles
 
