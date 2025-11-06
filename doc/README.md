@@ -21,9 +21,9 @@ NormPic normalizes photo collections by:
 
 - [Architecture Overview](architecture/README.md) - System design and key decisions
 
-### Modules (Coming Soon)
+### Modules
 
-- `modules/` - Technical documentation for each module
+- [Module Documentation](modules/README.md) - Technical documentation for each module
 
 ### Guides (Coming Soon)
 

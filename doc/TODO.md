@@ -56,17 +56,9 @@ normpic/
 
 ## Current Implementation Plan
 
-### Next 2 Commits
+### Next Commit
 
-#### Commit 2: "Ft: Add JSON schema and data models"
-- [ ] Create `lib/model/schema_v1.py` with schema definitions as Python constants
-- [ ] Create `lib/model/pic.py` dataclass for photo metadata
-- [ ] Create `lib/model/manifest.py` class for manifest structure
-- [ ] Create `lib/model/config.py` for collection configuration
-- [ ] Create `lib/serializer/manifest_serializer.py` with JSON serialization/validation
-- [ ] Include unit tests for models and serialization
-
-#### Commit 3: "Ft: Add EXIF extraction and filename generation"
+#### Next Commit: "Ft: Add EXIF extraction and filename generation"
 - [ ] Extract and adapt EXIF extraction from `deleteme-normpic-modules/src/services/exif.py`
 - [ ] Create `lib/core/exif_extractor.py` with timestamp/camera/GPS extraction
 - [ ] Create `lib/core/filename_generator.py` with naming format implementation
@@ -76,62 +68,9 @@ normpic/
 
 ## MVP Implementation Tasks
 
-### 1. Project Setup - ✅ COMPLETED
+### Core Processing (`lib/core/`)
 
-- [x] Initialize project with `uv` and `pyproject.toml`
-- [x] Configure Python 3.12 as minimum version
-- [x] Set up `ruff` for linting and formatting
-- [x] Create directory structure:
-
-  ```txt
-  normpic/
-  |-- lib/
-      |-- model/
-          |-- schema_v1.py     # JSON Schema as Python constants
-      |-- core/
-      |-- manager/
-      |-- util/
-      |-- serializer/         # JSON serialization layer
-  |-- cli/
-  |-- test/
-      |-- integration/
-      |-- unit/
-      |-- fixture/
-  |-- doc/
-  |-- pyproject.toml
-  ```
-
-- [x] Add dependencies: click, Pillow/piexif, jsonschema, pytest
-- [x] Add pre-commit hook with commit message validation
-- [ ] Create checkpoint branch for incomplete daily work
-- [ ] Initialize documentation structure
-
-### 2. Schema & Models Architecture
-
-**Versioned Schema Approach:**
-- `lib/model/schema_v1.py` - JSON Schema definitions as Python constants
-- `lib/model/schema_v0.py` - Future: legacy compatibility schemas
-- Schema version evolution through code, not files
-
-**Serializer Pattern:**
-- `lib/serializer/` - Peer directory to `lib/model/`
-- Handles JSON serialization/deserialization separate from data models
-- Schema validation logic centralized in serializer layer
-
-### 3. Data Models (`lib/model/`)
-
-- [ ] Create `Pic` dataclass with all metadata fields
-- [ ] Create `Manifest` class with:
-  - JSON serialization/deserialization
-  - Schema validation
-  - Version tracking
-- [ ] Create `Config` class for collection configuration
-- [ ] Add validation methods for all models
-- [ ] Document models in `doc/modules/models.md`
-
-### 4. Core Processing (`lib/core/`)
-
-#### 4.1 EXIF Extraction (`exif_extractor.py`)
+#### EXIF Extraction (`exif_extractor.py`)
 
 - [ ] Review `deleteme-normpic-modules/test/` for EXIF test cases
 - [ ] Extract timestamp with subsecond precision
@@ -141,7 +80,7 @@ normpic/
 - [ ] Return structured metadata dict
 - [ ] Document EXIF handling in `doc/modules/exif.md`
 
-#### 4.2 Filename Generation (`filename_generator.py`)
+#### Filename Generation (`filename_generator.py`)
 
 - [ ] Implement naming format: `{collection-?}{YY-MM-DDTHHMMSS}{-camera?}{-counter?}.ext`
 - [ ] Use Base32 hex (0-9, a-v) for burst counter
@@ -149,7 +88,7 @@ normpic/
 - [ ] Normalize extensions (.jpeg \u2192 .jpg)
 - [ ] Document naming conventions in `doc/guides/naming.md`
 
-#### 4.3 Pic Organization (`pic_organizer.py`)
+#### Pic Organization (`pic_organizer.py`)
 
 - [ ] Review `deleteme-normpic-modules/test/` for ordering test specs
 - [ ] Implement ordering algorithm:
@@ -160,9 +99,9 @@ normpic/
 - [ ] Detect when processing needed (hash/timestamp changes)
 - [ ] Document ordering logic in `doc/modules/organization.md`
 
-### 5. Managers (`lib/manager/`)
+### Managers (`lib/manager/`)
 
-#### 5.1 Manifest Manager
+#### Manifest Manager
 
 - [ ] Load existing manifest with validation
 - [ ] Detect changes requiring reprocessing:
@@ -176,7 +115,7 @@ normpic/
 - [ ] Delete dry-run manifest after successful run
 - [ ] Document manifest operations in `doc/modules/manifest.md`
 
-#### 5.2 Config Manager
+#### Config Manager
 
 - [ ] Load config from JSON file
 - [ ] Default config values
@@ -184,9 +123,9 @@ normpic/
 - [ ] Future: Environment variable override support (NORMPIC_*)
 - [ ] Document configuration in `doc/guides/configuration.md`
 
-### 6. Utilities (`lib/util/`)
+### Utilities (`lib/util/`)
 
-#### 6.1 Filesystem Utilities
+#### Filesystem Utilities
 
 - [ ] Mock filesystem for testing
 - [ ] Symlink creation and validation
@@ -196,7 +135,7 @@ normpic/
 - [ ] Handle file formats: .jpg, .png, .heic, .webp
 - [ ] Document filesystem operations in `doc/modules/filesystem.md`
 
-### 7. CLI Implementation (`cli/main.py`)
+### CLI Implementation (`cli/main.py`)
 
 - [ ] Single command: `normpic`
 - [ ] Flags:
@@ -209,9 +148,9 @@ normpic/
 - [ ] Return appropriate exit codes
 - [ ] Create CLI usage guide in `doc/guides/cli.md`
 
-### 8. Testing Strategy
+### Testing Strategy
 
-#### 8.1 Integration Tests (`test/integration/`)
+#### Integration Tests (`test/integration/`)
 
 - [ ] Review and adapt tests from `deleteme-normpic-modules/test/`
 - [ ] End-to-end test: source directory -> symlinks + manifest
@@ -221,7 +160,7 @@ normpic/
 - [ ] Test incremental updates
 - [ ] Document testing approach in `doc/CONTRIBUTE.md`
 
-#### 8.2 Unit Tests (`test/unit/`)
+#### Unit Tests (`test/unit/`)
 
 - [ ] EXIF extraction with various cameras
 - [ ] Filename generation edge cases
@@ -231,14 +170,14 @@ normpic/
 - [ ] Config loading and validation
 - [ ] Manifest serialization
 
-#### 8.3 Test Fixtures (`test/fixture/`)
+#### Test Fixtures (`test/fixture/`)
 
 - [ ] Sample EXIF data for different cameras
 - [ ] Mock pics with various metadata combinations
 - [ ] Invalid/corrupted file examples
 - [ ] Config examples
 
-### 9. Error Handling
+### Error Handling
 
 - [ ] Skip pics with warnings, continue processing
 - [ ] Log all warnings/errors to manifest
@@ -247,7 +186,7 @@ normpic/
 - [ ] Report broken symlinks
 - [ ] Document error handling in `doc/guides/errors.md`
 
-### 10. MVP Documentation Completion
+### MVP Documentation Completion
 
 - [ ] Architecture overview in `doc/architecture/overview.md`
 - [ ] Module interaction diagrams

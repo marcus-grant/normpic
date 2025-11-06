@@ -8,6 +8,7 @@ NormPic follows a manifest-centric, TDD-driven architecture with clear separatio
 
 ### Schema & Data Management
 - [Schema Versioning](schema-versioning.md) - Versioned schema approach using Python modules, serializer separation, and future migration system design
+- [Data Models](data-models.md) - Dataclass architecture, TDD implementation, and serialization layer design
 
 ## Architecture Principles
 

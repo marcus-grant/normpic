@@ -11,3 +11,7 @@
 - Planned serializer pattern as peer directory to models
 - Updated TODO.md with 3-commit implementation plan and migration system design
 - Established pre-commit documentation process in CONTRIBUTE.md
+- Added JSON schema v0.1.0 and data models (TDD approach)
+- Created Pic, Manifest, Config dataclasses with validation
+- Implemented ManifestSerializer with JSON serialization and schema validation
+- Added comprehensive unit tests (20 passing tests)
