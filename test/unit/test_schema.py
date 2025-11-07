@@ -20,11 +20,11 @@ class TestManifestSchema:
                     "source_path": "/path/to/source.jpg",
                     "dest_path": "/path/to/dest.jpg",
                     "hash": "abc123def456",
-                    "size_bytes": 1024
+                    "size_bytes": 1024,
                 }
-            ]
+            ],
         }
-        
+
         # Should not raise ValidationError
         validate(instance=valid_manifest, schema=MANIFEST_SCHEMA)
 
@@ -34,14 +34,14 @@ class TestManifestSchema:
             "version": "0.1.0",
             # Missing collection_name, generated_at, pics
         }
-        
+
         with pytest.raises(ValidationError):
             validate(instance=invalid_manifest, schema=MANIFEST_SCHEMA)
 
     def test_manifest_with_invalid_pic_fails(self):
         """Test that manifest with invalid pic entry fails validation."""
         invalid_manifest = {
-            "version": "0.1.0", 
+            "version": "0.1.0",
             "collection_name": "test-collection",
             "generated_at": "2025-11-06T19:30:00Z",
             "pics": [
@@ -49,9 +49,9 @@ class TestManifestSchema:
                     "source_path": "/path/to/source.jpg",
                     # Missing dest_path, hash, size_bytes
                 }
-            ]
+            ],
         }
-        
+
         with pytest.raises(ValidationError):
             validate(instance=invalid_manifest, schema=MANIFEST_SCHEMA)
 
@@ -63,11 +63,11 @@ class TestPicSchema:
         """Test that a valid pic entry passes schema validation."""
         valid_pic = {
             "source_path": "/path/to/source.jpg",
-            "dest_path": "/path/to/dest.jpg", 
+            "dest_path": "/path/to/dest.jpg",
             "hash": "abc123def456",
-            "size_bytes": 1024
+            "size_bytes": 1024,
         }
-        
+
         validate(instance=valid_pic, schema=PIC_SCHEMA)
 
     def test_pic_with_optional_fields_passes_validation(self):
@@ -75,15 +75,15 @@ class TestPicSchema:
         pic_with_optionals = {
             "source_path": "/path/to/source.jpg",
             "dest_path": "/path/to/dest.jpg",
-            "hash": "abc123def456", 
+            "hash": "abc123def456",
             "size_bytes": 1024,
             "timestamp": "2025-11-06T19:30:00Z",
             "timestamp_source": "exif",
             "camera": "Canon EOS R5",
             "gps": {"lat": 40.7128, "lon": -74.0060},
-            "errors": ["no_exif"]
+            "errors": ["no_exif"],
         }
-        
+
         validate(instance=pic_with_optionals, schema=PIC_SCHEMA)
 
     def test_pic_with_invalid_timestamp_source_fails(self):
@@ -93,9 +93,9 @@ class TestPicSchema:
             "dest_path": "/path/to/dest.jpg",
             "hash": "abc123def456",
             "size_bytes": 1024,
-            "timestamp_source": "invalid_source"  # Not in enum
+            "timestamp_source": "invalid_source",  # Not in enum
         }
-        
+
         with pytest.raises(ValidationError):
             validate(instance=invalid_pic, schema=PIC_SCHEMA)
 

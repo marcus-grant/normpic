@@ -8,7 +8,7 @@ import piexif
 @pytest.fixture
 def create_photo_with_exif(tmp_path):
     """Factory fixture to create test images with custom EXIF data.
-    
+
     Usage:
         def test_something(create_photo_with_exif):
             photo_path = create_photo_with_exif(
@@ -19,19 +19,19 @@ def create_photo_with_exif(tmp_path):
                 Model="EOS R5"
             )
             # Use photo_path in test
-    
+
     Args:
         filename: Name of the photo file to create
         **exif_tags: EXIF tags to include in the photo
-        
+
     Returns:
         Path: Path to the created photo file
     """
-    
+
     def _create_photo(filename="test_photo.jpg", **exif_tags):
         """Create a synthetic photo with specified EXIF data."""
         img = Image.new("RGB", (32, 32), color="red")
-        
+
         # Build EXIF dict from kwargs
         exif_dict = {
             "0th": {},
@@ -39,7 +39,7 @@ def create_photo_with_exif(tmp_path):
             "1st": {},
             "GPS": {},
         }
-        
+
         # Add tags based on kwargs
         for tag_name, value in exif_tags.items():
             if tag_name == "DateTimeOriginal":
@@ -67,23 +67,23 @@ def create_photo_with_exif(tmp_path):
                     value.encode() if isinstance(value, str) else value
                 )
             # Add more tag mappings as needed for GPS, etc.
-            
+
         # Create photo path in temporary directory
         photo_path = tmp_path / filename
-        
+
         # Only create EXIF if tags were provided
         if exif_tags:
             exif_bytes = piexif.dump(exif_dict)
             img.save(photo_path, "JPEG", exif=exif_bytes)
         else:
             img.save(photo_path, "JPEG")
-            
+
         return photo_path
-        
+
     return _create_photo
 
 
-@pytest.fixture  
+@pytest.fixture
 def sample_camera_data():
     """Fixture providing common camera make/model combinations for testing."""
     return {
@@ -112,6 +112,6 @@ def sample_gps_locations():
     """Fixture providing GPS coordinates for testing."""
     return {
         "nyc": {"lat": 40.7589, "lon": -73.9851},
-        "london": {"lat": 51.5074, "lon": -0.1278}, 
+        "london": {"lat": 51.5074, "lon": -0.1278},
         "tokyo": {"lat": 35.6762, "lon": 139.6503},
     }

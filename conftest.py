@@ -6,5 +6,5 @@ from test.fixtures import (
     create_photo_with_exif,
     sample_camera_data,
     burst_sequence_timestamps,
-    sample_gps_locations
+    sample_gps_locations,
 )
