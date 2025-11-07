@@ -1,5 +1,132 @@
 # NormPic - Photo Organization & Manifest Generator TODO
 
+## Next Development Phase - Detailed TDD Implementation Cycles
+
+### Priority 1: Manifest Manager - Load Existing Manifest
+
+**RED Phase - Write Failing E2E Test:**
+1. Create `test/integration/test_manifest_loading_workflow.py`
+2. Write `test_load_existing_manifest_complete_workflow()`
+   - Setup: Create existing manifest.json in destination
+   - Act: Run photo organization on same source
+   - Assert: Existing manifest loaded, validated, used for processing decisions
+
+**GREEN Phase - Unit Tests & Implementation:**
+1. Test fails (ImportError: function doesn't exist)
+2. Write unit tests in `test/unit/test_manifest_manager.py`:
+   - `test_load_manifest_file_exists()`
+   - `test_load_manifest_invalid_json()`
+   - `test_load_manifest_schema_validation()`
+3. Implement minimal `manifest_manager.load_existing_manifest()` to pass tests
+4. Run `uv run pytest test/unit/test_manifest_manager.py -v` until green
+
+**REFACTOR Phase:**
+1. Improve implementation with proper error handling
+2. Add logging, validation checks
+3. Optimize file loading performance if needed
+
+**DOCUMENTATION Phase:**
+1. Update `doc/CHANGELOG.md` with H2 date header + bullet points
+2. Update `doc/modules/manifest.md` with load functionality
+3. Ensure link chain: doc/README.md → doc/modules/README.md → manifest.md
+
+**COMMIT Phase:**
+1. Run full test suite: `uv run pytest`
+2. Run linting: `ruff check` and `ruff format`
+3. Commit with format: `Ft: Add manifest loading with validation`
+4. Mark TODO item [x] complete
+
+### Priority 2: Manifest Manager - Change Detection
+
+**RED Phase - Write Failing E2E Test:**
+1. Create `test_incremental_processing_workflow()` in same file
+2. Test scenario: modify source file, verify only changed files reprocessed
+3. Assert: unchanged files skipped, changed files reprocessed
+
+**GREEN Phase - Unit Tests & Implementation:**
+1. Unit tests for change detection:
+   - `test_detect_file_hash_changes()`
+   - `test_detect_timestamp_changes()`
+   - `test_detect_config_changes()`
+   - `test_detect_missing_destination_files()`
+2. Implement change detection logic in `manifest_manager.py`
+3. Iterate RED-GREEN until all tests pass
+
+**REFACTOR Phase:**
+1. Optimize hash computation for large files
+2. Add efficient timestamp comparison logic
+3. Consider lazy evaluation strategies
+
+**DOCUMENTATION Phase:**
+1. Update `doc/CHANGELOG.md` with date header
+2. Document change detection algorithm in `doc/modules/manifest.md`
+3. Add performance notes in `doc/analysis/` if significant optimizations made
+
+**COMMIT Phase:**
+1. Full test suite + linting checks
+2. Commit: `Ft: Add incremental change detection for manifests`
+
+### Priority 3: Filesystem Utilities - Symlink Operations
+
+**RED Phase - Write Failing E2E Test:**
+1. Create `test/integration/test_filesystem_operations_workflow.py`
+2. Write `test_symlink_creation_complete_workflow()`
+3. Test: source photos → symlink creation → validation → broken link detection
+
+**GREEN Phase - Unit Tests & Implementation:**
+1. Create `test/unit/test_filesystem_utils.py`:
+   - `test_create_symlink_success()`
+   - `test_create_symlink_existing_file()`
+   - `test_validate_symlink_integrity()`
+   - `test_detect_broken_symlinks()`
+   - `test_compute_file_hash_sha256()`
+2. Implement `lib/util/filesystem.py` utilities
+3. Mock filesystem operations for deterministic testing
+
+**REFACTOR Phase:**
+1. Add atomic symlink creation (temp + rename)
+2. Optimize hash computation for large files
+3. Add progress reporting hooks
+
+**DOCUMENTATION Phase:**
+1. Update `doc/CHANGELOG.md`
+2. Expand `doc/modules/filesystem.md` with new operations
+3. Link from doc/modules/README.md
+
+**COMMIT Phase:**
+1. Full suite + linting
+2. Commit: `Ft: Add symlink operations and file hash utilities`
+
+### Priority 4: Error Handling Framework
+
+**RED Phase - Write Failing E2E Test:**
+1. Create `test/integration/test_error_handling_workflow.py`
+2. Write `test_corrupted_file_complete_error_handling()`
+3. Test: corrupted files → graceful handling → continue processing → error logging
+
+**GREEN Phase - Unit Tests & Implementation:**
+1. Unit tests for error scenarios:
+   - `test_skip_corrupted_file_continue_processing()`
+   - `test_log_warnings_to_manifest()`
+   - `test_validate_manifest_before_write()`
+2. Implement error handling throughout processing pipeline
+3. Add error logging to manifest schema
+
+**REFACTOR Phase:**
+1. Standardize error message formats
+2. Add error severity levels (warning vs error)
+3. Implement error reporting utilities
+
+**DOCUMENTATION Phase:**
+1. Create `doc/guides/errors.md` with error handling guide
+2. Link from `doc/guides/README.md`
+3. Update `doc/CHANGELOG.md`
+4. Document error schema in `doc/modules/schema.md`
+
+**COMMIT Phase:**
+1. Full suite + linting
+2. Commit: `Ft: Add comprehensive error handling framework`
+
 ## Project Overview
 
 NormPic is a photo organization tool that normalizes photo collections by
@@ -52,7 +179,7 @@ normpic/
 
 #### Manifest Manager
 
-- [ ] Load existing manifest with validation
+- [x] Load existing manifest with validation
 - [ ] Detect changes requiring reprocessing:
   - File hash changes
   - Timestamp changes

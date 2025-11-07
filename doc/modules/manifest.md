@@ -44,37 +44,87 @@ manifest_file = dest_dir / manifest_filename
 - Manifest shows what would be organized
 - Useful for preview/validation before actual processing
 
-### Manifest Loading (Future)
+### Manifest Loading
+
+Loading existing manifests for validation and reuse (implemented in `lib/manager/manifest_manager.py`):
+
+```python
+from lib.manager.manifest_manager import load_existing_manifest, ManifestManager
+from pathlib import Path
+
+# Using standalone function (recommended for one-time loading)
+manifest_path = Path("dest_dir/manifest.json")
+manifest = load_existing_manifest(manifest_path)
+
+if manifest is not None:
+    print(f"Loaded manifest for collection: {manifest.collection_name}")
+    print(f"Contains {len(manifest.pics)} photos")
+    print(f"Generated at: {manifest.generated_at}")
+else:
+    print("Manifest not found or invalid")
+
+# Using ManifestManager class (recommended for multiple operations)
+manager = ManifestManager(manifest_path)
+if manager.manifest_exists():
+    manifest = manager.load_manifest()
+    # Process manifest...
+```
+
+**Loading behavior:**
+- Returns `None` if file doesn't exist
+- Returns `None` if JSON is malformed or schema validation fails  
+- Supports full schema validation against current version (0.1.0)
+- Handles encoding issues gracefully
+- Safe error handling for file permission problems
+
+**Error Handling:**
+- JSON parsing errors → returns `None`
+- Schema validation failures → returns `None`  
+- File encoding issues → returns `None`
+- File permission errors → returns `None`
+
+This enables incremental processing workflows where existing manifests can be loaded and compared against current source files.
+
+### Atomic Manifest Updates
+
+Safe manifest writing to prevent corruption (implemented in `ManifestManager.save_manifest()`):
+
+```python
+from lib.manager.manifest_manager import ManifestManager
+
+manager = ManifestManager(manifest_path)
+
+# Atomic write with temp file + rename
+try:
+    manager.save_manifest(manifest, validate=True)
+    print("Manifest saved successfully")
+except ValidationError as e:
+    print(f"Manifest validation failed: {e}")
+except OSError as e:
+    print(f"Failed to write manifest: {e}")
+```
+
+**Atomic write process:**
+1. Serialize manifest to JSON with validation
+2. Write to temporary file (`manifest.tmp`)
+3. Atomically rename temp file to final name
+4. Clean up temp file on any errors
+
+This prevents manifest corruption from interrupted writes or system crashes.
+
+### Change Detection (Priority 2 - Future)
 
 Planned functionality for incremental updates:
 
 ```python
-# Load existing manifest with validation
-def load_manifest(manifest_path: Path) -> Manifest:
-    """Load and validate existing manifest."""
-    pass
-
 # Detect changes requiring reprocessing  
 def detect_changes(manifest: Manifest, source_dir: Path) -> List[Change]:
     """Compare current state with manifest to find changes."""
-    pass
-```
-
-**Change detection will check:**
-- File hash changes (photo modified)
-- Timestamp changes (EXIF data updated)
-- Config changes (collection name, description)
-- Missing destination files (broken symlinks)
-
-### Atomic Manifest Updates (Future)
-
-```python
-# Write manifest atomically to prevent corruption
-def write_manifest_atomic(manifest: Manifest, dest_path: Path) -> None:
-    """Write manifest with atomic file replacement."""
-    # Write to temp file first
-    # Validate written content
-    # Atomically replace existing manifest
+    # Will check:
+    # - File hash changes (photo modified)
+    # - Timestamp changes (EXIF data updated) 
+    # - Config changes (collection name, description)
+    # - Missing destination files (broken symlinks)
     pass
 ```
 
@@ -198,6 +248,16 @@ except OSError as e:
 
 ## API Reference
 
-See `lib/serializer/manifest.py` for current manifest serialization implementation.
+**Manifest Operations:**
+- `lib/manager/manifest_manager.py` - ManifestManager class and load_existing_manifest() function
+- `lib/serializer/manifest.py` - ManifestSerializer for JSON serialization/validation
 
-Future manifest operations will be implemented in `lib/manager/manifest_manager.py`.
+**Current Implementation:**
+- Manifest loading with validation ✓
+- Atomic manifest writing ✓ 
+- Error handling for common failure modes ✓
+
+**Coming Next (Priority 2):**
+- Change detection for incremental updates
+- Dry-run manifest cleanup
+- Manifest version migration system
