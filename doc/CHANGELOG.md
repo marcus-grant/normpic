@@ -1,5 +1,32 @@
 # NormPic Development Changelog
 
+## 2025-11-07
+
+### CLI Implementation (Complete MVP Feature)
+
+- **CLI Implementation**: Full command-line interface for photo organization
+  - Implemented `cli/main.py` using Click framework with all operational flags
+  - Added `--dry-run`, `--verbose`, `--force`, `--config` flags  
+  - Wire CLI to existing photo_manager workflow
+  - Updated `main.py` to call CLI interface
+- **Configuration Management**: JSON-based configuration system
+  - Extended `lib/model/config.py` with source_dir/dest_dir fields
+  - Added JSON file loading with comprehensive validation
+  - Implemented path validation and directory creation
+  - Default config path: `./config.json`
+- **Dry-run Support**: Added dry-run mode throughout photo workflow
+  - Updated `lib/manager/photo_manager.py` with dry_run parameter
+  - Skip symlink creation in dry-run mode  
+  - Generate `manifest.dryrun.json` instead of `manifest.json`
+- **Comprehensive Testing**: Full TDD approach for new functionality
+  - Added 12 unit tests for config JSON loading/validation (`test/unit/test_config.py`)
+  - Added 11 CLI integration tests (`test/integration/test_cli.py`)  
+  - All 101 tests passing, including existing photo workflow tests
+- **Code Quality**: Clean implementation following project standards
+  - Proper error handling and exit codes
+  - Summary output: "Processed X pics, Y warnings, Z errors"
+  - Ruff linting compliance
+
 ## 2025-11-06
 
 ### Documentation Update & Cleanup (Post-Feature)

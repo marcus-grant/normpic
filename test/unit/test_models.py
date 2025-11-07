@@ -146,9 +146,15 @@ class TestConfig:
 
     def test_config_creation_with_defaults(self):
         """Test Config creation with default values."""
-        config = Config(collection_name="test-collection")
+        config = Config(
+            collection_name="test-collection",
+            source_dir="/tmp/source",
+            dest_dir="/tmp/dest"
+        )
         
         assert config.collection_name == "test-collection"
+        assert config.source_dir == "/tmp/source"
+        assert config.dest_dir == "/tmp/dest"
         assert config.collection_description is None
         assert config.timestamp_offset_hours == 0
         assert config.force_reprocess is False
@@ -157,12 +163,16 @@ class TestConfig:
         """Test Config creation with all fields."""
         config = Config(
             collection_name="wedding-photos",
+            source_dir="/photos/raw",
+            dest_dir="/photos/organized",
             collection_description="John and Jane's wedding",
             timestamp_offset_hours=-5,
             force_reprocess=True
         )
         
         assert config.collection_name == "wedding-photos"
+        assert config.source_dir == "/photos/raw"
+        assert config.dest_dir == "/photos/organized"
         assert config.collection_description == "John and Jane's wedding"
         assert config.timestamp_offset_hours == -5
         assert config.force_reprocess is True

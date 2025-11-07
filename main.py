@@ -1,5 +1,9 @@
+from cli.main import main as cli_main
+
+
 def main():
-    print("Hello from normpic!")
+    """Entry point for normpic CLI."""
+    cli_main()
 
 
 if __name__ == "__main__":

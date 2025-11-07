@@ -15,7 +15,8 @@ def organize_photos(
     source_dir: Path, 
     dest_dir: Path,
     collection_name: str,
-    collection_description: Optional[str] = None
+    collection_description: Optional[str] = None,
+    dry_run: bool = False
 ) -> Manifest:
     """Organize photos from source to destination with proper ordering and manifest generation.
     
@@ -24,6 +25,7 @@ def organize_photos(
         dest_dir: Destination directory for organized photos
         collection_name: Name of the photo collection
         collection_description: Optional description of the collection
+        dry_run: If True, generate manifest without creating symlinks
         
     Returns:
         Manifest object with organized photo information
@@ -49,14 +51,15 @@ def organize_photos(
     # Create Pic objects with proper filenames
     pics = _create_ordered_pics(ordered_pics, collection_name, dest_dir)
     
-    # Create symlinks
-    for pic in pics:
-        dest_path = dest_dir / pic.dest_path
-        dest_path.parent.mkdir(parents=True, exist_ok=True)
-        
-        if not dest_path.exists():
-            source_path = Path(pic.source_path)
-            dest_path.symlink_to(source_path.resolve())
+    # Create symlinks (unless dry-run)
+    if not dry_run:
+        for pic in pics:
+            dest_path = dest_dir / pic.dest_path
+            dest_path.parent.mkdir(parents=True, exist_ok=True)
+            
+            if not dest_path.exists():
+                source_path = Path(pic.source_path)
+                dest_path.symlink_to(source_path.resolve())
     
     # Create and save manifest
     manifest = Manifest(
@@ -68,7 +71,9 @@ def organize_photos(
         config={"collection_name": collection_name}
     )
     
-    manifest_file = dest_dir / "manifest.json"
+    # Save manifest (with .dryrun suffix in dry-run mode)
+    manifest_filename = "manifest.dryrun.json" if dry_run else "manifest.json"
+    manifest_file = dest_dir / manifest_filename
     serializer = ManifestSerializer()
     manifest_json = serializer.serialize(manifest, validate=True)
     manifest_file.write_text(manifest_json)

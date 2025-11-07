@@ -13,6 +13,10 @@ Technical documentation for each NormPic module, covering implementation details
 - [EXIF Module](exif.md) - EXIF data extraction, structured models, and testing patterns
 - [Photo Manager](photo-manager.md) - Complete photo organization workflow orchestration
 - [Organization Algorithm](organization.md) - Photo ordering algorithm and burst preservation details
+- [Manifest Operations](manifest.md) - Manifest management, validation, dry-run handling, and tool integrations
+
+### System Operations
+- [Filesystem Operations](filesystem.md) - Symlink creation, path handling, and file format support
 
 ## Coming Soon
 

@@ -1,20 +1,5 @@
 # NormPic - Photo Organization & Manifest Generator TODO
 
-## Handoff Message
-
-**Essential Reading (MANDATORY - in order):**
-1. [doc/CONTRIBUTE.md](CONTRIBUTE.md) - Development process, commit format, TDD approach
-2. [doc/README.md](README.md) - Documentation index and project status
-3. Follow documentation links as tasks demand them - all docs are properly linked
-
-**Current Status:** Photo organization workflow complete with 78 passing tests. Ready for CLI implementation.
-
-**Next Task:** CLI implementation (see below for details)
-
-**Instructions:** Delete this handoff section once you've read the essential documents.
-
----
-
 ## Project Overview
 
 NormPic is a photo organization tool that normalizes photo collections by
@@ -75,17 +60,14 @@ normpic/
   - Missing destination files
 - [ ] Update manifest with processing results
 - [ ] Write manifest atomically
-- [ ] Create dry-run manifests (`manifest.dryrun.json`)
+- [x] Create dry-run manifests (`manifest.dryrun.json`)
 - [ ] Delete dry-run manifest after successful run
-- [ ] Document manifest operations in `doc/modules/manifest.md`
+- [x] Document manifest operations in `doc/modules/manifest.md`
 
-#### Config Manager
+#### Config Manager (Future Enhancements)
 
-- [ ] Load config from JSON file
-- [ ] Default config values
-- [ ] Config validation
-- [ ] Future: Environment variable override support (NORMPIC_*)
-- [ ] Document configuration in `doc/guides/configuration.md`
+- [ ] Environment variable override support (NORMPIC_*)
+- [ ] Implement config precedence system (defaults < local config < env vars < cli args)
 
 ### Utilities (`lib/util/`)
 
@@ -96,43 +78,20 @@ normpic/
 - [ ] Detect broken symlinks
 - [ ] Check for flat directory structure (warn if nested)
 - [ ] File hash computation (SHA-256)
-- [ ] Handle file formats: .jpg, .png, .heic, .webp
-- [ ] Document filesystem operations in `doc/modules/filesystem.md`
+- [x] Handle file formats: .jpg, .png, .heic, .webp
+- [x] Document filesystem operations in `doc/modules/filesystem.md`
 
-### CLI Implementation (`cli/main.py`)
 
-- [ ] Single command: `normpic`
-- [ ] Flags:
-  - `--dry-run`: Generate manifest without creating symlinks
-  - `--verbose`: Show each pic being processed
-  - `--force`: Reprocess everything ignoring cache
-  - `--config`: Path to config file (default: `./config.json`)
-- [ ] Output summary: "Processed X pics, Y warnings, Z errors"
-- [ ] Distinguish warnings vs errors in output
-- [ ] Return appropriate exit codes
-- [ ] Create CLI usage guide in `doc/guides/cli.md`
-
-### Testing Strategy
+### Testing Strategy (Remaining)
 
 #### Integration Tests (`test/integration/`)
 
 - [ ] Review and adapt tests from `deleteme-normpic-modules/test/`
-- [ ] End-to-end test: source directory -> symlinks + manifest
-- [ ] Test with mock filesystem
-- [ ] Test dry-run mode
-- [ ] Test force reprocessing
 - [ ] Test incremental updates
-- [ ] Document testing approach in `doc/CONTRIBUTE.md`
 
 #### Unit Tests (`test/unit/`)
 
-- [ ] EXIF extraction with various cameras
-- [ ] Filename generation edge cases
-- [ ] Timestamp parsing and ordering
-- [ ] Burst detection
 - [ ] Hash computation
-- [ ] Config loading and validation
-- [ ] Manifest serialization
 
 #### Test Fixtures (`test/fixture/`)
 
@@ -164,21 +123,9 @@ normpic/
 
 ### Current Status
 
-**COMPLETED:** Photo organization and processing workflow (Commit: "Ft: Add photo organization and processing")
+**COMPLETED:** CLI implementation with comprehensive configuration system
 
-**Next Tasks:** Documentation and cleanup (small commit after main feature)
-
-### Photo Organization Workflow - COMPLETED
-
-**Implementation Complete (Multiple commits with 78 passing tests)**
-- [x] Complete photo organization workflow in lib/manager/photo_manager.py
-- [x] EXIF extraction, filename generation, temporal ordering with burst preservation
-- [x] Comprehensive test coverage (integration + unit tests)
-- [x] Full documentation in doc/modules/, doc/test/, and doc/architecture/
-- [x] Cleanup of superseded deleteme content
-
-### Next Major Feature
-**Ready for CLI Implementation:** Basic photo organization workflow complete
+**Next Tasks:** Performance improvements and incremental updates
 
 ## Post-MVP Features (Future)
 
@@ -247,14 +194,17 @@ normpic/
 
 ## Success Criteria
 
+**✅ Completed:**
+- Produces valid, schema-compliant manifests
+- Maintains pic order with proper burst handling  
+- All tests pass before commits (except checkpoint branches)
+- Ruff checks pass on all code
+- Clear separation between library and CLI
+- Complete documentation for all modules
+
+**🚧 Remaining:**
 - [ ] Processes 24GB photo collection efficiently
-- [ ] Produces valid, schema-compliant manifests
-- [ ] Maintains pic order with proper burst handling
-- [ ] All tests pass before commits (except checkpoint branches)
-- [ ] Ruff checks pass on all code
-- [ ] Clear separation between library and CLI
 - [ ] Documentation of performance improvements
-- [ ] Complete documentation for all modules
 - [ ] Deletion of deleteme directory indicates MVP completion
 
 ## Development Rules
