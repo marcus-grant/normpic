@@ -9,6 +9,22 @@ NormPic normalizes photo collections by:
 - Creating symlinks with consistent naming patterns
 - Producing JSON manifests for integration with other tools
 
+## Architecture Principles
+
+- **Manifest-Centric Design**: All decisions flow through JSON Schema-validated manifests
+- **Protocol-Based Integration**: Parent projects provide implementations for external concerns
+- **TDD Approach**: Integration tests first, then unit tests following RED-GREEN-REFACTOR
+- **Lazy Processing**: Skip unchanged photos based on timestamps and hashes
+
+## Documentation Structure
+
+This documentation follows a hierarchical linking structure:
+
+- All documents link from project root README.md → doc/README.md
+- Each doc/ subdirectory has its own README.md serving as an index
+- Follow links: topic → subtopic → specific document (no direct deep linking)
+- This ensures the entire documentation tree is discoverable systematically
+
 ## Documentation Index
 
 ### Project Management
@@ -35,15 +51,17 @@ NormPic normalizes photo collections by:
 
 ## Project Status
 
-**Photo Organization Workflow**: Complete implementation with 78 passing tests
-- Temporal ordering with burst sequence preservation
-- EXIF-based filename generation 
-- Symlink creation and manifest generation
-- Ready for CLI implementation
+**Complete MVP Implementation** with 109 passing tests:
+- Full CLI interface with configuration system
+- Photo organization workflow with temporal ordering and burst sequence preservation
+- EXIF-based filename generation and symlink creation
+- Manifest loading with validation and atomic file operations
+- Comprehensive error handling and schema validation
 
-See [TODO.md](TODO.md) for remaining tasks and [CHANGELOG.md](CHANGELOG.md) for detailed progress.
+**Current Development**: Change detection for incremental updates (Priority 2)
+
+See [TODO.md](TODO.md) for next tasks and [CHANGELOG.md](CHANGELOG.md) for detailed development progress.
 
 ## Related Projects
 
 - **Galleria** - Static gallery builder that consumes NormPic manifests
-- **deleteme-normpic-modules** - Reference implementation to be superseded

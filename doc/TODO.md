@@ -1,40 +1,34 @@
 # NormPic - Photo Organization & Manifest Generator TODO
 
+## Handoff Message
+
+**Essential Reading (MANDATORY - in order):**
+1. [README.md](../README.md) - Project overview and current status
+2. [doc/README.md](README.md) - Architecture principles, documentation structure, project status
+3. [CONTRIBUTE.md](CONTRIBUTE.md) - Development process, commit format, TDD approach  
+4. [TODO.md](TODO.md) - This file with current tasks and roadmap
+
+**Current Status:** 
+- **Complete MVP Implementation**: 109 passing tests, CLI interface, configuration system
+- **Priority 1 COMPLETED**: Manifest loading with validation (see CHANGELOG.md 2025-11-07)
+  - Added `load_existing_manifest()` function with comprehensive error handling
+  - Enhanced `ManifestManager` with atomic write operations
+  - Full TDD implementation with integration + unit tests
+- **Architecture & Documentation**: Restructured with principles in doc/README.md, cleaned TODO
+  
+**Next Tasks:** Priority 2 - Change detection for incremental updates
+
+**What to do:** 
+1. Follow Priority 2 TDD implementation cycle detailed below
+2. Follow TDD approach: Integration tests first, then unit tests (see CONTRIBUTE.md)
+3. Update documentation with every commit (CHANGELOG.md, relevant module docs)
+4. Delete this handoff section once oriented
+
+**Instructions:** Delete this handoff section once you've read the essential documents and understand the project structure.
+
+---
+
 ## Next Development Phase - Detailed TDD Implementation Cycles
-
-### Priority 1: Manifest Manager - Load Existing Manifest
-
-**RED Phase - Write Failing E2E Test:**
-1. Create `test/integration/test_manifest_loading_workflow.py`
-2. Write `test_load_existing_manifest_complete_workflow()`
-   - Setup: Create existing manifest.json in destination
-   - Act: Run photo organization on same source
-   - Assert: Existing manifest loaded, validated, used for processing decisions
-
-**GREEN Phase - Unit Tests & Implementation:**
-1. Test fails (ImportError: function doesn't exist)
-2. Write unit tests in `test/unit/test_manifest_manager.py`:
-   - `test_load_manifest_file_exists()`
-   - `test_load_manifest_invalid_json()`
-   - `test_load_manifest_schema_validation()`
-3. Implement minimal `manifest_manager.load_existing_manifest()` to pass tests
-4. Run `uv run pytest test/unit/test_manifest_manager.py -v` until green
-
-**REFACTOR Phase:**
-1. Improve implementation with proper error handling
-2. Add logging, validation checks
-3. Optimize file loading performance if needed
-
-**DOCUMENTATION Phase:**
-1. Update `doc/CHANGELOG.md` with H2 date header + bullet points
-2. Update `doc/modules/manifest.md` with load functionality
-3. Ensure link chain: doc/README.md → doc/modules/README.md → manifest.md
-
-**COMMIT Phase:**
-1. Run full test suite: `uv run pytest`
-2. Run linting: `ruff check` and `ruff format`
-3. Commit with format: `Ft: Add manifest loading with validation`
-4. Mark TODO item [x] complete
 
 ### Priority 2: Manifest Manager - Change Detection
 
@@ -127,49 +121,6 @@
 1. Full suite + linting
 2. Commit: `Ft: Add comprehensive error handling framework`
 
-## Project Overview
-
-NormPic is a photo organization tool that normalizes photo collections by
-renaming files based on temporal and camera metadata,
-creating symlinks with standardized names,
-and generating JSON manifests for interoperability with
-other tools like Galleria (gallery builder).
-
-## Architecture Overview
-
-- **Manifest-Centric Design**: All decisions flow through JSON Schema-validated manifests
-- **Protocol-Based Integration**:
-  - Parent projects provide implementations for external concerns
-- **TDD Approach**: Integration tests first, then unit tests following RED-GREEN-REFACTOR
-- **Lazy Processing**: Skip unchanged photos based on timestamps and hashes
-
-## Documentation Strategy
-
-### Documentation Structure
-
-```txt
-normpic/
-|-- README.md           -> Links to doc/README.md
-|-- doc/
-    |-- README.md       # Index and overview
-    |-- TODO.md         # This file
-    |-- CONTRIBUTE.md   # Contribution guidelines (must read)
-    |-- CHANGELOG.md    # Daily updates with H2 date headers
-    |-- architecture/   # System design documents
-    |-- modules/        # Module-specific documentation
-    |-- guides/         # User and developer guides
-    |-- analysis/       # Performance metrics, timestamp statistics
-```
-
-### Documentation Requirements
-
-- [ ] Every commit must consider documentation updates
-- [ ] Features/fixes must be documented in appropriate locations
-- [ ] Daily changes logged in CHANGELOG.md under date headers
-- [ ] Major changes require guide/module documentation updates
-- [ ] Performance discoveries documented in analysis/
-- [ ] Architecture decisions documented as they're made
-
 ## Current Implementation Plan
 
 ## MVP Implementation Tasks
@@ -179,17 +130,13 @@ normpic/
 
 #### Manifest Manager
 
-- [x] Load existing manifest with validation
 - [ ] Detect changes requiring reprocessing:
   - File hash changes
   - Timestamp changes
   - Config changes (collection name, etc.)
   - Missing destination files
 - [ ] Update manifest with processing results
-- [ ] Write manifest atomically
-- [x] Create dry-run manifests (`manifest.dryrun.json`)
 - [ ] Delete dry-run manifest after successful run
-- [x] Document manifest operations in `doc/modules/manifest.md`
 
 #### Config Manager (Future Enhancements)
 
@@ -205,8 +152,6 @@ normpic/
 - [ ] Detect broken symlinks
 - [ ] Check for flat directory structure (warn if nested)
 - [ ] File hash computation (SHA-256)
-- [x] Handle file formats: .jpg, .png, .heic, .webp
-- [x] Document filesystem operations in `doc/modules/filesystem.md`
 
 
 ### Testing Strategy (Remaining)
@@ -238,21 +183,18 @@ normpic/
 
 ### MVP Documentation Completion
 
-- [ ] Architecture overview in `doc/architecture/overview.md`
-- [ ] Module interaction diagrams
-- [ ] Usage guide for end users
-- [ ] Developer setup guide
 - [ ] Performance baseline measurements
 - [ ] Timestamp analysis from test collections
 - [ ] Document any systematic offsets discovered
-- [ ] Complete CHANGELOG.md with all development history
 - [ ] Verify all deleteme content is obsolete and remove directory
 
 ### Current Status
 
-**COMPLETED:** CLI implementation with comprehensive configuration system
+**COMPLETED:** 
+- CLI implementation with comprehensive configuration system
+- Manifest loading with validation (Priority 1)
 
-**Next Tasks:** Performance improvements and incremental updates
+**Next Tasks:** Change detection for incremental updates (Priority 2)
 
 ## Post-MVP Features (Future)
 
