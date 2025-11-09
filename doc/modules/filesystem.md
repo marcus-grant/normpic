@@ -93,36 +93,111 @@ def validate_paths(self) -> None:
 - Destination directories created recursively if needed
 - No modification of source directory structure
 
+## Filesystem Utilities Module
+
+The `src/util/filesystem.py` module provides low-level filesystem operations for photo organization.
+
+### Symlink Operations
+
+#### `create_symlink(source, destination, atomic=True, progress_callback=None)`
+
+Creates symlinks with atomic operations by default:
+
+```python
+from src.util.filesystem import create_symlink
+
+# Basic usage
+create_symlink(source_path, dest_path)
+
+# With progress reporting
+def progress_handler(message):
+    print(f"Progress: {message}")
+
+create_symlink(source_path, dest_path, progress_callback=progress_handler)
+
+# Non-atomic operation (faster but not crash-safe)
+create_symlink(source_path, dest_path, atomic=False)
+```
+
+**Features:**
+- **Atomic operations**: Uses temporary file + rename for crash safety
+- **Progress reporting**: Optional callback for UI integration
+- **Parent directory creation**: Creates destination directories as needed
+- **Error handling**: Clear exceptions for missing sources or existing destinations
+
+#### `validate_symlink_integrity(symlink_path)`
+
+Validates symlink targets exist:
+
+```python
+from src.util.filesystem import validate_symlink_integrity
+
+is_valid = validate_symlink_integrity(symlink_path)
+# Returns True if symlink exists and points to valid file
+```
+
+#### `detect_broken_symlinks(directory)`
+
+Recursively finds broken symlinks:
+
+```python
+from src.util.filesystem import detect_broken_symlinks
+
+broken_links = detect_broken_symlinks(dest_directory)
+for broken_link in broken_links:
+    print(f"Broken symlink: {broken_link}")
+```
+
+### File Hash Computation
+
+#### `compute_file_hash(file_path, chunk_size=65536, progress_callback=None)`
+
+Optimized SHA-256 hash computation:
+
+```python
+from src.util.filesystem import compute_file_hash
+
+# Basic usage
+file_hash = compute_file_hash(file_path)
+
+# With progress reporting for large files
+def hash_progress(bytes_read, total_size):
+    percent = (bytes_read / total_size) * 100
+    print(f"Hashing: {percent:.1f}%")
+
+file_hash = compute_file_hash(file_path, progress_callback=hash_progress)
+
+# Custom chunk size for performance tuning
+file_hash = compute_file_hash(file_path, chunk_size=1024*1024)  # 1MB chunks
+```
+
+**Optimizations:**
+- **64KB default chunks**: Optimal for most file sizes and storage types
+- **Progress reporting**: Callback for long-running operations
+- **Large file handling**: Efficient memory usage for multi-GB files
+- **Configurable chunk size**: Tunable for specific performance requirements
+
 ## Current Limitations
 
-1. **No recursion**: Only scans immediate source directory
-2. **No broken symlink detection**: Doesn't check for or clean up broken symlinks  
-3. **No hash computation**: File integrity not verified
-4. **No nested structure handling**: Flat organization only
-5. **No file metadata preservation**: Only EXIF data extracted
+1. **No recursion**: Photo manager only scans immediate source directory
+2. **No nested structure handling**: Flat organization only  
+3. **No file metadata preservation**: Only EXIF data extracted
 
-## Future Filesystem Features
+## Filesystem Utilities vs Photo Manager
 
-### Planned Enhancements
+The filesystem utilities provide low-level operations, while photo manager provides high-level workflow:
+
+| Component | Responsibility |
+|-----------|---------------|
+| `src/util/filesystem.py` | Atomic symlinks, hash computation, broken link detection |
+| `src/manager/photo_manager.py` | Photo discovery, EXIF extraction, filename generation |
+
+## Future Enhancements
 
 **Recursive Directory Scanning:**
 ```python
 def find_photos_recursive(source_dir: Path) -> List[Path]:
     """Recursively find photos in directory tree."""
-    pass
-```
-
-**Broken Symlink Detection:**
-```python
-def detect_broken_symlinks(dest_dir: Path) -> List[Path]:
-    """Find symlinks that point to missing files."""
-    pass
-```
-
-**File Hash Computation:**
-```python
-def compute_file_hash(file_path: Path) -> str:
-    """Compute SHA-256 hash of file contents."""
     pass
 ```
 

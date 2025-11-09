@@ -1,5 +1,26 @@
 # NormPic Development Changelog
 
+## 2025-11-09
+
+### Filesystem Utilities Implementation (Priority 3 TDD)
+
+- **Filesystem Module**: Created `src/util/filesystem.py` with comprehensive utilities
+  - `create_symlink()`: Atomic symlink creation with progress reporting
+  - `validate_symlink_integrity()`: Symlink validation and target checking  
+  - `detect_broken_symlinks()`: Recursive broken symlink detection
+  - `compute_file_hash()`: Optimized SHA-256 computation with progress callbacks
+- **Atomic Operations**: Symlinks use temporary file + rename for crash safety
+- **Performance Optimizations**: 64KB chunk size for optimal hash computation
+- **Progress Reporting**: Callback hooks for UI integration
+- **Comprehensive Testing**: 23 unit tests + 2 integration tests
+  - Full TDD RED-GREEN-REFACTOR cycle implementation
+  - E2E workflow testing: symlink creation → validation → broken link detection
+  - Error handling tests for edge cases and invalid inputs
+- **Documentation Update**: Enhanced `doc/modules/filesystem.md` with usage examples
+  - Added API documentation for all new functions
+  - Performance optimization details and configuration options
+  - Clear separation of concerns vs photo manager responsibilities
+
 ## 2025-11-07
 
 ### Manifest Loading Functionality (TDD Implementation)
