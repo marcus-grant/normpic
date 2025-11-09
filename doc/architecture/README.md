@@ -24,7 +24,7 @@ NormPic follows a manifest-centric, TDD-driven architecture with clear separatio
 ## System Structure
 
 ```
-lib/
+src/
 ├── model/          # Data structures (Pic, Manifest, Config)
 │   └── schema_v0.py # JSON Schema definitions as Python constants
 ├── serializer/     # JSON serialization/validation layer
@@ -37,7 +37,7 @@ lib/
 
 ## Implemented Workflows
 
-### Photo Organization (lib/manager/photo_manager.py)
+### Photo Organization (src/manager/photo_manager.py)
 
 Complete photo collection processing workflow:
 - **Temporal Ordering**: EXIF timestamp → filename → mtime precedence with subsecond precision

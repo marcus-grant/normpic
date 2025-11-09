@@ -10,7 +10,7 @@ This document covers manifest file operations and management. For manifest struc
 
 ### Manifest Creation
 
-Regular manifest creation (implemented in `lib/manager/photo_manager.py`):
+Regular manifest creation (implemented in `src/manager/photo_manager.py`):
 
 ```python
 manifest = Manifest(
@@ -46,10 +46,10 @@ manifest_file = dest_dir / manifest_filename
 
 ### Manifest Loading
 
-Loading existing manifests for validation and reuse (implemented in `lib/manager/manifest_manager.py`):
+Loading existing manifests for validation and reuse (implemented in `src/manager/manifest_manager.py`):
 
 ```python
-from lib.manager.manifest_manager import load_existing_manifest, ManifestManager
+from src.manager.manifest_manager import load_existing_manifest, ManifestManager
 from pathlib import Path
 
 # Using standalone function (recommended for one-time loading)
@@ -90,7 +90,7 @@ This enables incremental processing workflows where existing manifests can be lo
 Safe manifest writing to prevent corruption (implemented in `ManifestManager.save_manifest()`):
 
 ```python
-from lib.manager.manifest_manager import ManifestManager
+from src.manager.manifest_manager import ManifestManager
 
 manager = ManifestManager(manifest_path)
 
@@ -249,8 +249,8 @@ except OSError as e:
 ## API Reference
 
 **Manifest Operations:**
-- `lib/manager/manifest_manager.py` - ManifestManager class and load_existing_manifest() function
-- `lib/serializer/manifest.py` - ManifestSerializer for JSON serialization/validation
+- `src/manager/manifest_manager.py` - ManifestManager class and load_existing_manifest() function
+- `src/serializer/manifest.py` - ManifestSerializer for JSON serialization/validation
 
 **Current Implementation:**
 - Manifest loading with validation ✓

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The organization module (`lib/manager/photo_manager.py`) implements the core photo ordering and organization workflow for NormPic. It ensures photos are arranged chronologically while preserving burst sequences from individual cameras.
+The organization module (`src/manager/photo_manager.py`) implements the core photo ordering and organization workflow for NormPic. It ensures photos are arranged chronologically while preserving burst sequences from individual cameras.
 
 ## Ordering Algorithm
 

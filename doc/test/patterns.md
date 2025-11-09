@@ -130,7 +130,7 @@ def test_feature_that_doesnt_exist_yet(create_photo_with_exif):
 
 ### GREEN Phase: Minimal Implementation
 ```python
-# lib/util/example.py
+# src/util/example.py
 def function_that_doesnt_exist_yet(photo_path):
     """Minimal implementation to make test pass."""
     # Return just enough to satisfy the test
@@ -141,7 +141,7 @@ def function_that_doesnt_exist_yet(photo_path):
 
 ### REFACTOR Phase: Improve Implementation
 ```python  
-# lib/util/example.py
+# src/util/example.py
 def function_that_doesnt_exist_yet(photo_path):
     """Improved implementation with proper logic."""
     # Add real EXIF extraction, error handling, etc.

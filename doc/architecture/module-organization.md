@@ -11,28 +11,28 @@ NormPic organizes modules by function and responsibility rather than using gener
 - **Solution**: Organize by specific functional responsibility
 
 ### Split Generic vs Domain-Specific
-- **Generic utilities**: Reusable across projects (`lib/util/`)
-- **Domain logic**: NormPic-specific business rules (`lib/template/`, `lib/manager/`)
+- **Generic utilities**: Reusable across projects (`src/util/`)
+- **Domain logic**: NormPic-specific business rules (`src/template/`, `src/manager/`)
 
 ## Module Patterns
 
-### Template Pattern (`lib/template/`)
+### Template Pattern (`src/template/`)
 - **Purpose**: Apply data to format templates
 - **Example**: `filename.py` applies photo metadata to naming template
 - **Template**: `{collection-?}{YY-MM-DDTHHMMSS}{-camera?}{-counter?}.ext`
 - **Rationale**: Clear responsibility, supports future template variations
 
-### Utility Pattern (`lib/util/`)
+### Utility Pattern (`src/util/`)
 - **Purpose**: Generic, reusable helper functions
 - **Example**: `exif.py` extracts metadata from any photo file
 - **Rationale**: Pure functions, no domain knowledge, broadly useful
 
-### Serialization Pattern (`lib/serializer/`)
+### Serialization Pattern (`src/serializer/`)
 - **Purpose**: Format conversion between internal and external representations
 - **Example**: `manifest.py` converts Manifest objects ↔ JSON
 - **Rationale**: Clean separation of data structures from formats
 
-### Manager Pattern (`lib/manager/`)
+### Manager Pattern (`src/manager/`)
 - **Purpose**: High-level workflow orchestration and business logic coordination
 - **Example**: `photo_manager.py` orchestrates the complete photo organization workflow
 - **Implementation**: Coordinates EXIF extraction, temporal ordering, burst preservation, filename generation, symlink creation, and manifest generation
@@ -41,7 +41,7 @@ NormPic organizes modules by function and responsibility rather than using gener
 ## Current Structure
 
 ```
-lib/
+src/
 ├── model/          # Data structures & schema definitions
 ├── serializer/     # Format conversion (JSON, etc.)
 ├── util/           # Generic utilities (EXIF extraction)
@@ -53,10 +53,10 @@ lib/
 ## Implemented Modules
 
 ### Current Implementation
-- **`lib/util/exif.py`** - EXIF metadata extraction with piexif integration
-- **`lib/template/filename.py`** - Template-based filename generation with camera mapping
-- **`lib/manager/photo_manager.py`** - Complete photo organization workflow orchestration
-- **`lib/serializer/manifest.py`** - JSON manifest serialization with schema validation
+- **`src/util/exif.py`** - EXIF metadata extraction with piexif integration
+- **`src/template/filename.py`** - Template-based filename generation with camera mapping
+- **`src/manager/photo_manager.py`** - Complete photo organization workflow orchestration
+- **`src/serializer/manifest.py`** - JSON manifest serialization with schema validation
 
 ## Benefits
 

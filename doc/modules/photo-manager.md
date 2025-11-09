@@ -2,7 +2,7 @@
 
 ## Overview
 
-The `lib/manager/photo_manager.py` module provides complete photo collection organization workflow orchestration.
+The `src/manager/photo_manager.py` module provides complete photo collection organization workflow orchestration.
 
 ## Main Function
 
@@ -12,11 +12,11 @@ The `lib/manager/photo_manager.py` module provides complete photo collection org
 
 **Process**:
 1. Discovers photos in source directory (jpg, jpeg, png, heic, webp)
-2. Extracts EXIF and camera metadata via `lib/util/exif.py`
+2. Extracts EXIF and camera metadata via `src/util/exif.py`
 3. Orders photos with burst preservation via `_order_photos_with_burst_preservation()`
-4. Generates standardized filenames via `lib/template/filename.py`
+4. Generates standardized filenames via `src/template/filename.py`
 5. Creates symlinks in destination directory
-6. Generates and saves JSON manifest via `lib/serializer/manifest.py`
+6. Generates and saves JSON manifest via `src/serializer/manifest.py`
 
 **Returns**: `Manifest` object with organized photo information
 
@@ -51,7 +51,7 @@ The `lib/manager/photo_manager.py` module provides complete photo collection org
 
 ## Module Dependencies
 
-- `lib/util/exif.py` - EXIF extraction
-- `lib/template/filename.py` - Filename generation  
-- `lib/serializer/manifest.py` - JSON serialization
-- `lib/model/manifest.py` - Data structures
+- `src/util/exif.py` - EXIF extraction
+- `src/template/filename.py` - Filename generation  
+- `src/serializer/manifest.py` - JSON serialization
+- `src/model/manifest.py` - Data structures

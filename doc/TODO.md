@@ -46,7 +46,7 @@
    - `test_validate_symlink_integrity()`
    - `test_detect_broken_symlinks()`
    - `test_compute_file_hash_sha256()`
-2. Implement `lib/util/filesystem.py` utilities
+2. Implement `src/util/filesystem.py` utilities
 3. Mock filesystem operations for deterministic testing
 
 **REFACTOR Phase:**
@@ -98,7 +98,7 @@
 ## MVP Implementation Tasks
 
 
-### Managers (`lib/manager/`)
+### Managers (`src/manager/`)
 
 #### Manifest Manager
 
@@ -115,7 +115,7 @@
 - [ ] Environment variable override support (NORMPIC_*)
 - [ ] Implement config precedence system (defaults < local config < env vars < cli args)
 
-### Utilities (`lib/util/`)
+### Utilities (`src/util/`)
 
 #### Filesystem Utilities
 
@@ -173,7 +173,7 @@
 ### Schema Evolution Architecture
 
 **Migration System Design:**
-- `lib/migration/` directory for schema version migrations
+- `src/migration/` directory for schema version migrations
 - Migration scripts handle manifest format evolution
 - Versioned schemas (`schema_v1.py`, `schema_v2.py`, etc.) support multiple formats
 - Automatic detection and upgrade of legacy manifests
@@ -203,7 +203,7 @@
 - [ ] EXIF modification and copy creation
 - [ ] Camera name mapping configuration
 - [ ] Multiple error tracking per pic
-- [ ] **Schema Migration System** (`lib/migration/`)
+- [ ] **Schema Migration System** (`src/migration/`)
   - [ ] Automatic manifest version detection
   - [ ] Migration scripts between schema versions
   - [ ] Backward compatibility validation

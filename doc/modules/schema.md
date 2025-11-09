@@ -12,7 +12,7 @@ NormPic uses JSON Schema to validate manifest structure, ensuring consistency an
 - **Future**: v1.x will mark public-ready, stable API
 
 ### Schema as Python Constants
-- **Location**: `lib/model/schema_v0.py`
+- **Location**: `src/model/schema_v0.py`
 - **Format**: Python dictionaries using JSON Schema specification
 - **Benefits**: No runtime file I/O, schemas versioned with code, easy imports
 
@@ -76,5 +76,5 @@ assert manifest["version"] == VERSION  # "0.1.0"
 
 ## Future Evolution
 - Schema v1.x will add features like UTC offsets, multiple cameras per timestamp
-- Migration system (`lib/migration/`) will handle version upgrades
+- Migration system (`src/migration/`) will handle version upgrades
 - Backward compatibility maintained through versioned schema modules

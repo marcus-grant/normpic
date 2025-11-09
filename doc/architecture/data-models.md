@@ -7,8 +7,8 @@ NormPic uses a clean separation between data models and serialization logic, fol
 ## Architecture Decisions
 
 ### Dataclass-First Design
-- **Models**: Pure dataclasses in `lib/model/` with no serialization logic
-- **Serializers**: Separate layer in `lib/serializer/` handles JSON operations
+- **Models**: Pure dataclasses in `src/model/` with no serialization logic
+- **Serializers**: Separate layer in `src/serializer/` handles JSON operations
 - **Benefits**: Clean separation of concerns, easy testing, type safety
 
 ### TDD Implementation Approach
@@ -65,7 +65,7 @@ class Config:
 ## Serialization Layer
 
 ### ManifestSerializer
-- **Location**: `lib/serializer/manifest.py`
+- **Location**: `src/serializer/manifest.py`
 - **Methods**: `serialize()`, `deserialize()`, `validate()`
 - **Features**: JSON Schema validation, round-trip serialization, error handling
 

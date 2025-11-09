@@ -8,7 +8,7 @@ NormPic performs minimal filesystem operations, primarily focused on symlink cre
 
 ### Symlink Creation
 
-Current implementation in `lib/manager/photo_manager.py`:
+Current implementation in `src/manager/photo_manager.py`:
 
 ```python
 # Create symlinks for organized photos

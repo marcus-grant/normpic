@@ -27,12 +27,12 @@
   - Wire CLI to existing photo_manager workflow
   - Updated `main.py` to call CLI interface
 - **Configuration Management**: JSON-based configuration system
-  - Extended `lib/model/config.py` with source_dir/dest_dir fields
+  - Extended `src/model/config.py` with source_dir/dest_dir fields
   - Added JSON file loading with comprehensive validation
   - Implemented path validation and directory creation
   - Default config path: `./config.json`
 - **Dry-run Support**: Added dry-run mode throughout photo workflow
-  - Updated `lib/manager/photo_manager.py` with dry_run parameter
+  - Updated `src/manager/photo_manager.py` with dry_run parameter
   - Skip symlink creation in dry-run mode  
   - Generate `manifest.dryrun.json` instead of `manifest.json`
 - **Comprehensive Testing**: Full TDD approach for new functionality
@@ -54,7 +54,7 @@
   - Updated `doc/architecture/module-organization.md` with implemented modules list
 - **Architecture Documentation**: Comprehensive updates for photo organization workflow
   - Updated `doc/architecture/README.md` with implemented photo_manager.py workflow
-  - Added Manager Pattern documentation for `lib/manager/photo_manager.py` 
+  - Added Manager Pattern documentation for `src/manager/photo_manager.py` 
   - Documented temporal ordering, burst preservation, and workflow orchestration
   - Updated system structure diagram to reflect actual implementation
 - **Organization Algorithm Documentation**: Created detailed ordering algorithm docs
@@ -72,8 +72,8 @@
 
 ### Photo Organization and Processing Workflow (TDD)
 
-- **Architecture Decision**: Implemented proper module organization in `lib/manager/`
-  - `lib/manager/photo_manager.py` - High-level photo organization workflow orchestration
+- **Architecture Decision**: Implemented proper module organization in `src/manager/`
+  - `src/manager/photo_manager.py` - High-level photo organization workflow orchestration
   - Follows documented architecture patterns (manager for orchestration, not catch-all core)
 - **Ordering Algorithm**: EXIF timestamp → filename → mtime precedence
   - Subsecond precision handling for fine-grained temporal ordering
@@ -94,8 +94,8 @@
 ### EXIF Extraction and Filename Generation Implementation (TDD)
 
 - **Architecture Decision**: Implemented template/util split pattern
-  - `lib/util/exif.py` - Generic EXIF extraction utilities (reusable)
-  - `lib/template/filename.py` - Domain-specific filename template application
+  - `src/util/exif.py` - Generic EXIF extraction utilities (reusable)
+  - `src/template/filename.py` - Domain-specific filename template application
 - **Data Models**: Created structured EXIF data models
   - `CameraInfo` dataclass for camera make/model
   - `ExifData` dataclass for structured EXIF metadata
@@ -124,7 +124,7 @@
 
 - Project structure initialization with uv, Python 3.12+, ruff
 - Added dependencies: click, Pillow, piexif, jsonschema, pytest  
-- Created lib/ directory structure with model/, core/, manager/, util/, serializer/
+- Created src/ directory structure with model/, core/, manager/, util/, serializer/
 - Installed pre-commit hook for commit message validation
 - Added deleteme folder cleanup rules to CONTRIBUTE.md
 - Designed versioned schema architecture with schema_v1.py approach
@@ -136,5 +136,5 @@
 - Implemented ManifestSerializer with JSON serialization and schema validation
 - Added comprehensive unit tests (20 passing tests)
 - Established versioned schema architecture (schema_v0.py approach)
-- Implemented serializer separation pattern (lib/serializer/ peer to lib/model/)
+- Implemented serializer separation pattern (src/serializer/ peer to src/model/)
 - Documented data models architecture and schema design decisions

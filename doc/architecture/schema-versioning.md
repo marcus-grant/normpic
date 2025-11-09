@@ -13,14 +13,14 @@ NormPic uses a versioned schema approach to enable manifest format evolution whi
 **Rationale:**
 - No runtime file I/O or path resolution required
 - Schemas are versioned with the code that uses them
-- Easy imports: `from lib.model.schema_v1 import MANIFEST_SCHEMA`
+- Easy imports: `from src.model.schema_v1 import MANIFEST_SCHEMA`
 - Simplifies packaging and distribution
 - Better testability - schemas are just Python objects
 
 ### Versioned Module Structure
 
 ```
-lib/model/
+src/model/
 ├── schema_v1.py    # Current schema (v1.0.0)
 ├── schema_v0.py    # Future: legacy compatibility
 ├── pic.py          # Data models
@@ -30,7 +30,7 @@ lib/model/
 
 ### Serializer Separation
 
-**Decision:** Create `lib/serializer/` as peer directory to `lib/model/`.
+**Decision:** Create `src/serializer/` as peer directory to `src/model/`.
 
 **Rationale:**
 - Serialization is a distinct architectural concern
@@ -40,7 +40,7 @@ lib/model/
 
 ### Migration System
 
-**Future:** `lib/migration/` will handle schema evolution:
+**Future:** `src/migration/` will handle schema evolution:
 - Automatic manifest version detection
 - Migration scripts between versions
 - Backward compatibility validation

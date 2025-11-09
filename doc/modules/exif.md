@@ -6,7 +6,7 @@ The EXIF module provides structured extraction of photo metadata using a combina
 
 ## Components
 
-### Data Models (`lib/model/exif.py`)
+### Data Models (`src/model/exif.py`)
 
 **CameraInfo**
 ```python
@@ -34,7 +34,7 @@ class ExifData:
 - Helper methods: `has_gps()`, `has_timestamp()`, `has_subsecond_precision()`
 - Preserves raw EXIF data for extensibility
 
-### Extraction Utilities (`lib/util/exif.py`)
+### Extraction Utilities (`src/util/exif.py`)
 
 **extract_exif_data(photo_path) → ExifData**
 - Extracts structured EXIF metadata from photo files
@@ -85,7 +85,7 @@ except (FileNotFoundError, OSError, piexif.InvalidImageDataError, ValueError):
 
 ### Basic Extraction
 ```python
-from lib.util.exif import extract_exif_data, extract_camera_info
+from src.util.exif import extract_exif_data, extract_camera_info
 
 exif_data = extract_exif_data(photo_path)
 camera_info = extract_camera_info(photo_path)
@@ -96,7 +96,7 @@ if exif_data.has_timestamp():
 
 ### Integration with Templates
 ```python
-from lib.template.filename import generate_filename
+from src.template.filename import generate_filename
 
 filename = generate_filename(
     camera_info=camera_info,
