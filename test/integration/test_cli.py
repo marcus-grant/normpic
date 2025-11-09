@@ -27,7 +27,7 @@ class TestCLIConfigHandling:
                 json.dump(config_data, f)
 
             with patch(
-                "lib.model.config.Config.get_default_config_path",
+                "src.model.config.Config.get_default_config_path",
                 return_value=config_path,
             ):
                 runner = CliRunner()

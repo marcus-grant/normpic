@@ -1,33 +1,5 @@
 # NormPic - Photo Organization & Manifest Generator TODO
 
-## Handoff Message
-
-**Essential Reading (MANDATORY - in order):**
-1. [README.md](../README.md) - Project overview and current status
-2. [doc/README.md](README.md) - Architecture principles, documentation structure, project status
-3. [CONTRIBUTE.md](CONTRIBUTE.md) - Development process, commit format, TDD approach  
-4. [TODO.md](TODO.md) - This file with current tasks and roadmap
-
-**Current Status:** 
-- **Complete MVP Implementation**: 109 passing tests, CLI interface, configuration system
-- **Priority 1 COMPLETED**: Manifest loading with validation (see CHANGELOG.md 2025-11-07)
-  - Added `load_existing_manifest()` function with comprehensive error handling
-  - Enhanced `ManifestManager` with atomic write operations
-  - Full TDD implementation with integration + unit tests
-- **Architecture & Documentation**: Restructured with principles in doc/README.md, cleaned TODO
-  
-**Next Tasks:** Priority 2 - Change detection for incremental updates
-
-**What to do:** 
-1. Follow Priority 2 TDD implementation cycle detailed below
-2. Follow TDD approach: Integration tests first, then unit tests (see CONTRIBUTE.md)
-3. Update documentation with every commit (CHANGELOG.md, relevant module docs)
-4. Delete this handoff section once oriented
-
-**Instructions:** Delete this handoff section once you've read the essential documents and understand the project structure.
-
----
-
 ## Next Development Phase - Detailed TDD Implementation Cycles
 
 ### Priority 2: Manifest Manager - Change Detection

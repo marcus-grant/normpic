@@ -3,8 +3,8 @@
 import json
 
 # These imports will fail initially - that's the point of TDD
-from lib.manager.photo_manager import organize_photos
-from lib.manager.manifest_manager import load_existing_manifest
+from src.manager.photo_manager import organize_photos
+from src.manager.manifest_manager import load_existing_manifest
 
 
 class TestManifestLoadingWorkflow:

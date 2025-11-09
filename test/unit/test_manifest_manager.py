@@ -3,7 +3,7 @@
 import json
 
 
-from lib.manager.manifest_manager import ManifestManager, load_existing_manifest
+from src.manager.manifest_manager import ManifestManager, load_existing_manifest
 
 
 class TestManifestManager:

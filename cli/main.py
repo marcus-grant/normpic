@@ -6,8 +6,8 @@ from typing import Optional
 
 import click
 
-from lib.model.config import Config
-from lib.manager.photo_manager import organize_photos
+from src.model.config import Config
+from src.manager.photo_manager import organize_photos
 
 
 @click.command()

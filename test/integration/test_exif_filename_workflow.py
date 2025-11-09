@@ -3,9 +3,9 @@
 from datetime import datetime
 
 # These imports will fail initially - that's the point of TDD
-from lib.util.exif import extract_exif_data, extract_camera_info
-from lib.template.filename import generate_filename
-from lib.model.exif import CameraInfo, ExifData
+from src.util.exif import extract_exif_data, extract_camera_info
+from src.template.filename import generate_filename
+from src.model.exif import CameraInfo, ExifData
 
 
 class TestCompleteWorkflows:

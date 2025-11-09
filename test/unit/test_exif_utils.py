@@ -2,8 +2,8 @@
 
 from datetime import datetime
 
-from lib.util.exif import extract_exif_data, extract_camera_info
-from lib.model.exif import CameraInfo, ExifData
+from src.util.exif import extract_exif_data, extract_camera_info
+from src.model.exif import CameraInfo, ExifData
 
 
 class TestExtractExifData:

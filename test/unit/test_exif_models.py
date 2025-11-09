@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from lib.model.exif import CameraInfo, ExifData
+from src.model.exif import CameraInfo, ExifData
 
 
 class TestCameraInfo:

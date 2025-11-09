@@ -3,7 +3,7 @@
 import pytest
 from jsonschema import validate, ValidationError
 
-from lib.model.schema_v0 import VERSION, MANIFEST_SCHEMA, PIC_SCHEMA
+from src.model.schema_v0 import VERSION, MANIFEST_SCHEMA, PIC_SCHEMA
 
 
 class TestManifestSchema:

@@ -5,7 +5,7 @@ import pytest
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 
-from lib.model.config import Config
+from src.model.config import Config
 
 
 class TestConfigFromJsonFile:

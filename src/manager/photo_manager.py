@@ -4,11 +4,11 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional, List
 
-from lib.model.manifest import Manifest
-from lib.model.pic import Pic
-from lib.util.exif import extract_exif_data, extract_camera_info
-from lib.template.filename import generate_filename
-from lib.serializer.manifest import ManifestSerializer
+from src.model.manifest import Manifest
+from src.model.pic import Pic
+from src.util.exif import extract_exif_data, extract_camera_info
+from src.template.filename import generate_filename
+from src.serializer.manifest import ManifestSerializer
 
 
 def organize_photos(

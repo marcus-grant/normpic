@@ -1,0 +1,1 @@
+"""Template application module for domain-specific formatting."""

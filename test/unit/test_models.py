@@ -3,9 +3,9 @@
 from datetime import datetime
 
 
-from lib.model.pic import Pic
-from lib.model.manifest import Manifest
-from lib.model.config import Config
+from src.model.pic import Pic
+from src.model.manifest import Manifest
+from src.model.config import Config
 
 
 class TestPic:

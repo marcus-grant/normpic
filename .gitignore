@@ -18,7 +18,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+# lib/ - REMOVED: This project uses src/ for source code, not lib/ for Python packages
 lib64/
 parts/
 sdist/

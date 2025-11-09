@@ -4,8 +4,8 @@ from datetime import datetime
 from pathlib import Path
 
 # These imports will fail initially - that's the point of TDD
-from lib.manager.photo_manager import organize_photos
-from lib.serializer.manifest import ManifestSerializer
+from src.manager.photo_manager import organize_photos
+from src.serializer.manifest import ManifestSerializer
 
 
 class TestPhotoOrganizationWorkflow:
