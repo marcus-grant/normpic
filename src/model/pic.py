@@ -14,6 +14,7 @@ class Pic:
     dest_path: str
     hash: str
     size_bytes: int
+    mtime: float  # File modification time for change detection
     
     # Optional fields
     timestamp: Optional[datetime] = None
@@ -29,6 +30,7 @@ class Pic:
             "dest_path": self.dest_path,
             "hash": self.hash,
             "size_bytes": self.size_bytes,
+            "mtime": self.mtime,
             "timestamp": self.timestamp.isoformat() if self.timestamp else None,
             "timestamp_source": self.timestamp_source,
             "camera": self.camera,

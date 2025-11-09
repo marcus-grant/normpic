@@ -18,6 +18,7 @@ class TestPic:
             dest_path="/path/to/dest.jpg",
             hash="abc123def456",
             size_bytes=1024,
+            mtime=1699123456.789,
         )
 
         assert pic.source_path == "/path/to/source.jpg"
@@ -39,6 +40,7 @@ class TestPic:
             dest_path="/path/to/dest.jpg",
             hash="abc123def456",
             size_bytes=1024,
+            mtime=1699123456.789,
             timestamp=timestamp,
             timestamp_source="exif",
             camera="Canon EOS R5",
@@ -59,6 +61,7 @@ class TestPic:
             dest_path="/path/to/dest.jpg",
             hash="abc123def456",
             size_bytes=1024,
+            mtime=1699123456.789,
         )
 
         expected = {
@@ -66,6 +69,7 @@ class TestPic:
             "dest_path": "/path/to/dest.jpg",
             "hash": "abc123def456",
             "size_bytes": 1024,
+            "mtime": 1699123456.789,
             "timestamp": None,
             "timestamp_source": None,
             "camera": None,
@@ -89,12 +93,14 @@ class TestManifest:
                 dest_path="/path/to/dest1.jpg",
                 hash="abc123",
                 size_bytes=1024,
+                mtime=1699123456.789,
             ),
             Pic(
                 source_path="/path/to/source2.jpg",
                 dest_path="/path/to/dest2.jpg",
                 hash="def456",
                 size_bytes=2048,
+                mtime=1699123456.789,
             ),
         ]
 
@@ -122,6 +128,7 @@ class TestManifest:
                 dest_path="/path/to/dest.jpg",
                 hash="abc123",
                 size_bytes=1024,
+                mtime=1699123456.789,
             )
         ]
 

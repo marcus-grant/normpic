@@ -2,9 +2,8 @@
 
 from pathlib import Path
 from datetime import datetime
-from typing import Union, Optional
+from typing import Union
 import piexif
-from PIL import Image
 
 from src.model.exif import CameraInfo, ExifData
 
@@ -64,7 +63,7 @@ def extract_exif_data(photo_path: Union[Path, str]) -> ExifData:
                             raw_data[f"{ifd_name}_{tag}"] = value.decode('utf-8', errors='ignore')
                         else:
                             raw_data[f"{ifd_name}_{tag}"] = str(value)
-                    except:
+                    except Exception:
                         # Skip problematic tags
                         pass
         exif_data.raw_data = raw_data

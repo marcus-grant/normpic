@@ -4,7 +4,7 @@ VERSION = "0.1.0"
 
 PIC_SCHEMA = {
     "type": "object",
-    "required": ["source_path", "dest_path", "hash", "size_bytes"],
+    "required": ["source_path", "dest_path", "hash", "size_bytes", "mtime"],
     "properties": {
         "source_path": {
             "type": "string",
@@ -22,6 +22,10 @@ PIC_SCHEMA = {
             "type": "integer",
             "minimum": 0,
             "description": "File size in bytes"
+        },
+        "mtime": {
+            "type": "number",
+            "description": "File modification time (Unix timestamp) for change detection"
         },
         "timestamp": {
             "type": ["string", "null"],

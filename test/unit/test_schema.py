@@ -21,6 +21,7 @@ class TestManifestSchema:
                     "dest_path": "/path/to/dest.jpg",
                     "hash": "abc123def456",
                     "size_bytes": 1024,
+                    "mtime": 1699123456.789,
                 }
             ],
         }
@@ -66,6 +67,7 @@ class TestPicSchema:
             "dest_path": "/path/to/dest.jpg",
             "hash": "abc123def456",
             "size_bytes": 1024,
+            "mtime": 1699123456.789,
         }
 
         validate(instance=valid_pic, schema=PIC_SCHEMA)
@@ -77,6 +79,7 @@ class TestPicSchema:
             "dest_path": "/path/to/dest.jpg",
             "hash": "abc123def456",
             "size_bytes": 1024,
+            "mtime": 1699123456.789,
             "timestamp": "2025-11-06T19:30:00Z",
             "timestamp_source": "exif",
             "camera": "Canon EOS R5",
@@ -93,6 +96,7 @@ class TestPicSchema:
             "dest_path": "/path/to/dest.jpg",
             "hash": "abc123def456",
             "size_bytes": 1024,
+            "mtime": 1699123456.789,
             "timestamp_source": "invalid_source",  # Not in enum
         }
 

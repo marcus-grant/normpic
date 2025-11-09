@@ -2,9 +2,8 @@
 
 import json
 from datetime import datetime
-from typing import Dict, Any
 
-from jsonschema import validate, ValidationError
+from jsonschema import validate
 
 from src.model.manifest import Manifest
 from src.model.pic import Pic
@@ -64,6 +63,7 @@ class ManifestSerializer:
                 dest_path=pic_data["dest_path"],
                 hash=pic_data["hash"],
                 size_bytes=pic_data["size_bytes"],
+                mtime=pic_data["mtime"],
                 timestamp=timestamp,
                 timestamp_source=pic_data["timestamp_source"],
                 camera=pic_data["camera"],

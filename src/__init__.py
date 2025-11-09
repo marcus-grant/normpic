@@ -1,0 +1,1 @@
+"""NormPic - Photo organization and manifest generation library."""

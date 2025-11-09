@@ -24,6 +24,7 @@ class TestManifestSerializer:
                 dest_path="/path/to/dest.jpg",
                 hash="abc123",
                 size_bytes=1024,
+                mtime=1699123456.789,
             )
         ]
 
@@ -56,6 +57,7 @@ class TestManifestSerializer:
                     "dest_path": "/path/to/dest.jpg",
                     "hash": "abc123",
                     "size_bytes": 1024,
+                    "mtime": 1699123456.789,
                     "timestamp": None,
                     "timestamp_source": None,
                     "camera": None,
@@ -90,6 +92,7 @@ class TestManifestSerializer:
                     dest_path="/path/to/dest.jpg",
                     hash="abc123",
                     size_bytes=1024,
+                    mtime=1699123456.789,
                     timestamp=generated_at,
                     timestamp_source="exif",
                 )
@@ -125,6 +128,7 @@ class TestManifestSerializer:
                     dest_path="/path/to/dest.jpg",
                     hash="abc123",
                     size_bytes=1024,
+                    mtime=1699123456.789,
                 )
             ],
         )
@@ -141,6 +145,7 @@ class TestManifestSerializer:
             dest_path="/path/to/dest.jpg",
             hash="abc123",
             size_bytes=1024,
+            mtime=1699123456.789,
             timestamp_source="invalid_source",  # Not in enum
         )
 
@@ -167,6 +172,7 @@ class TestManifestSerializer:
                     dest_path="/path/to/dest.jpg",
                     hash="abc123",
                     size_bytes=1024,
+                    mtime=1699123456.789,
                 )
             ],
         )
