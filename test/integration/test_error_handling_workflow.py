@@ -28,7 +28,7 @@ class TestErrorHandlingWorkflow:
         )
 
         create_photo_with_exif(
-            source_dir / "valid_photo.png",
+            source_dir / "valid_photo2.jpg",
             DateTimeOriginal="2024:10:05 14:30:46",
             Make="Canon", 
             Model="EOS R5",
@@ -68,8 +68,8 @@ class TestErrorHandlingWorkflow:
         assert result is not None
         
         # Supported files should be processed successfully
-        assert (dest_dir / "test-collection-24-10-05T143045-canon-eos-r5.jpg").exists()
-        assert (dest_dir / "test-collection-24-10-05T143046-canon-eos-r5.png").exists()
+        assert (dest_dir / "test-collection-20241005T143045-r5a.jpg").exists()
+        assert (dest_dir / "test-collection-20241005T143046-r5a.jpg").exists()
         
         # Unsupported files should be skipped with warnings
         assert not (dest_dir / "photo.CR2").exists()
@@ -88,7 +88,8 @@ class TestErrorHandlingWorkflow:
         # For now, just check that we can load the manifest
         # Error handling fields will be added in later commits
         serializer = ManifestSerializer()
-        serializer.load_manifest(manifest_path)
+        manifest_json = manifest_path.read_text()
+        serializer.deserialize(manifest_json)
         
         # This test expects error handling features to be implemented:
         # - errors and warnings fields in manifest

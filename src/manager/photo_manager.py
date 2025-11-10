@@ -10,6 +10,7 @@ from src.util.exif import extract_exif_data, extract_camera_info
 from src.template.filename import generate_filename
 from src.serializer.manifest import ManifestSerializer
 from src.manager.manifest_manager import ManifestManager
+from src.util.error_handling import ErrorHandler
 
 
 def organize_photos(
@@ -31,6 +32,9 @@ def organize_photos(
     Returns:
         Manifest object with organized photo information
     """
+    # Initialize error handler
+    error_handler = ErrorHandler()
+    
     # Load existing manifest for incremental processing
     manifest_filename = "manifest.dryrun.json" if dry_run else "manifest.json"
     manifest_path = dest_dir / manifest_filename
@@ -43,13 +47,17 @@ def organize_photos(
         for pic in existing_manifest.pics:
             existing_pics_by_path[pic.source_path] = pic
     
-    # Find all photo files in source directory
+    # Find all files in source directory and handle supported/unsupported formats
     photo_extensions = {'.jpg', '.jpeg', '.png', '.heic', '.webp'}
     source_photos = []
     
     for file_path in source_dir.iterdir():
-        if file_path.is_file() and file_path.suffix.lower() in photo_extensions:
-            source_photos.append(file_path)
+        if file_path.is_file():
+            if file_path.suffix.lower() in photo_extensions:
+                source_photos.append(file_path)
+            else:
+                # Handle unsupported file formats
+                error_handler.handle_unsupported_format(file_path)
     
     # Filter photos that need processing using change detection
     photos_to_process = []
@@ -78,9 +86,30 @@ def organize_photos(
     # Extract EXIF and camera info for photos that need processing
     pics_with_metadata = []
     for photo_path in photos_to_process:
-        exif_data = extract_exif_data(photo_path)
-        camera_info = extract_camera_info(photo_path)
-        pics_with_metadata.append((photo_path, exif_data, camera_info))
+        try:
+            exif_data = extract_exif_data(photo_path)
+            camera_info = extract_camera_info(photo_path)
+            pics_with_metadata.append((photo_path, exif_data, camera_info))
+        except Exception as e:
+            # Handle corrupted files and EXIF errors
+            error_str = str(e).lower()
+            if "corrupted" in error_str or "invalid" in error_str or "truncated" in error_str:
+                error_handler.handle_corrupted_file(photo_path, str(e))
+            else:
+                # Try to use filesystem timestamp as fallback
+                try:
+                    fallback_timestamp = datetime.fromtimestamp(photo_path.stat().st_mtime).isoformat()
+                    error_handler.handle_exif_extraction_failure(
+                        photo_path, 
+                        str(e), 
+                        fallback_timestamp=fallback_timestamp
+                    )
+                    # Add with fallback data
+                    pics_with_metadata.append((photo_path, None, None))
+                except Exception:
+                    # Complete failure - skip this file
+                    error_handler.handle_filesystem_error(photo_path, f"Cannot access file: {e}")
+            continue
     
     # Order by EXIF timestamp with burst sequence preservation
     ordered_pics = _order_photos_with_burst_preservation(pics_with_metadata)
@@ -102,6 +131,30 @@ def organize_photos(
                 source_path = Path(pic.source_path)
                 dest_path.symlink_to(source_path.resolve())
     
+    # Prepare error information for manifest
+    total_files_found = len(source_photos) + len(error_handler.get_info()) + len(error_handler.get_warnings()) + len(error_handler.get_errors())
+    
+    # Determine overall processing status
+    if error_handler.has_blocking_errors():
+        overall_status = "failed"
+    elif len(error_handler.get_warnings()) > 0 or len(error_handler.get_info()) > 0:
+        overall_status = "completed_with_warnings"
+    else:
+        overall_status = "completed"
+    
+    processing_status_data = {
+        "status": overall_status,
+        "total_files": total_files_found,
+        "processed_successfully": len(all_pics),
+        "warnings_count": len(error_handler.get_warnings()),
+        "errors_count": len(error_handler.get_errors()),
+        "files_skipped": len(error_handler.get_info()) + len(error_handler.get_warnings()) + len(error_handler.get_errors())
+    }
+    
+    # Separate errors and warnings for manifest
+    all_errors = [e for e in error_handler.get_all_entries_for_manifest() if e["severity"] == "error"]
+    all_warnings = [e for e in error_handler.get_all_entries_for_manifest() if e["severity"] in ["warning", "info"]]
+
     # Create and save manifest
     manifest = Manifest(
         version="0.1.0",
@@ -109,7 +162,10 @@ def organize_photos(
         generated_at=datetime.now(),
         pics=all_pics,
         collection_description=collection_description,
-        config={"collection_name": collection_name}
+        config={"collection_name": collection_name},
+        errors=all_errors if all_errors else None,
+        warnings=all_warnings if all_warnings else None,
+        processing_status=processing_status_data
     )
     
     # Save manifest (with .dryrun suffix in dry-run mode)

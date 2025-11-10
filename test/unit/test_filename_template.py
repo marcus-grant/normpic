@@ -18,7 +18,7 @@ class TestGenerateFilename:
             camera_info=camera_info, exif_data=exif_data, collection="wedding"
         )
 
-        assert filename == "wedding-20241005T143045-r5a-0.jpg"
+        assert filename == "wedding-20241005T143045-r5a.jpg"
 
     def test_generate_filename_iphone_with_heic(self):
         """Test filename generation for iPhone with HEIC format."""
@@ -32,7 +32,7 @@ class TestGenerateFilename:
             file_extension=".heic",
         )
 
-        assert filename == "ceremony-20241005T163000-i15-0.heic"
+        assert filename == "ceremony-20241005T163000-i15.heic"
 
     def test_generate_filename_no_collection(self):
         """Test filename generation with no collection name."""
@@ -44,7 +44,7 @@ class TestGenerateFilename:
         )
 
         # Should not include collection prefix when empty
-        assert filename == "20241005T143045-a7r-0.jpg"
+        assert filename == "20241005T143045-a7r.jpg"
 
     def test_generate_filename_no_camera_info(self):
         """Test filename generation with unknown camera."""
@@ -55,7 +55,7 @@ class TestGenerateFilename:
             camera_info=camera_info, exif_data=exif_data, collection="unknown"
         )
 
-        assert filename == "unknown-20241005T143045-unk-0.jpg"
+        assert filename == "unknown-20241005T143045-unk.jpg"
 
     def test_generate_filename_no_timestamp_fallback(self):
         """Test filename generation with missing timestamp (should use current time)."""
@@ -68,7 +68,7 @@ class TestGenerateFilename:
 
         # Should contain current year and r5a camera code
         assert "202" in filename  # Year should be 2024/2025
-        assert "-r5a-0.jpg" in filename
+        assert "-r5a.jpg" in filename
         assert filename.startswith("fallback-")
 
     def test_generate_filename_with_existing_filenames(self):
@@ -77,8 +77,8 @@ class TestGenerateFilename:
         exif_data = ExifData(timestamp=datetime(2024, 10, 5, 14, 30, 45))
 
         existing_filenames = {
-            "wedding-20241005T143045-r5a-0.jpg",  # First one exists
-            "wedding-20241005T143045-r5a-1.jpg",  # Second one exists
+            "wedding-20241005T143045-r5a.jpg",    # Base filename exists
+            "wedding-20241005T143045-r5a-0.jpg",  # First counter exists
         }
 
         filename = generate_filename(
@@ -88,8 +88,8 @@ class TestGenerateFilename:
             existing_filenames=existing_filenames,
         )
 
-        # Should get the next available counter (2)
-        assert filename == "wedding-20241005T143045-r5a-2.jpg"
+        # Should get the next available counter (1)
+        assert filename == "wedding-20241005T143045-r5a-1.jpg"
 
     def test_generate_filename_base32_counter_sequence(self):
         """Test Base32 counter progression through sequence."""
@@ -97,9 +97,21 @@ class TestGenerateFilename:
         exif_data = ExifData(timestamp=datetime(2024, 10, 5, 14, 30, 45))
 
         existing_filenames = set()
-        expected_counters = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B"]
+        
+        # First filename should have no counter
+        filename = generate_filename(
+            camera_info=camera_info,
+            exif_data=exif_data,
+            collection="burst",
+            existing_filenames=existing_filenames,
+        )
+        expected = "burst-20241005T143045-r5a.jpg"
+        assert filename == expected
+        existing_filenames.add(filename)
 
-        for i, expected_counter in enumerate(expected_counters):
+        # Subsequent filenames should have counters
+        expected_counters = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B"]
+        for expected_counter in expected_counters:
             filename = generate_filename(
                 camera_info=camera_info,
                 exif_data=exif_data,
@@ -243,5 +255,5 @@ class TestIntegrationScenarios:
             )
 
             expected_code = expected_codes[camera_name]
-            expected = f"test-20241005T143045-{expected_code}-0.jpg"
+            expected = f"test-20241005T143045-{expected_code}.jpg"
             assert filename == expected

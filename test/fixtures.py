@@ -71,12 +71,15 @@ def create_photo_with_exif(tmp_path):
         # Create photo path in temporary directory
         photo_path = tmp_path / filename
 
-        # Only create EXIF if tags were provided
-        if exif_tags:
+        # Determine file format from extension
+        file_format = "PNG" if photo_path.suffix.lower() == ".png" else "JPEG"
+        
+        # Only create EXIF if tags were provided and format supports it
+        if exif_tags and file_format == "JPEG":
             exif_bytes = piexif.dump(exif_dict)
-            img.save(photo_path, "JPEG", exif=exif_bytes)
+            img.save(photo_path, file_format, exif=exif_bytes)
         else:
-            img.save(photo_path, "JPEG")
+            img.save(photo_path, file_format)
 
         return photo_path
 

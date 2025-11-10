@@ -48,11 +48,16 @@ def generate_filename(
     # Build base filename
     base_filename = "-".join(parts)
     
-    # Find available counter
+    # Check if base filename is available (no counter needed)
+    candidate_filename = f"{base_filename}{file_extension}"
+    if not existing_filenames or candidate_filename not in existing_filenames:
+        return candidate_filename
+    
+    # Base filename conflicts, need to add counter
     counter = find_available_counter(base_filename, file_extension, existing_filenames)
     counter_char = BASE32_ALPHABET[counter]
     
-    # Final filename
+    # Final filename with counter
     return f"{base_filename}-{counter_char}{file_extension}"
 
 

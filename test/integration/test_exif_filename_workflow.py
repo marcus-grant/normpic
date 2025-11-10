@@ -33,7 +33,7 @@ class TestCompleteWorkflows:
         )
 
         # Assert: Verify complete workflow produces expected filename
-        assert filename == "wedding-20241005T143045-r5a-0.jpg"
+        assert filename == "wedding-20241005T143045-r5a.jpg"
 
         # Assert: Verify extracted data structures
         assert isinstance(camera_info, CameraInfo)

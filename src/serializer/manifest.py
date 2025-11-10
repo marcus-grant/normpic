@@ -80,8 +80,11 @@ class ManifestSerializer:
             collection_name=data["collection_name"],
             generated_at=generated_at,
             pics=pics,
-            collection_description=data["collection_description"],
-            config=data["config"]
+            collection_description=data.get("collection_description"),
+            config=data.get("config"),
+            errors=data.get("errors"),
+            warnings=data.get("warnings"),
+            processing_status=data.get("processing_status")
         )
         
         return manifest
