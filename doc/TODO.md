@@ -1,97 +1,127 @@
 # NormPic - Photo Organization & Manifest Generator TODO
 
-## Next Development Phase - Detailed TDD Implementation Cycles
+## Current Status: Priority 3 COMPLETED
 
-### Priority 2: Manifest Manager - Change Detection
+Complete MVP + Incremental Processing + Filesystem Utilities: 140 passing tests
 
-**RED Phase - Write Failing E2E Test:**
-1. Create `test_incremental_processing_workflow()` in same file
-2. Test scenario: modify source file, verify only changed files reprocessed
-3. Assert: unchanged files skipped, changed files reprocessed
+**Critical Technical Details:**
+- This is a uv-managed project: Use `uv run pytest` (NOT `python -m pytest`)
+- Source code location: `src/` directory
+- Test command: `uv run pytest test/` for full suite
+- Linting: `uv run ruff check` (must pass before commits)
 
-**GREEN Phase - Unit Tests & Implementation:**
-1. Unit tests for change detection:
-   - `test_detect_file_hash_changes()`
-   - `test_detect_timestamp_changes()`
-   - `test_detect_config_changes()`
-   - `test_detect_missing_destination_files()`
-2. Implement change detection logic in `manifest_manager.py`
-3. Iterate RED-GREEN until all tests pass
+## Detailed Implementation Plan - Ready to Execute
 
-**REFACTOR Phase:**
-1. Optimize hash computation for large files
-2. Add efficient timestamp comparison logic
-3. Consider lazy evaluation strategies
+The following 12 commits will complete all remaining MVP tasks. Each step includes validation requirements and commit messages.
 
-**DOCUMENTATION Phase:**
-1. Update `doc/CHANGELOG.md` with date header
-2. Document change detection algorithm in `doc/modules/manifest.md`
-3. Add performance notes in `doc/analysis/` if significant optimizations made
+### Commit 1: Error Handling E2E Test (RED Phase)
+**Files to create**: `test/integration/test_error_handling_workflow.py`
+**Task**: Create failing E2E test with comprehensive file format testing
+- Test mix: JPEG/PNG/WEBP/HEIC (supported), RAW/GIF/BMP/H.264/AVI (unsupported), corrupted files
+- Create fixtures for various corruption scenarios and file formats as needed
+- Test assertions: supported files processed, unsupported skipped with warnings, processing continues
+**Validation**: Tests fail as expected, `uv run ruff check` passes
+**Commit**: `Tst: Add error handling workflow tests (RED phase)`
 
-**COMMIT Phase:**
-1. Full test suite + linting checks
-2. Commit: `Ft: Add incremental change detection for manifests`
+### Commit 2: Error Handling Unit Tests
+**Files to create**: `test/unit/test_error_handling.py`
+**Task**: Create unit tests for specific error scenarios
+- `test_skip_corrupted_file_continue_processing()`, `test_log_warnings_to_manifest()`
+- `test_validate_manifest_before_write()`, `test_error_severity_levels()`
+- Mock all filesystem and EXIF operations for deterministic testing
+**Validation**: Unit tests fail as expected, `uv run ruff check` passes
+**Commit**: `Tst: Add error handling unit tests`
 
-### Priority 3: Filesystem Utilities - Symlink Operations
+### Commit 3: Schema Updates for Error Handling
+**Files to modify**: `src/model/schema_v0.py`
+**Task**: Add error/warning fields to manifest schema
+- Add `errors`, `warnings`, `processing_status` fields to PIC_SCHEMA
+- Create ERROR_SCHEMA object with type/message/severity/timestamp
+- Add error summary fields to MANIFEST_SCHEMA
+**Validation**: `uv run pytest` (existing tests pass, new tests still fail), `uv run ruff check`
+**Commit**: `Ft: Add error/warning fields to manifest schema`
 
-**RED Phase - Write Failing E2E Test:**
-1. Create `test/integration/test_filesystem_operations_workflow.py`
-2. Write `test_symlink_creation_complete_workflow()`
-3. Test: source photos → symlink creation → validation → broken link detection
+### Commit 4: Error Handling Implementation (GREEN Phase)
+**Files to create/modify**: `src/util/error_handling.py`, `src/manager/photo_manager.py`, data models
+**Task**: Implement minimal error handling to make E2E test pass
+- Create ErrorHandler class, ErrorSeverity/ErrorType enums
+- Integrate error collection into photo processing workflow
+- Use iterative test-driven approach: run test → implement minimum → repeat
+**Validation**: `uv run pytest` (all tests including new ones pass), `uv run ruff check`
+**Commit**: `Ft: Implement error handling throughout photo workflow`
 
-**GREEN Phase - Unit Tests & Implementation:**
-1. Create `test/unit/test_filesystem_utils.py`:
-   - `test_create_symlink_success()`
-   - `test_create_symlink_existing_file()`
-   - `test_validate_symlink_integrity()`
-   - `test_detect_broken_symlinks()`
-   - `test_compute_file_hash_sha256()`
-2. Implement `src/util/filesystem.py` utilities
-3. Mock filesystem operations for deterministic testing
+### Commit 5: Error Handling Refactor
+⚠️ **PAUSE FOR DESIGN REVIEW**: Consider simple string lists vs complex error objects
+**Task**: Optimize error handling implementation based on actual usage
+- Standardize error message formats, optimize performance
+- Decide on final error representation format (strings vs objects)
+**Validation**: `uv run pytest`, `uv run ruff check`
+**Commit**: `Ref: Optimize error handling implementation`
 
-**REFACTOR Phase:**
-1. Add atomic symlink creation (temp + rename)
-2. Optimize hash computation for large files
-3. Add progress reporting hooks
+### Commit 6: Error Handling Documentation
+**Files to create/modify**: `doc/guides/errors.md`, `doc/guides/README.md`, `doc/modules/schema.md`, `doc/CHANGELOG.md`
+**Task**: Create comprehensive error handling documentation
+- User guide for interpreting errors, schema documentation updates
+**Validation**: Documentation links work correctly
+**Commit**: `Doc: Add comprehensive error handling documentation`
 
-**DOCUMENTATION Phase:**
-1. Update `doc/CHANGELOG.md`
-2. Expand `doc/modules/filesystem.md` with new operations
-3. Link from doc/modules/README.md
+### Commit 7: Mock Filesystem Testing
+**Files to create**: `test/unit/test_filesystem_mock.py`
+**Task**: Add mock filesystem utilities for deterministic testing
+- Create comprehensive filesystem mocking for all filesystem operations
+**Validation**: `uv run pytest test/unit/test_filesystem_mock.py -v`, full suite, `uv run ruff check`
+**Commit**: `Tst: Add mock filesystem utilities for deterministic testing`
 
-**COMMIT Phase:**
-1. Full suite + linting
-2. Commit: `Ft: Add symlink operations and file hash utilities`
+### Commit 8: Enhanced Symlink Detection
+**Files to modify**: `src/util/filesystem.py`
+**Task**: Enhance broken symlink detection with performance optimizations
+- Add recursive directory scanning, progress reporting for large trees
+**Validation**: `uv run pytest test/unit/test_filesystem_utils.py -v`, full suite, `uv run ruff check`
+**Commit**: `Ft: Enhance broken symlink detection with performance optimizations`
 
-### Priority 4: Error Handling Framework
+### Commit 9: Environment Variable Support
+⚠️ **SECURITY WARNING**: Only read specific NORMPIC_* variables, never shell enumeration
+**Files to create**: `src/manager/config_manager.py`
+**Task**: Add secure environment variable parsing
+- Only read: NORMPIC_SOURCE_DIR, NORMPIC_DEST_DIR, NORMPIC_COLLECTION_NAME, NORMPIC_CONFIG_PATH
+- Mock all environment variables during testing (use `unittest.mock.patch.dict`)
+**Validation**: `uv run pytest test/unit/test_config_manager.py -v`, full suite, `uv run ruff check`
+**Commit**: `Ft: Add secure NORMPIC_* environment variable support`
 
-**RED Phase - Write Failing E2E Test:**
-1. Create `test/integration/test_error_handling_workflow.py`
-2. Write `test_corrupted_file_complete_error_handling()`
-3. Test: corrupted files → graceful handling → continue processing → error logging
+### Commit 10: Config Precedence System
+**Files to modify**: `src/manager/config_manager.py`, `src/cli/main.py`
+**Task**: Implement config precedence system
+- Precedence order: defaults < config file < environment variables < CLI arguments
+- Create integration tests for all precedence combinations
+**Validation**: `uv run pytest test/integration/test_config_precedence.py -v`, full suite, `uv run ruff check`
+**Commit**: `Ft: Implement config precedence system (defaults < file < env < cli)`
 
-**GREEN Phase - Unit Tests & Implementation:**
-1. Unit tests for error scenarios:
-   - `test_skip_corrupted_file_continue_processing()`
-   - `test_log_warnings_to_manifest()`
-   - `test_validate_manifest_before_write()`
-2. Implement error handling throughout processing pipeline
-3. Add error logging to manifest schema
+### Commit 11: Performance Documentation
+**Files to create**: `doc/analysis/performance.md`
+**Task**: Create performance baselines with reproducibility information
+- Record exact commit hash and complete hardware specifications
+- Document CPU, RAM, storage, OS details for benchmark reproduction
+- Include benchmark reproduction guide and hardware comparison template
+**📋 REMINDER**: Ask user about parent project's real-world timestamped photo document
+**Validation**: Documentation links work correctly
+**Commit**: `Doc: Add performance baseline with hardware specs and reproducible benchmarks`
 
-**REFACTOR Phase:**
-1. Standardize error message formats
-2. Add error severity levels (warning vs error)
-3. Implement error reporting utilities
+### Commit 12: Timestamp Analysis Documentation
+**Files to create**: `doc/analysis/timestamps.md`
+**Task**: Document timestamp analysis and systematic offset findings
+- Camera-specific timestamp accuracy, systematic offset patterns
+- Configuration examples for common camera corrections
+**Validation**: Documentation links work correctly
+**Commit**: `Doc: Add timestamp analysis and systematic offset documentation`
 
-**DOCUMENTATION Phase:**
-1. Create `doc/guides/errors.md` with error handling guide
-2. Link from `doc/guides/README.md`
-3. Update `doc/CHANGELOG.md`
-4. Document error schema in `doc/modules/schema.md`
+### Commit 13: Final Cleanup
+**Task**: Remove obsolete deleteme directory after verification
+- Review `deleteme-normpic-modules/` content, verify all specs adapted
+- Remove entire directory, update documentation references
+**Validation**: No broken links, `uv run pytest`, `uv run ruff check`
+**Commit**: `Cleanup: Remove obsolete deleteme directory after successful adaptation`
 
-**COMMIT Phase:**
-1. Full suite + linting
-2. Commit: `Ft: Add comprehensive error handling framework`
+## Reference Information (Historical Context)
 
 ## Current Implementation Plan
 
