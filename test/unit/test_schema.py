@@ -84,7 +84,15 @@ class TestPicSchema:
             "timestamp_source": "exif",
             "camera": "Canon EOS R5",
             "gps": {"lat": 40.7128, "lon": -74.0060},
-            "errors": ["no_exif"],
+            "errors": [
+                {
+                    "error_type": "exif_error",
+                    "severity": "warning", 
+                    "message": "No EXIF data found",
+                    "timestamp": "2024-10-05T14:30:45.123456",
+                    "source_file": "/path/to/source.jpg"
+                }
+            ],
         }
 
         validate(instance=pic_with_optionals, schema=PIC_SCHEMA)

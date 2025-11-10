@@ -2,6 +2,47 @@
 
 VERSION = "0.1.0"
 
+ERROR_SCHEMA = {
+    "type": "object",
+    "required": ["error_type", "severity", "message", "timestamp"],
+    "properties": {
+        "error_type": {
+            "type": "string",
+            "enum": [
+                "corrupted_file", 
+                "unsupported_format", 
+                "exif_error",
+                "filesystem_error",
+                "validation_error",
+                "file_skipped"
+            ],
+            "description": "Type of error encountered"
+        },
+        "severity": {
+            "type": "string", 
+            "enum": ["info", "warning", "error"],
+            "description": "Severity level of the error"
+        },
+        "message": {
+            "type": "string",
+            "description": "Human-readable error message"
+        },
+        "timestamp": {
+            "type": "string",
+            "format": "date-time", 
+            "description": "When the error occurred (ISO 8601)"
+        },
+        "source_file": {
+            "type": ["string", "null"],
+            "description": "Path to file that caused the error, if applicable"
+        },
+        "details": {
+            "type": ["object", "null"],
+            "description": "Additional error-specific details"
+        }
+    }
+}
+
 PIC_SCHEMA = {
     "type": "object",
     "required": ["source_path", "dest_path", "hash", "size_bytes", "mtime"],
@@ -60,11 +101,18 @@ PIC_SCHEMA = {
         },
         "errors": {
             "type": "array",
-            "items": {
-                "type": "string",
-                "enum": ["no_exif", "corrupted_file", "unsupported_format"]
-            },
-            "description": "Processing errors encountered"
+            "items": ERROR_SCHEMA,
+            "description": "Processing errors encountered for this photo"
+        },
+        "warnings": {
+            "type": "array", 
+            "items": ERROR_SCHEMA,
+            "description": "Processing warnings encountered for this photo"
+        },
+        "processing_status": {
+            "type": "string",
+            "enum": ["processed", "skipped", "failed", "processed_with_warnings"],
+            "description": "Status of processing this photo"
         }
     }
 }
@@ -100,6 +148,53 @@ MANIFEST_SCHEMA = {
             "type": "array",
             "items": PIC_SCHEMA,
             "description": "List of processed photos"
+        },
+        "errors": {
+            "type": "array",
+            "items": ERROR_SCHEMA,
+            "description": "Global processing errors not tied to specific photos"
+        },
+        "warnings": {
+            "type": "array", 
+            "items": ERROR_SCHEMA,
+            "description": "Global processing warnings not tied to specific photos"
+        },
+        "processing_status": {
+            "type": "object",
+            "required": ["status", "total_files", "processed_successfully"],
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "enum": ["completed", "completed_with_warnings", "failed"],
+                    "description": "Overall processing status"
+                },
+                "total_files": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Total number of files encountered"
+                },
+                "processed_successfully": {
+                    "type": "integer", 
+                    "minimum": 0,
+                    "description": "Number of files processed successfully"
+                },
+                "warnings_count": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Total number of warnings"
+                },
+                "errors_count": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Total number of errors"
+                },
+                "files_skipped": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Number of files skipped due to errors/warnings"
+                }
+            },
+            "description": "Summary of processing results"
         }
     }
 }
