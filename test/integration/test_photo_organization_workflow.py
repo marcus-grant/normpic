@@ -71,16 +71,16 @@ class TestPhotoOrganizationWorkflow:
         # Expected order: canon_early → iphone_middle → canon_late → nikon_conflict
         # (EXIF timestamp with subsec precedence, then filename for conflicts)
         expected_order = [
-            ("wedding-20241005T143045-r5a-0.jpg", canon_early),  # 14:30:45.123
-            ("wedding-20241005T143046-i15-0.jpg", iphone_middle),  # 14:30:46.789
+            ("wedding-20241005T143045-r5a.jpg", canon_early),  # 14:30:45.123
+            ("wedding-20241005T143046-i15.heic", iphone_middle),  # 14:30:46.789
             (
-                "wedding-20241005T143047-d85-0.jpg",
+                "wedding-20241005T143047-d85.jpg",
                 nikon_conflict,
-            ),  # 14:30:47 (no subsec, filename DSC < IMG)
+            ),  # 14:30:47 (no subsec, different camera from canon)
             (
-                "wedding-20241005T143047-r5a-0.jpg",
+                "wedding-20241005T143047-r5a.jpg",
                 canon_late,
-            ),  # 14:30:47.456 (same timestamp different cameras)
+            ),  # 14:30:47.456 (same timestamp but different camera from nikon)
         ]
 
         for i, (expected_filename, source_photo) in enumerate(expected_order):

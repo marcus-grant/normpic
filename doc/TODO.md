@@ -10,50 +10,8 @@ Complete MVP + Incremental Processing + Filesystem Utilities: 140 passing tests
 - Test command: `uv run pytest test/` for full suite
 - Linting: `uv run ruff check` (must pass before commits)
 
-## Detailed Implementation Plan - Ready to Execute
 
-The following 12 commits will complete all remaining MVP tasks. Each step includes validation requirements and commit messages.
-
-### ✅ Commit 1: Error Handling E2E Test (RED Phase) - COMPLETED
-**Files created**: `test/integration/test_error_handling_workflow.py`
-**Task**: Create failing E2E test with comprehensive file format testing
-- Test mix: JPEG/PNG (supported), RAW/GIF/MP4 (unsupported), corrupted files
-- Test scenarios: mixed formats, all corrupted, partial processing with mixed scenarios
-- Test assertions: supported files processed, unsupported skipped with warnings, processing continues
-**Validation**: Tests fail as expected, `uv run ruff check` passes ✅
-**Commit**: `Tst: Add error handling workflow tests (RED phase)` - a92859f
-
-### ✅ Commit 2: Error Handling Unit Tests - COMPLETED
-**Files created**: `test/unit/test_error_handling.py`
-**Task**: Create unit tests for specific error scenarios
-- `test_skip_corrupted_file_continue_processing()`, `test_log_warnings_to_manifest()`
-- `test_validate_manifest_before_write()`, `test_error_severity_levels()`
-- Mock all filesystem and EXIF operations for deterministic testing
-**Validation**: Unit tests fail as expected, `uv run ruff check` passes ✅
-**Commit**: `Tst: Add error handling unit tests` - b870276
-
-### ✅ Commit 3: Schema Updates for Error Handling - COMPLETED
-**Files modified**: `src/model/schema_v0.py`, `test/unit/test_schema.py`
-**Task**: Add error/warning fields to manifest schema
-- Added ERROR_SCHEMA with structured error information (type, severity, message, timestamp)
-- Enhanced PIC_SCHEMA with `errors`, `warnings`, `processing_status` fields
-- Added global error tracking and processing summary to MANIFEST_SCHEMA
-- Updated existing test to use new structured error format
-**Validation**: `uv run pytest` (existing tests pass, new tests still fail), `uv run ruff check` ✅
-**Commit**: `Ft: Add error/warning fields to manifest schema` - 854cb66
-
-### ✅ Commit 4: Error Handling Implementation (GREEN Phase) - COMPLETED
-**Files created/modified**: `src/util/error_handling.py`, `src/manager/photo_manager.py`, `src/model/manifest.py`, `src/serializer/manifest.py`, `test/fixtures.py`
-**Task**: Implement comprehensive error handling to make E2E tests pass
-- ✅ Created complete ErrorHandler class with ErrorSeverity/ErrorType enums and processing status
-- ✅ Integrated error collection throughout photo processing workflow in photo_manager.py
-- ✅ Enhanced Manifest and ManifestSerializer to support error/warning/processing_status fields
-- ✅ **CRITICAL BUG FIX**: Fixed filename generation logic that always added `-0` counters unnecessarily
-- ✅ Updated test fixtures to properly handle PNG files without EXIF support
-**Validation**: `uv run pytest test/*error_handling*` (all error handling tests pass), `uv run ruff check` ✅
-**Commit**: `Ft: Implement error handling and fix filename counter bug` - [pending]
-
-**🔧 REMAINING TASK**: Update remaining test expectations for corrected filename format (7 tests still expecting old `-0` format)
+## Remaining MVP Implementation Tasks
 
 ### Commit 5: Error Handling Refactor
 ⚠️ **PAUSE FOR DESIGN REVIEW**: Consider simple string lists vs complex error objects

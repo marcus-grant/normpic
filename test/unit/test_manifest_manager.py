@@ -256,7 +256,7 @@ class TestChangeDetection:
         # Expected destination path (symlink that should exist)
         dest_dir = tmp_path / "dest"
         dest_dir.mkdir()
-        dest_path = dest_dir / "test-20241005T143045-0.jpg"
+        dest_path = dest_dir / "test-20241005T143045.jpg"
         
         from src.manager.manifest_manager import ManifestManager
         manager = ManifestManager()

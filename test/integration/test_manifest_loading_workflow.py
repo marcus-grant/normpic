@@ -49,7 +49,7 @@ class TestManifestLoadingWorkflow:
             "pics": [
                 {
                     "source_path": str(photo1),
-                    "dest_path": str(dest_dir / "wedding-20241005T143045-r5a-0.jpg"),
+                    "dest_path": str(dest_dir / "wedding-20241005T143045-r5a.jpg"),
                     "hash": "abc123def456",
                     "size_bytes": 2048000,
                     "timestamp": "2024-10-05T14:30:45.123",

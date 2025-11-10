@@ -2,6 +2,23 @@
 
 ## 2025-11-10
 
+### Test Suite Filename Format Corrections
+
+- **Removed Handoff Section**: Cleaned up TODO.md after reviewing handoff instructions
+- **Fixed Test Expectations**: Updated 7 failing tests to match corrected filename format
+  - Single photos with unique timestamps: No `-0` counter (e.g., `ceremony-20241005T163000-i15.heic`)
+  - Mixed cameras with different timestamps: No counters needed
+  - Burst sequences (same timestamp + same camera): All get counters starting with `-0`
+- **Burst Collision Detection Enhancement**: Implemented proper burst sequence handling
+  - Modified `_create_ordered_pics()` in photo_manager.py to group by timestamp+camera
+  - Photos with same timestamp to the second AND same camera get sequential counters
+  - Different cameras at same timestamp remain separate (no counters)
+- **File Extension Fix**: Corrected filename generation to preserve original extensions (.heic, .jpg)
+- **Test Restructuring**: Updated burst sequence test to use complete workflow instead of incremental filename generation
+- **Status**: All 153 tests passing, ruff checks passing
+
+## Previous Entry - 2025-11-10
+
 ### Error Handling Implementation Complete (TDD GREEN Phase)
 
 - **Critical Filename Generation Bug Fix**: Discovered and fixed systematic issue with counter logic

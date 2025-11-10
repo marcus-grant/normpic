@@ -67,7 +67,7 @@ class TestCompleteWorkflows:
         )
 
         # Assert: Verify iPhone workflow
-        assert filename == "ceremony-20241005T163000-i15-0.heic"
+        assert filename == "ceremony-20241005T163000-i15.heic"
         assert camera_info.make == "Apple"
         assert camera_info.model == "iPhone 15"
         assert exif_data.timestamp == datetime(2024, 10, 5, 16, 30, 0)
@@ -93,16 +93,21 @@ class TestCompleteWorkflows:
 
         # Should still generate a filename with fallback values
         assert filename.startswith("unknown-")
-        assert filename.endswith("-unk-0.jpg")
+        assert filename.endswith("-unk.jpg")
 
-    def test_burst_sequence_workflow(self, create_photo_with_exif):
+    def test_burst_sequence_workflow(self, create_photo_with_exif, tmp_path):
         """Test: Burst sequence → EXIF extraction → sequential filename generation."""
 
-        # Arrange: Create 3-photo burst sequence
+        # Arrange: Create 3-photo burst sequence in temporary directory
+        source_dir = tmp_path / "source"
+        dest_dir = tmp_path / "dest"
+        source_dir.mkdir()
+        dest_dir.mkdir()
+        
         photos = []
         for i in range(3):
             photo = create_photo_with_exif(
-                f"burst_{i:03d}.jpg",
+                source_dir / f"burst_{i:03d}.jpg",
                 DateTimeOriginal="2024:10:05 14:30:45",  # Same second
                 SubSecTimeOriginal=str(100 + i * 50),  # 100ms, 150ms, 200ms
                 Make="Canon",
@@ -110,24 +115,20 @@ class TestCompleteWorkflows:
             )
             photos.append(photo)
 
-        # Act: Process each photo in the burst
-        filenames = []
-        existing_filenames = set()
-
-        for photo in photos:
-            exif_data = extract_exif_data(photo)
-            camera_info = extract_camera_info(photo)
-            filename = generate_filename(
-                camera_info=camera_info,
-                exif_data=exif_data,
-                collection="reception",
-                existing_filenames=existing_filenames,
-            )
-            filenames.append(filename)
-            existing_filenames.add(filename)
+        # Act: Use the complete workflow to process burst sequence
+        from src.manager.photo_manager import organize_photos
+        manifest = organize_photos(
+            source_dir=source_dir,
+            dest_dir=dest_dir,
+            collection_name="reception"
+        )
 
         # Assert: Verify burst sequence gets sequential counters
-        assert len(filenames) == 3
+        assert len(manifest.pics) == 3
+        
+        # Extract just the filenames for easier testing
+        filenames = [pic.dest_path for pic in manifest.pics]
+        
         assert filenames[0] == "reception-20241005T143045-r5a-0.jpg"
         assert filenames[1] == "reception-20241005T143045-r5a-1.jpg"
         assert filenames[2] == "reception-20241005T143045-r5a-2.jpg"
@@ -175,15 +176,15 @@ class TestCompleteWorkflows:
 
         # Canon R5
         assert results[0]["camera_info"].make == "Canon"
-        assert results[0]["filename"].endswith("-r5a-0.jpg")
+        assert results[0]["filename"].endswith("-r5a.jpg")
 
         # Nikon D850
         assert results[1]["camera_info"].make == "Nikon"
-        assert results[1]["filename"].endswith("-d85-0.jpg")
+        assert results[1]["filename"].endswith("-d85.jpg")
 
         # iPhone 15
         assert results[2]["camera_info"].make == "Apple"
-        assert results[2]["filename"].endswith("-i15-0.jpg")
+        assert results[2]["filename"].endswith("-i15.jpg")
 
         # All should have same collection prefix
         for result in results:

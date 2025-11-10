@@ -276,46 +276,92 @@ def _order_photos_temporally(pics_data):
 
 def _create_ordered_pics(pics_data, collection_name: str, dest_dir: Path) -> List[Pic]:
     """Create Pic objects with proper filenames and metadata."""
-    pics = []
+    from datetime import datetime
+    from collections import defaultdict
     
-    for photo_path, exif_data, camera_info in pics_data:
-        # Generate destination filename
-        existing_filenames = [p.dest_path for p in pics]
-        
-        dest_filename = generate_filename(
-            camera_info=camera_info,
-            exif_data=exif_data,
-            collection=collection_name,
-            existing_filenames=existing_filenames
-        )
-        
-        # Determine timestamp source
-        timestamp_source = "exif" if exif_data.timestamp else "filename"
-        
-        # Calculate file metadata
-        file_size = photo_path.stat().st_size
-        file_hash = f"sha256-{hash(photo_path.read_bytes())}"  # Simplified
-        
-        # Get file modification time for change detection
-        file_mtime = photo_path.stat().st_mtime
-        
-        # Create Pic object
-        pic = Pic(
-            source_path=str(photo_path),
-            dest_path=dest_filename,
-            hash=file_hash,
-            size_bytes=file_size,
-            mtime=file_mtime,
-            timestamp=exif_data.timestamp,
-            timestamp_source=timestamp_source,
-            camera=camera_info.model if camera_info else None,
-            gps={
-                "latitude": exif_data.gps_latitude,
-                "longitude": exif_data.gps_longitude
-            } if exif_data.gps_latitude and exif_data.gps_longitude else None,
-            errors=[]
-        )
-        
-        pics.append(pic)
+    # Group photos by (timestamp_to_second, camera_model) to detect bursts
+    burst_groups = defaultdict(list)
     
-    return pics
+    for i, (photo_path, exif_data, camera_info) in enumerate(pics_data):
+        # Get timestamp rounded to the second
+        timestamp = exif_data.timestamp or datetime.now()
+        timestamp_key = timestamp.replace(microsecond=0)  # Round to second
+        
+        # Group by timestamp and camera
+        camera_model = camera_info.model if camera_info else "unknown"
+        group_key = (timestamp_key, camera_model)
+        burst_groups[group_key].append((i, photo_path, exif_data, camera_info))
+    
+    # Generate filenames with burst counters when needed
+    pics = [None] * len(pics_data)  # Pre-allocate with correct order
+    
+    for group_key, group_photos in burst_groups.items():
+        if len(group_photos) == 1:
+            # Single photo - no counter needed
+            i, photo_path, exif_data, camera_info = group_photos[0]
+            
+            file_extension = photo_path.suffix
+            dest_filename = generate_filename(
+                camera_info=camera_info,
+                exif_data=exif_data,
+                collection=collection_name,
+                file_extension=file_extension,
+                existing_filenames=None  # No collision check needed for single photos
+            )
+        else:
+            # Multiple photos at same timestamp+camera - all need counters
+            from src.template.filename import BASE32_ALPHABET, get_camera_code, format_timestamp
+            
+            # Generate base filename components
+            parts = []
+            if collection_name:
+                parts.append(collection_name)
+            
+            # Use first photo's data for base filename
+            _, first_photo_path, first_exif_data, first_camera_info = group_photos[0]
+            timestamp = first_exif_data.timestamp or datetime.now()
+            parts.append(format_timestamp(timestamp))
+            parts.append(get_camera_code(first_camera_info))
+            
+            base_filename = "-".join(parts)
+            
+            for counter, (i, photo_path, exif_data, camera_info) in enumerate(group_photos):
+                file_extension = photo_path.suffix
+                counter_char = BASE32_ALPHABET[counter]
+                dest_filename = f"{base_filename}-{counter_char}{file_extension}"
+        
+        # Create Pic objects for this group
+        for j, (i, photo_path, exif_data, camera_info) in enumerate(group_photos):
+            if len(group_photos) > 1:
+                # Use the counter filename generated above
+                file_extension = photo_path.suffix
+                counter_char = BASE32_ALPHABET[j]
+                dest_filename = f"{base_filename}-{counter_char}{file_extension}"
+            # else: dest_filename already set for single photos
+            
+            # Calculate file metadata
+            timestamp_source = "exif" if exif_data.timestamp else "filename"
+            file_size = photo_path.stat().st_size
+            file_hash = f"sha256-{hash(photo_path.read_bytes())}"  # Simplified
+            file_mtime = photo_path.stat().st_mtime
+            
+            # Create Pic object
+            pic = Pic(
+                source_path=str(photo_path),
+                dest_path=dest_filename,
+                hash=file_hash,
+                size_bytes=file_size,
+                mtime=file_mtime,
+                timestamp=exif_data.timestamp,
+                timestamp_source=timestamp_source,
+                camera=camera_info.model if camera_info else None,
+                gps={
+                    "latitude": exif_data.gps_latitude,
+                    "longitude": exif_data.gps_longitude
+                } if exif_data.gps_latitude and exif_data.gps_longitude else None,
+                errors=[]
+            )
+            
+            pics[i] = pic  # Maintain original order
+    
+    return [pic for pic in pics if pic is not None]
