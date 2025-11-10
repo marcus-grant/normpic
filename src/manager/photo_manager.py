@@ -151,9 +151,9 @@ def organize_photos(
         "files_skipped": len(error_handler.get_info()) + len(error_handler.get_warnings()) + len(error_handler.get_errors())
     }
     
-    # Separate errors and warnings for manifest
-    all_errors = [e for e in error_handler.get_all_entries_for_manifest() if e["severity"] == "error"]
-    all_warnings = [e for e in error_handler.get_all_entries_for_manifest() if e["severity"] in ["warning", "info"]]
+    # Get error entries for manifest
+    all_errors = error_handler.get_errors_for_manifest() if error_handler.get_errors() else None
+    all_warnings = error_handler.get_warnings_for_manifest() if (error_handler.get_warnings() or error_handler.get_info()) else None
 
     # Create and save manifest
     manifest = Manifest(

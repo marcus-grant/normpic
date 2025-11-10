@@ -4,7 +4,7 @@ VERSION = "0.1.0"
 
 ERROR_SCHEMA = {
     "type": "object",
-    "required": ["error_type", "severity", "message", "timestamp"],
+    "required": ["error_type", "source_file"],
     "properties": {
         "error_type": {
             "type": "string",
@@ -16,28 +16,14 @@ ERROR_SCHEMA = {
                 "validation_error",
                 "file_skipped"
             ],
-            "description": "Type of error encountered"
-        },
-        "severity": {
-            "type": "string", 
-            "enum": ["info", "warning", "error"],
-            "description": "Severity level of the error"
-        },
-        "message": {
-            "type": "string",
-            "description": "Human-readable error message"
-        },
-        "timestamp": {
-            "type": "string",
-            "format": "date-time", 
-            "description": "When the error occurred (ISO 8601)"
+            "description": "Type of error encountered (severity is intrinsic to type)"
         },
         "source_file": {
-            "type": ["string", "null"],
-            "description": "Path to file that caused the error, if applicable"
+            "type": "string",
+            "description": "Filename that caused the error"
         },
         "details": {
-            "type": ["object", "null"],
+            "type": ["string", "null"],
             "description": "Additional error-specific details"
         }
     }
