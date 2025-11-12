@@ -47,7 +47,18 @@ This documentation follows a hierarchical linking structure:
 
 ### Guides
 
-- [User and Developer Guides](guides/README.md) - CLI usage, configuration, and workflows
+- [User and Developer Guides](guides/README.md) - CLI usage, configuration, and basic workflows
+
+### Integration
+
+- [Parent Project Integration](guides/integration.md) - Complete workflow for integrating NormPic into static site projects
+- [Parent Project Setup](guides/parent-project-setup.md) - Setup instructions for uv integration with parent projects
+- [Manifest Integration](guides/manifest-integration.md) - Working with NormPic manifest data in custom applications  
+- [Gallery Builder Integration](guides/gallery-builder-integration.md) - Building custom gallery generators that consume NormPic output
+
+### Analysis
+
+- [Performance and Timestamp Analysis](analysis/README.md) - Real-world performance benchmarks, timestamp accuracy analysis, and systematic offset documentation
 
 ## Project Status
 

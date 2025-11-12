@@ -1,8 +1,14 @@
 # NormPic - Photo Organization & Manifest Generator TODO
 
-## Current Status: Commits 5-10 COMPLETED
 
-Complete MVP + Error Handling + Mock Testing + Enhanced Filesystem + Environment Variables + Config Precedence: 200 passing tests
+## Current Status: MVP COMPLETE ✅
+
+**Ready for parent project integration**
+- Core photo organization workflow complete (200 passing tests)
+- Performance and timestamp analysis documentation complete
+- Integration documentation complete with all guides indexed
+- CLI interface with full configuration system
+- All MVP requirements satisfied
 
 **Critical Technical Details:**
 - This is a uv-managed project: Use `uv run pytest` (NOT `python -m pytest`)
@@ -10,98 +16,13 @@ Complete MVP + Error Handling + Mock Testing + Enhanced Filesystem + Environment
 - Test command: `uv run pytest test/` for full suite
 - Linting: `uv run ruff check` (must pass before commits)
 
+## Remaining Tasks
 
-## Remaining MVP Implementation Tasks
-
-### Commit 11: Performance Documentation
-**Files to create**: `doc/analysis/performance.md`
-**Task**: Create performance baselines with reproducibility information
-- Record exact commit hash and complete hardware specifications
-- Document CPU, RAM, storage, OS details for benchmark reproduction
-- Include benchmark reproduction guide and hardware comparison template
-**📋 REMINDER**: Ask user about parent project's real-world timestamped photo document
-**Validation**: Documentation links work correctly
-**Commit**: `Doc: Add performance baseline with hardware specs and reproducible benchmarks`
-
-### Commit 12: Timestamp Analysis Documentation
-**Files to create**: `doc/analysis/timestamps.md`
-**Task**: Document timestamp analysis and systematic offset findings
-- Camera-specific timestamp accuracy, systematic offset patterns
-- Configuration examples for common camera corrections
-**Validation**: Documentation links work correctly
-**Commit**: `Doc: Add timestamp analysis and systematic offset documentation`
-
-### Commit 13: Final Cleanup
+### Final Cleanup
 **Task**: Remove obsolete deleteme directory after verification
 - Review `deleteme-normpic-modules/` content, verify all specs adapted
+- **S3 storage features confirmed as post-MVP** - can be removed safely
 - Remove entire directory, update documentation references
-**Validation**: No broken links, `uv run pytest`, `uv run ruff check`
-**Commit**: `Cleanup: Remove obsolete deleteme directory after successful adaptation`
-
-## Reference Information (Historical Context)
-
-## Current Implementation Plan
-
-## MVP Implementation Tasks
-
-
-### Managers (`src/manager/`)
-
-#### Manifest Manager
-
-- [ ] Detect changes requiring reprocessing:
-  - File hash changes
-  - Timestamp changes
-  - Config changes (collection name, etc.)
-  - Missing destination files
-- [ ] Update manifest with processing results
-- [ ] Delete dry-run manifest after successful run
-
-#### Config Manager (Future Enhancements)
-
-- [x] Environment variable override support (NORMPIC_*)
-- [x] Implement config precedence system (defaults < local config < env vars < cli args)
-
-### Utilities (`src/util/`)
-
-#### Filesystem Utilities
-
-- [ ] Check for flat directory structure (warn if nested)
-
-
-### Testing Strategy (Remaining)
-
-#### Integration Tests (`test/integration/`)
-
-- [ ] Review and adapt tests from `deleteme-normpic-modules/test/`
-- [ ] Test incremental updates
-
-#### Unit Tests (`test/unit/`)
-
-- [ ] Hash computation
-
-#### Test Fixtures (`test/fixture/`)
-
-- [ ] Sample EXIF data for different cameras
-- [ ] Mock pics with various metadata combinations
-- [ ] Invalid/corrupted file examples
-- [ ] Config examples
-
-
-### MVP Documentation Completion
-
-- [ ] Performance baseline measurements
-- [ ] Timestamp analysis from test collections
-- [ ] Document any systematic offsets discovered
-- [ ] Verify all deleteme content is obsolete and remove directory
-
-### Current Status
-
-**COMPLETED:** 
-- CLI implementation with comprehensive configuration system
-- Manifest loading with validation (Priority 1)
-
-**Next Tasks:** Change detection for incremental updates (Priority 2)
 
 ## Post-MVP Features (Future)
 

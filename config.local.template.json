@@ -1,0 +1,8 @@
+{
+  "collection_name": "your-collection-name",
+  "collection_description": "Description of your photo collection",
+  "source_dir": "/path/to/your/source/photos",
+  "dest_dir": "./out",
+  "timestamp_offset_hours": 0,
+  "force_reprocess": false
+}

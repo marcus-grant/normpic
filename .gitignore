@@ -209,3 +209,10 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Local configuration files
+config.local.json
+config.local.web.json
+
+# Local testing output
+out/

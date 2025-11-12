@@ -1,0 +1,49 @@
+{
+  "system_info": {
+    "cpu_model": "Unknown",
+    "cpu_cores": 8,
+    "cpu_threads": 16,
+    "ram_total_gb": 30.662700653076172,
+    "storage_type": "SSD",
+    "os_name": "Linux",
+    "os_version": "6.16.5+deb14-amd64",
+    "python_version": "3.12.8",
+    "git_commit": "b5b9032d6e59"
+  },
+  "config_used": {
+    "collection_name": "wedding",
+    "collection_description": "Wedding collection (full sized originals)",
+    "source_dir": "~/Pictures/wedding/full",
+    "dest_dir": "./out/full",
+    "timestamp_offset_hours": 0,
+    "force_reprocess": true
+  },
+  "performance": {
+    "total_time_seconds": 16.564619779586792,
+    "peak_memory_mb": 45.3203125,
+    "avg_memory_mb": 45.02518939393939,
+    "cpu_percent_avg": 0.0,
+    "photos_processed": 645,
+    "photos_per_second": 38.93841262778986,
+    "total_source_size_gb": 21.171301731839776,
+    "manifest_size_kb": 244.9873046875,
+    "errors": 0,
+    "warnings": 0,
+    "image_stats": {
+      "avg_size_mb": 33.611492982021595,
+      "median_size_mb": 30.00880527496338,
+      "min_size_mb": 11.483896255493164,
+      "max_size_mb": 70.40320491790771,
+      "total_size_gb": 21.171301731839776,
+      "size_ranges": {
+        "0-1MB": 0,
+        "1-5MB": 0,
+        "5-10MB": 0,
+        "10-25MB": 154,
+        "25-50MB": 429,
+        "50MB+": 62
+      }
+    }
+  },
+  "timestamp": "2025-11-12 23:25:18"
+}

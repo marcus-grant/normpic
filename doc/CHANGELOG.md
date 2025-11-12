@@ -1,6 +1,40 @@
 # NormPic Development Changelog
 
+## 2025-11-13
+
+### Integration Documentation Completion
+
+- **Documentation Updates**: Completed integration guide organization and indexing
+  - Added Integration section to `doc/README.md` with direct links to all 4 integration guides
+  - Updated `doc/guides/README.md` to include Integration Guides section
+  - Fixed 9 f-string linting issues in performance script
+  - All 200 tests passing, MVP integration documentation complete
+
 ## 2025-11-12
+
+### Performance Documentation and Real-World Analysis
+
+- **Performance Measurement Script**: Created comprehensive benchmarking system
+  - Added `script/performance_test.py` with system resource monitoring (psutil)
+  - Automated subprocess execution with memory, CPU, and timing metrics
+  - Image size analysis with distribution statistics across size ranges
+  - Support for multiple collections (full vs web-optimized) comparison
+  - Generates detailed JSON results and human-readable summaries
+- **Performance Documentation**: Baseline measurements for real-world wedding collection
+  - Added `doc/analysis/performance.md` with hardware specs and benchmark results
+  - 645 photos, 21.17GB full resolution vs 2.19GB web-optimized comparison
+  - Demonstrated 5.9× speed improvement for smaller files (38.9 vs 229.5 photos/sec)
+  - Documented AMD Ryzen 7040U + FireCuda NVMe performance characteristics
+- **Timestamp Analysis**: Camera-specific EXIF accuracy documentation
+  - Added `doc/analysis/timestamps.md` with timeline verification using reference photos
+  - Canon EOS R5 timezone EXIF issue analysis (correct local time, wrong timezone marker)
+  - Wedding event timeline validation: 16:10 ceremony vs 16:00 start time
+  - Future enhancement plans for EXIF modification and timezone correction
+- **Analysis Documentation Structure**: Organized analysis section with hierarchical links
+  - Added `doc/analysis/README.md` as analysis section index
+  - Updated `doc/README.md` to link analysis section for performance and timestamp documentation
+  - Maintains discoverable documentation hierarchy standards
+- **Status**: Performance testing infrastructure complete, commit 11 documentation ready
 
 ### Enhanced Filesystem Operations and Environment Variable Support
 
