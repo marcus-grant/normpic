@@ -9,6 +9,7 @@ Practical guides for using and configuring NormPic, covering common workflows an
 ### User Guides
 - [CLI Usage Guide](cli.md) - Command-line interface usage, flags, and basic workflows
 - [Configuration Reference](configuration.md) - JSON configuration file format, validation, and examples
+- [Environment Variables](environment-variables.md) - NORMPIC_* environment variable configuration and security
 - [Error Handling Guide](errors.md) - Understanding error types, severity levels, and troubleshooting
 
 ## Future Guides

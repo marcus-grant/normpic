@@ -1,5 +1,23 @@
 # NormPic Development Changelog
 
+## 2025-11-12
+
+### Enhanced Filesystem Operations and Environment Variable Support
+
+- **Enhanced Symlink Detection**: Added performance optimizations for large directory trees
+  - Recursive directory scanning with progress reporting callbacks
+  - Added `scan_directory_symlinks()` for comprehensive file type analysis
+  - Added `batch_validate_symlinks()` for efficient bulk validation
+  - Graceful handling of permission errors and inaccessible files
+  - Added 9 comprehensive tests for new enhanced functionality
+- **Secure Environment Variable Support**: Implemented NORMPIC_* environment variable parsing
+  - Whitelisted approach: only reads specific NORMPIC_SOURCE_DIR, NORMPIC_DEST_DIR, NORMPIC_COLLECTION_NAME, NORMPIC_CONFIG_PATH
+  - Environment variables override file configuration (precedence system)
+  - All environment variables fully mocked during testing for security
+  - Added integration test for config precedence workflow
+  - Added 21 unit tests with comprehensive mocking coverage
+- **Status**: All 195 tests passing, ruff checks passing, commits 8-9 complete
+
 ## 2025-11-11
 
 ### Error Handling Documentation and Mock Filesystem Testing

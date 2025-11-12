@@ -136,16 +136,81 @@ is_valid = validate_symlink_integrity(symlink_path)
 # Returns True if symlink exists and points to valid file
 ```
 
-#### `detect_broken_symlinks(directory)`
+#### `detect_broken_symlinks(directory, progress_callback=None)`
 
-Recursively finds broken symlinks:
+Recursively finds broken symlinks with performance optimizations:
 
 ```python
 from src.util.filesystem import detect_broken_symlinks
 
+# Basic usage
 broken_links = detect_broken_symlinks(dest_directory)
 for broken_link in broken_links:
     print(f"Broken symlink: {broken_link}")
+
+# With progress reporting for large directories
+def scan_progress(scanned, total):
+    print(f"Scanned {scanned}/{total} items")
+
+broken_links = detect_broken_symlinks(dest_directory, progress_callback=scan_progress)
+```
+
+**Enhanced Features:**
+- **Progress reporting**: Callback with scanned count and total items
+- **Permission error handling**: Gracefully skips inaccessible files/directories
+- **Performance optimization**: Two-pass scanning for accurate progress tracking
+
+#### `scan_directory_symlinks(directory, progress_callback=None)`
+
+Comprehensive directory analysis with file type categorization:
+
+```python
+from src.util.filesystem import scan_directory_symlinks
+
+# Basic directory analysis
+results = scan_directory_symlinks(directory)
+print(f"Valid symlinks: {len(results['valid'])}")
+print(f"Broken symlinks: {len(results['broken'])}")
+print(f"Regular files: {len(results['regular_files'])}")
+print(f"Directories: {len(results['directories'])}")
+
+# With detailed progress reporting
+def detailed_progress(status, current, total):
+    print(f"{status} {current}/{total}")
+
+results = scan_directory_symlinks(directory, progress_callback=detailed_progress)
+```
+
+**Return Format:**
+```python
+{
+    'valid': [Path, ...],      # Working symlinks
+    'broken': [Path, ...],     # Broken symlinks  
+    'regular_files': [Path, ...], # Regular files
+    'directories': [Path, ...]     # Subdirectories
+}
+```
+
+#### `batch_validate_symlinks(symlinks, progress_callback=None)`
+
+Efficient batch validation of multiple symlinks:
+
+```python
+from src.util.filesystem import batch_validate_symlinks
+
+symlinks = [path1, path2, path3]
+
+# Basic batch validation
+results = batch_validate_symlinks(symlinks)
+for symlink_path, is_valid in results.items():
+    if not is_valid:
+        print(f"Broken: {symlink_path}")
+
+# With progress tracking
+def validation_progress(completed, total):
+    print(f"Validated {completed}/{total} symlinks")
+
+results = batch_validate_symlinks(symlinks, progress_callback=validation_progress)
 ```
 
 ### File Hash Computation

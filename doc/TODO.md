@@ -1,8 +1,8 @@
 # NormPic - Photo Organization & Manifest Generator TODO
 
-## Current Status: Commits 5-7 COMPLETED
+## Current Status: Commits 5-9 COMPLETED
 
-Complete MVP + Error Handling + Mock Testing: 164 passing tests
+Complete MVP + Error Handling + Mock Testing + Enhanced Filesystem + Environment Variables: 195 passing tests
 
 **Critical Technical Details:**
 - This is a uv-managed project: Use `uv run pytest` (NOT `python -m pytest`)
@@ -12,22 +12,6 @@ Complete MVP + Error Handling + Mock Testing: 164 passing tests
 
 
 ## Remaining MVP Implementation Tasks
-
-### Commit 8: Enhanced Symlink Detection
-**Files to modify**: `src/util/filesystem.py`
-**Task**: Enhance broken symlink detection with performance optimizations
-- Add recursive directory scanning, progress reporting for large trees
-**Validation**: `uv run pytest test/unit/test_filesystem_utils.py -v`, full suite, `uv run ruff check`
-**Commit**: `Ft: Enhance broken symlink detection with performance optimizations`
-
-### Commit 9: Environment Variable Support
-⚠️ **SECURITY WARNING**: Only read specific NORMPIC_* variables, never shell enumeration
-**Files to create**: `src/manager/config_manager.py`
-**Task**: Add secure environment variable parsing
-- Only read: NORMPIC_SOURCE_DIR, NORMPIC_DEST_DIR, NORMPIC_COLLECTION_NAME, NORMPIC_CONFIG_PATH
-- Mock all environment variables during testing (use `unittest.mock.patch.dict`)
-**Validation**: `uv run pytest test/unit/test_config_manager.py -v`, full suite, `uv run ruff check`
-**Commit**: `Ft: Add secure NORMPIC_* environment variable support`
 
 ### Commit 10: Config Precedence System
 **Files to modify**: `src/manager/config_manager.py`, `src/cli/main.py`
