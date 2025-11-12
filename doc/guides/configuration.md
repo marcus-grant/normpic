@@ -2,7 +2,18 @@
 
 ## Overview
 
-NormPic uses JSON configuration files to specify photo collection settings and processing parameters.
+NormPic uses JSON configuration files to specify photo collection settings and processing parameters. Configuration follows a strict precedence hierarchy: **defaults < config file < environment variables < CLI arguments**.
+
+## Configuration Precedence
+
+The configuration system applies settings in this order (later sources override earlier ones):
+
+1. **Default values** (lowest priority)
+2. **JSON configuration file** 
+3. **Environment variables** (NORMPIC_*)
+4. **CLI arguments** (highest priority)
+
+This allows flexible deployment scenarios while maintaining predictable overrides.
 
 ## Configuration File Format
 

@@ -1,8 +1,8 @@
 # NormPic - Photo Organization & Manifest Generator TODO
 
-## Current Status: Commits 5-9 COMPLETED
+## Current Status: Commits 5-10 COMPLETED
 
-Complete MVP + Error Handling + Mock Testing + Enhanced Filesystem + Environment Variables: 195 passing tests
+Complete MVP + Error Handling + Mock Testing + Enhanced Filesystem + Environment Variables + Config Precedence: 200 passing tests
 
 **Critical Technical Details:**
 - This is a uv-managed project: Use `uv run pytest` (NOT `python -m pytest`)
@@ -12,14 +12,6 @@ Complete MVP + Error Handling + Mock Testing + Enhanced Filesystem + Environment
 
 
 ## Remaining MVP Implementation Tasks
-
-### Commit 10: Config Precedence System
-**Files to modify**: `src/manager/config_manager.py`, `src/cli/main.py`
-**Task**: Implement config precedence system
-- Precedence order: defaults < config file < environment variables < CLI arguments
-- Create integration tests for all precedence combinations
-**Validation**: `uv run pytest test/integration/test_config_precedence.py -v`, full suite, `uv run ruff check`
-**Commit**: `Ft: Implement config precedence system (defaults < file < env < cli)`
 
 ### Commit 11: Performance Documentation
 **Files to create**: `doc/analysis/performance.md`

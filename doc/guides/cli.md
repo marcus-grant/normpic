@@ -23,8 +23,56 @@ python main.py --dry-run
 # Verbose output
 python main.py --verbose
 
-# Force reprocessing (ignore existing results)
+# Force reprocessing (ignore existing results)  
 python main.py --force
+
+# Override configuration with CLI arguments
+python main.py --source-dir /path/to/photos --dest-dir /path/to/output --collection-name "my-photos"
+
+# Mix config file and CLI overrides
+python main.py --config my-config.json --collection-name "override-name"
+```
+
+## CLI Configuration Options
+
+The following CLI options override configuration file and environment variables:
+
+### --source-dir
+Override source directory containing original photos.
+
+```bash
+python main.py --source-dir /path/to/raw/photos
+```
+
+### --dest-dir
+Override destination directory for organized photos.
+
+```bash
+python main.py --dest-dir /path/to/organized/photos
+```
+
+### --collection-name
+Override collection name used in generated filenames.
+
+```bash
+python main.py --collection-name "wedding-2024"
+```
+
+## Configuration Precedence
+
+CLI arguments have the highest precedence and override all other configuration sources:
+
+1. **Default values** (lowest)
+2. **Configuration file** (--config)
+3. **Environment variables** (NORMPIC_*)
+4. **CLI arguments** (highest)
+
+```bash
+# Example: CLI argument overrides config file
+# config.json contains: "collection_name": "from-file"
+# ENV: NORMPIC_COLLECTION_NAME="from-env"
+# CLI: --collection-name "from-cli"
+# Result: "from-cli" is used
 ```
 
 ## Configuration File
