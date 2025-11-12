@@ -59,8 +59,8 @@ Complete MVP + Error Handling + Mock Testing + Enhanced Filesystem + Environment
 
 #### Config Manager (Future Enhancements)
 
-- [ ] Environment variable override support (NORMPIC_*)
-- [ ] Implement config precedence system (defaults < local config < env vars < cli args)
+- [x] Environment variable override support (NORMPIC_*)
+- [x] Implement config precedence system (defaults < local config < env vars < cli args)
 
 ### Utilities (`src/util/`)
 
@@ -123,8 +123,8 @@ Complete MVP + Error Handling + Mock Testing + Enhanced Filesystem + Environment
 - [ ] Timestamp systematic correction via config
 - [ ] SSH/SFTP adapter
 - [ ] Proton Drive integration
-- [ ] Environment variable config overrides
-- [ ] CLI argument overrides
+- [x] Environment variable config overrides
+- [x] CLI argument overrides
 - [ ] Subdirectory handling with tagging
 - [ ] RAW format support
 - [ ] Performance: Multithreading with speedup documentation in `doc/analysis/`
