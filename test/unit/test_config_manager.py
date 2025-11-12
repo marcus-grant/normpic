@@ -10,6 +10,7 @@ from src.manager.config_manager import (
     get_env_config,
     validate_env_paths,
     load_config_with_env_override,
+    load_config_with_full_precedence,
     ALLOWED_ENV_VARS
 )
 from src.model.config import Config
@@ -275,3 +276,42 @@ class TestLoadConfigWithEnvOverride:
             # Should return default config when file doesn't exist
             assert isinstance(config, Config)
             assert config.collection_name == ""
+
+
+class TestFullPrecedenceSystem:
+    """Test the complete configuration precedence system."""
+    
+    def test_load_config_with_full_precedence_cli_only(self):
+        """Test loading config with only CLI overrides."""
+        cli_overrides = {
+            'collection_name': 'cli-name',
+            'source_dir': '/cli/source',
+            'dest_dir': '/cli/dest'
+        }
+        
+        with patch.dict('os.environ', {}, clear=True):
+            config = load_config_with_full_precedence(cli_overrides=cli_overrides)
+            
+            assert config.collection_name == 'cli-name'
+            assert config.source_dir == '/cli/source'
+            assert config.dest_dir == '/cli/dest'
+    
+    def test_load_config_with_full_precedence_empty_cli(self):
+        """Test loading config with empty CLI overrides."""
+        with patch.dict('os.environ', {}, clear=True):
+            config = load_config_with_full_precedence(cli_overrides={})
+            
+            # Should get defaults
+            assert config.collection_name == ""
+            assert config.source_dir == ""
+            assert config.dest_dir == ""
+    
+    def test_load_config_with_full_precedence_none_cli(self):
+        """Test loading config with None CLI overrides.""" 
+        with patch.dict('os.environ', {}, clear=True):
+            config = load_config_with_full_precedence(cli_overrides=None)
+            
+            # Should get defaults
+            assert config.collection_name == ""
+            assert config.source_dir == ""
+            assert config.dest_dir == ""

@@ -117,3 +117,31 @@ def load_config_with_env_override(config_path: Optional[Path] = None) -> Config:
                 setattr(config, field_name, value)
     
     return config
+
+
+def load_config_with_full_precedence(
+    config_file: Optional[Path] = None,
+    cli_overrides: Optional[Dict[str, Any]] = None
+) -> Config:
+    """Load configuration with full precedence system.
+    
+    Args:
+        config_file: Optional path to JSON config file
+        cli_overrides: Optional dictionary of CLI argument overrides
+        
+    Returns:
+        Config object with full precedence applied
+        
+    Precedence:
+        defaults < config file < environment variables < CLI arguments
+    """
+    # Start with env override (handles defaults + file + env)
+    config = load_config_with_env_override(config_file)
+    
+    # Apply CLI overrides last (highest precedence)
+    if cli_overrides:
+        for field_name, value in cli_overrides.items():
+            if hasattr(config, field_name) and value is not None:
+                setattr(config, field_name, value)
+    
+    return config
