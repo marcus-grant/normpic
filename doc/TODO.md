@@ -1,8 +1,8 @@
 # NormPic - Photo Organization & Manifest Generator TODO
 
-## Current Status: Priority 3 COMPLETED
+## Current Status: Commits 5-7 COMPLETED
 
-Complete MVP + Incremental Processing + Filesystem Utilities: 140 passing tests
+Complete MVP + Error Handling + Mock Testing: 164 passing tests
 
 **Critical Technical Details:**
 - This is a uv-managed project: Use `uv run pytest` (NOT `python -m pytest`)
@@ -12,28 +12,6 @@ Complete MVP + Incremental Processing + Filesystem Utilities: 140 passing tests
 
 
 ## Remaining MVP Implementation Tasks
-
-### Commit 5: Error Handling Refactor
-⚠️ **PAUSE FOR DESIGN REVIEW**: Consider simple string lists vs complex error objects
-**Task**: Optimize error handling implementation based on actual usage
-- Standardize error message formats, optimize performance
-- Decide on final error representation format (strings vs objects)
-**Validation**: `uv run pytest`, `uv run ruff check`
-**Commit**: `Ref: Optimize error handling implementation`
-
-### Commit 6: Error Handling Documentation
-**Files to create/modify**: `doc/guides/errors.md`, `doc/guides/README.md`, `doc/modules/schema.md`, `doc/CHANGELOG.md`
-**Task**: Create comprehensive error handling documentation
-- User guide for interpreting errors, schema documentation updates
-**Validation**: Documentation links work correctly
-**Commit**: `Doc: Add comprehensive error handling documentation`
-
-### Commit 7: Mock Filesystem Testing
-**Files to create**: `test/unit/test_filesystem_mock.py`
-**Task**: Add mock filesystem utilities for deterministic testing
-- Create comprehensive filesystem mocking for all filesystem operations
-**Validation**: `uv run pytest test/unit/test_filesystem_mock.py -v`, full suite, `uv run ruff check`
-**Commit**: `Tst: Add mock filesystem utilities for deterministic testing`
 
 ### Commit 8: Enhanced Symlink Detection
 **Files to modify**: `src/util/filesystem.py`
@@ -112,11 +90,7 @@ Complete MVP + Incremental Processing + Filesystem Utilities: 140 passing tests
 
 #### Filesystem Utilities
 
-- [ ] Mock filesystem for testing
-- [ ] Symlink creation and validation
-- [ ] Detect broken symlinks
 - [ ] Check for flat directory structure (warn if nested)
-- [ ] File hash computation (SHA-256)
 
 
 ### Testing Strategy (Remaining)
@@ -137,14 +111,6 @@ Complete MVP + Incremental Processing + Filesystem Utilities: 140 passing tests
 - [ ] Invalid/corrupted file examples
 - [ ] Config examples
 
-### Error Handling
-
-- [ ] Skip pics with warnings, continue processing
-- [ ] Log all warnings/errors to manifest
-- [ ] Validate manifest before updates
-- [ ] Handle corrupted files gracefully
-- [ ] Report broken symlinks
-- [ ] Document error handling in `doc/guides/errors.md`
 
 ### MVP Documentation Completion
 

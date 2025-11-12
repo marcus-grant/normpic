@@ -9,7 +9,9 @@ from src.util.filesystem import (
     create_symlink,
     validate_symlink_integrity,
     detect_broken_symlinks, 
-    compute_file_hash
+    compute_file_hash,
+    scan_directory_symlinks,
+    batch_validate_symlinks
 )
 
 
@@ -380,3 +382,154 @@ class TestComputeFileHash:
             final_update = progress_updates[-1]
             assert final_update[0] == len(test_data)  # bytes_read
             assert final_update[1] == len(test_data)  # total_size
+
+
+class TestDetectBrokenSymlinksEnhanced:
+    """Test enhanced broken symlink detection functionality."""
+    
+    def test_detect_broken_symlinks_with_progress(self):
+        """Test detection with progress callback."""
+        progress_updates = []
+        
+        def progress_callback(scanned, total):
+            progress_updates.append((scanned, total))
+        
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            
+            # Create some files and symlinks
+            source = temp_path / "source.jpg"
+            broken_link = temp_path / "broken.jpg"
+            source.write_bytes(b"data")
+            broken_link.symlink_to(temp_path / "nonexistent.jpg")
+            
+            broken = detect_broken_symlinks(temp_path, progress_callback=progress_callback)
+            
+            assert len(broken) == 1
+            assert len(progress_updates) > 0
+    
+    def test_detect_broken_symlinks_invalid_directory(self):
+        """Test detection on nonexistent directory."""
+        nonexistent = Path("/nonexistent/directory")
+        broken = detect_broken_symlinks(nonexistent)
+        assert broken == []
+
+
+class TestScanDirectorySymlinks:
+    """Test comprehensive directory scanning functionality."""
+    
+    def test_scan_directory_symlinks_mixed_content(self):
+        """Test scanning directory with mixed file types."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            
+            # Create various file types
+            regular_file = temp_path / "regular.jpg"
+            source = temp_path / "source.jpg"
+            valid_link = temp_path / "valid_link.jpg" 
+            broken_link = temp_path / "broken_link.jpg"
+            subdir = temp_path / "subdir"
+            
+            regular_file.write_bytes(b"regular")
+            source.write_bytes(b"source")
+            valid_link.symlink_to(source)
+            broken_link.symlink_to(temp_path / "nonexistent.jpg")
+            subdir.mkdir()
+            
+            results = scan_directory_symlinks(temp_path)
+            
+            assert len(results['regular_files']) == 2  # regular.jpg, source.jpg
+            assert len(results['valid']) == 1  # valid_link.jpg
+            assert len(results['broken']) == 1  # broken_link.jpg
+            assert len(results['directories']) == 1  # subdir
+    
+    def test_scan_directory_symlinks_with_progress(self):
+        """Test scanning with progress callback."""
+        progress_updates = []
+        
+        def progress_callback(status, current, total):
+            progress_updates.append((status, current, total))
+        
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            
+            # Create some content
+            regular_file = temp_path / "regular.jpg"
+            regular_file.write_bytes(b"data")
+            
+            results = scan_directory_symlinks(temp_path, progress_callback=progress_callback)
+            
+            assert len(results['regular_files']) == 1
+            assert len(progress_updates) >= 1  # At least counting phase
+    
+    def test_scan_directory_symlinks_empty_directory(self):
+        """Test scanning empty directory."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            
+            results = scan_directory_symlinks(temp_path)
+            
+            assert all(len(file_list) == 0 for file_list in results.values())
+    
+    def test_scan_directory_symlinks_nonexistent_directory(self):
+        """Test scanning nonexistent directory."""
+        nonexistent = Path("/nonexistent/directory")
+        results = scan_directory_symlinks(nonexistent)
+        
+        assert all(len(file_list) == 0 for file_list in results.values())
+
+
+class TestBatchValidateSymlinks:
+    """Test batch symlink validation functionality."""
+    
+    def test_batch_validate_symlinks_mixed(self):
+        """Test batch validation of mixed valid/broken symlinks.""" 
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            
+            # Create symlinks
+            source = temp_path / "source.jpg"
+            valid_link = temp_path / "valid.jpg"
+            broken_link = temp_path / "broken.jpg"
+            
+            source.write_bytes(b"data")
+            valid_link.symlink_to(source)
+            broken_link.symlink_to(temp_path / "nonexistent.jpg")
+            
+            symlinks = [valid_link, broken_link]
+            results = batch_validate_symlinks(symlinks)
+            
+            assert results[valid_link] is True
+            assert results[broken_link] is False
+    
+    def test_batch_validate_symlinks_with_progress(self):
+        """Test batch validation with progress callback."""
+        progress_updates = []
+        
+        def progress_callback(completed, total):
+            progress_updates.append((completed, total))
+        
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+            
+            # Create symlinks
+            source = temp_path / "source.jpg"
+            link1 = temp_path / "link1.jpg"
+            link2 = temp_path / "link2.jpg"
+            
+            source.write_bytes(b"data")
+            link1.symlink_to(source)
+            link2.symlink_to(source)
+            
+            symlinks = [link1, link2]
+            results = batch_validate_symlinks(symlinks, progress_callback=progress_callback)
+            
+            assert len(results) == 2
+            assert all(valid for valid in results.values())
+            assert len(progress_updates) == 2
+            assert progress_updates[-1] == (2, 2)
+    
+    def test_batch_validate_symlinks_empty_list(self):
+        """Test batch validation with empty symlink list."""
+        results = batch_validate_symlinks([])
+        assert results == {}

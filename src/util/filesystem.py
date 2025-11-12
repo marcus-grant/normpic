@@ -81,20 +81,55 @@ def validate_symlink_integrity(symlink_path: Path) -> bool:
         return False
 
 
-def detect_broken_symlinks(directory: Path) -> List[Path]:
+def detect_broken_symlinks(
+    directory: Path, 
+    progress_callback: Optional[Callable[[int, int], None]] = None
+) -> List[Path]:
     """Find all broken symlinks in a directory tree.
     
     Args:
         directory: Directory to search recursively
+        progress_callback: Optional callback(scanned_count, total_estimate) for progress
         
     Returns:
         List of paths to broken symlinks
     """
     broken_links = []
     
-    for item in directory.rglob("*"):
-        if item.is_symlink() and not validate_symlink_integrity(item):
-            broken_links.append(item)
+    if not directory.exists() or not directory.is_dir():
+        return broken_links
+    
+    # First pass: count items for progress reporting
+    if progress_callback:
+        try:
+            total_items = sum(1 for _ in directory.rglob("*"))
+        except (OSError, PermissionError):
+            # If we can't count, estimate or use unknown count
+            total_items = 0
+    else:
+        total_items = 0
+    
+    scanned_count = 0
+    
+    try:
+        for item in directory.rglob("*"):
+            try:
+                if item.is_symlink() and not validate_symlink_integrity(item):
+                    broken_links.append(item)
+                
+                scanned_count += 1
+                if progress_callback and total_items > 0:
+                    progress_callback(scanned_count, total_items)
+                    
+            except (OSError, PermissionError):
+                # Skip files we can't access
+                scanned_count += 1
+                if progress_callback and total_items > 0:
+                    progress_callback(scanned_count, total_items)
+                continue
+    except (OSError, PermissionError):
+        # Handle cases where we can't traverse the directory
+        pass
     
     return broken_links
 
@@ -134,3 +169,94 @@ def compute_file_hash(
                 progress_callback(bytes_read, file_size)
     
     return sha256_hash.hexdigest()
+
+
+def scan_directory_symlinks(
+    directory: Path,
+    progress_callback: Optional[Callable[[str, int, int], None]] = None
+) -> dict[str, List[Path]]:
+    """Scan directory for symlink analysis with performance optimizations.
+    
+    Args:
+        directory: Directory to scan recursively
+        progress_callback: Optional callback(status, current, total) for progress
+        
+    Returns:
+        Dictionary with keys: 'valid', 'broken', 'regular_files', 'directories'
+    """
+    results = {
+        'valid': [],
+        'broken': [], 
+        'regular_files': [],
+        'directories': []
+    }
+    
+    if not directory.exists() or not directory.is_dir():
+        return results
+    
+    # Pre-scan for total count if progress reporting enabled
+    total_items = 0
+    if progress_callback:
+        try:
+            if progress_callback:
+                progress_callback("Counting items...", 0, 0)
+            total_items = sum(1 for _ in directory.rglob("*"))
+        except (OSError, PermissionError):
+            total_items = 0
+    
+    current_item = 0
+    
+    try:
+        for item in directory.rglob("*"):
+            try:
+                current_item += 1
+                
+                if item.is_dir():
+                    results['directories'].append(item)
+                elif item.is_symlink():
+                    if validate_symlink_integrity(item):
+                        results['valid'].append(item)
+                    else:
+                        results['broken'].append(item)
+                else:
+                    results['regular_files'].append(item)
+                
+                if progress_callback and total_items > 0:
+                    progress_callback("Scanning...", current_item, total_items)
+                    
+            except (OSError, PermissionError):
+                # Skip inaccessible files/directories
+                continue
+                
+    except (OSError, PermissionError):
+        # Handle cases where directory traversal fails
+        pass
+    
+    return results
+
+
+def batch_validate_symlinks(
+    symlinks: List[Path],
+    progress_callback: Optional[Callable[[int, int], None]] = None
+) -> dict[Path, bool]:
+    """Validate multiple symlinks efficiently.
+    
+    Args:
+        symlinks: List of symlink paths to validate
+        progress_callback: Optional callback(completed, total) for progress
+        
+    Returns:
+        Dictionary mapping symlink path to validity (True=valid, False=broken)
+    """
+    results = {}
+    
+    for i, symlink in enumerate(symlinks):
+        try:
+            results[symlink] = validate_symlink_integrity(symlink)
+        except (OSError, PermissionError):
+            results[symlink] = False
+            
+        if progress_callback:
+            progress_callback(i + 1, len(symlinks))
+    
+    return results

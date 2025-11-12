@@ -2,28 +2,32 @@
 
 ## 2025-11-11
 
-### Error Handling Refactor and Documentation
+### Error Handling Documentation and Mock Filesystem Testing
 
-- **Error Handling Optimization**: Implemented streamlined error handling system
-  - Replaced complex `ErrorResult` objects with simple `ErrorEntry` dataclass
-  - Removed redundant severity field (intrinsic to error type)
-  - Removed redundant message field (data-driven generation preferred)
-  - Removed unused timestamp and action fields from error objects
-  - Simplified manifest schema to match new structured format
-  - Updated all tests to expect new simplified error format
-  - Performance improvements: ~60% memory reduction, faster processing
 - **Comprehensive Error Documentation**: Created user-friendly error handling guides
   - Added `doc/guides/errors.md` with error interpretation and troubleshooting
   - Updated `doc/guides/README.md` to include error handling guide
   - Enhanced `doc/modules/schema.md` with new error schema structure
   - Documented error types, severity levels, and processing status
-  - Added examples of error output in manifest files
-- **Status**: All 153 tests passing, ruff checks passing, documentation complete
+- **Mock Filesystem Testing**: Added deterministic testing utilities
+  - Created comprehensive mock filesystem implementation (MockPath, MockFilesystem)
+  - Added 11 tests covering all filesystem operations
+  - Enabled testing without real filesystem dependencies
+- **Filesystem Utilities**: Completed core filesystem operations
+  - Symlink creation and validation with atomic operations
+  - Broken symlink detection with recursive scanning
+  - File hash computation (SHA-256) with progress callbacks
+- **Status**: All 164 tests passing, ruff checks passing, commits 6-7 complete
 
 ## 2025-11-10
 
-### Test Suite Filename Format Corrections
+### Error Handling Refactor and Test Suite Corrections
 
+- **Error Handling Optimization**: Streamlined error handling implementation
+  - Replaced complex `ErrorResult` objects with simple `ErrorEntry` dataclass
+  - Removed redundant severity field (intrinsic to error type)
+  - Simplified manifest schema, ~60% memory reduction
+- **Test Suite Filename Format Corrections**: Fixed filename generation tests
 - **Removed Handoff Section**: Cleaned up TODO.md after reviewing handoff instructions
 - **Fixed Test Expectations**: Updated 7 failing tests to match corrected filename format
   - Single photos with unique timestamps: No `-0` counter (e.g., `ceremony-20241005T163000-i15.heic`)
