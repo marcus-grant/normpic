@@ -6,9 +6,9 @@ from typing import Optional
 
 import click
 
-from src.model.config import Config
-from src.manager.photo_manager import organize_photos
-from src.manager.config_manager import load_config_with_full_precedence
+from normpic.model.config import Config
+from normpic.manager.photo_manager import organize_photos
+from normpic.manager.config_manager import load_config_with_full_precedence
 
 
 @click.command()
