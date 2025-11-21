@@ -8,7 +8,7 @@ import tempfile
 import pytest
 from pathlib import Path
 
-from src.util.filesystem import (
+from normpic.util.filesystem import (
     create_symlink,
     validate_symlink_integrity, 
     detect_broken_symlinks,

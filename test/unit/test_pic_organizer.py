@@ -5,9 +5,9 @@ from pathlib import Path
 
 
 # These imports will fail initially - TDD approach
-from src.manager.photo_manager import _order_photos_temporally, _create_ordered_pics
-from src.model.pic import Pic
-from src.model.exif import ExifData, CameraInfo
+from normpic.manager.photo_manager import _order_photos_temporally, _create_ordered_pics
+from normpic.model.pic import Pic
+from normpic.model.exif import ExifData, CameraInfo
 
 
 class TestDeterminePicOrder:
@@ -142,7 +142,7 @@ class TestGroupByBurstSequence:
         ]
 
         # Act: Group by burst sequence - test the actual workflow function instead
-        from src.manager.photo_manager import _order_photos_with_burst_preservation
+        from normpic.manager.photo_manager import _order_photos_with_burst_preservation
 
         ordered_pics = _order_photos_with_burst_preservation(canon_pics)
 
@@ -186,7 +186,7 @@ class TestGroupByBurstSequence:
         ]
 
         # Act: Order with burst preservation
-        from src.manager.photo_manager import _order_photos_with_burst_preservation
+        from normpic.manager.photo_manager import _order_photos_with_burst_preservation
 
         ordered_pics = _order_photos_with_burst_preservation(mixed_pics)
 

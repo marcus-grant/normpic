@@ -2,8 +2,8 @@
 
 from datetime import datetime
 
-from src.util.exif import extract_exif_data, extract_camera_info
-from src.model.exif import CameraInfo, ExifData
+from normpic.util.exif import extract_exif_data, extract_camera_info
+from normpic.model.exif import CameraInfo, ExifData
 
 
 class TestExtractExifData:

@@ -3,7 +3,7 @@
 from pathlib import Path
 
 # These imports will fail initially - that's the point of TDD
-from src.util.error_handling import ErrorHandler
+from normpic.util.error_handling import ErrorHandler
 
 
 class TestErrorHandler:

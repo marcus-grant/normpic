@@ -2,8 +2,8 @@
 
 from datetime import datetime
 
-from src.template.filename import generate_filename
-from src.model.exif import CameraInfo, ExifData
+from normpic.template.filename import generate_filename
+from normpic.model.exif import CameraInfo, ExifData
 
 
 class TestGenerateFilename:
@@ -129,7 +129,7 @@ class TestCameraCodeGeneration:
 
     def test_camera_code_canon_r5(self):
         """Test Canon R5 gets mapped to r5a."""
-        from src.template.filename import get_camera_code
+        from normpic.template.filename import get_camera_code
 
         camera_info = CameraInfo(make="Canon", model="EOS R5")
         code = get_camera_code(camera_info)
@@ -138,7 +138,7 @@ class TestCameraCodeGeneration:
 
     def test_camera_code_canon_r6(self):
         """Test Canon R6 gets mapped to r6a."""
-        from src.template.filename import get_camera_code
+        from normpic.template.filename import get_camera_code
 
         camera_info = CameraInfo(make="Canon", model="EOS R6")
         code = get_camera_code(camera_info)
@@ -147,7 +147,7 @@ class TestCameraCodeGeneration:
 
     def test_camera_code_iphone_15(self):
         """Test iPhone 15 gets mapped to i15."""
-        from src.template.filename import get_camera_code
+        from normpic.template.filename import get_camera_code
 
         camera_info = CameraInfo(make="Apple", model="iPhone 15")
         code = get_camera_code(camera_info)
@@ -156,7 +156,7 @@ class TestCameraCodeGeneration:
 
     def test_camera_code_nikon_d850(self):
         """Test Nikon D850 gets mapped to d85."""
-        from src.template.filename import get_camera_code
+        from normpic.template.filename import get_camera_code
 
         camera_info = CameraInfo(make="Nikon", model="D850")
         code = get_camera_code(camera_info)
@@ -165,7 +165,7 @@ class TestCameraCodeGeneration:
 
     def test_camera_code_sony_a7r(self):
         """Test Sony A7R gets mapped to a7r."""
-        from src.template.filename import get_camera_code
+        from normpic.template.filename import get_camera_code
 
         camera_info = CameraInfo(make="Sony", model="A7R V")
         code = get_camera_code(camera_info)
@@ -174,7 +174,7 @@ class TestCameraCodeGeneration:
 
     def test_camera_code_unknown_camera(self):
         """Test unknown camera gets fallback code."""
-        from src.template.filename import get_camera_code
+        from normpic.template.filename import get_camera_code
 
         camera_info = CameraInfo(make="Unknown", model="TestCam")
         code = get_camera_code(camera_info)
@@ -185,7 +185,7 @@ class TestCameraCodeGeneration:
 
     def test_camera_code_no_camera_info(self):
         """Test missing camera info gets 'unk' code."""
-        from src.template.filename import get_camera_code
+        from normpic.template.filename import get_camera_code
 
         camera_info = CameraInfo()  # No make/model
         code = get_camera_code(camera_info)
@@ -198,7 +198,7 @@ class TestTimestampFormatting:
 
     def test_format_timestamp_basic(self):
         """Test basic timestamp formatting to YY-MM-DDTHHMMSS."""
-        from src.template.filename import format_timestamp
+        from normpic.template.filename import format_timestamp
 
         dt = datetime(2024, 10, 5, 14, 30, 45)
         formatted = format_timestamp(dt)
@@ -207,7 +207,7 @@ class TestTimestampFormatting:
 
     def test_format_timestamp_midnight(self):
         """Test timestamp formatting at midnight."""
-        from src.template.filename import format_timestamp
+        from normpic.template.filename import format_timestamp
 
         dt = datetime(2024, 1, 1, 0, 0, 0)
         formatted = format_timestamp(dt)
@@ -216,7 +216,7 @@ class TestTimestampFormatting:
 
     def test_format_timestamp_end_of_year(self):
         """Test timestamp formatting at end of year."""
-        from src.template.filename import format_timestamp
+        from normpic.template.filename import format_timestamp
 
         dt = datetime(2024, 12, 31, 23, 59, 59)
         formatted = format_timestamp(dt)

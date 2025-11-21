@@ -3,7 +3,7 @@
 from unittest.mock import patch, mock_open
 from typing import Dict, Any
 
-from src.util.filesystem import (
+from normpic.util.filesystem import (
     create_symlink,
     validate_symlink_integrity,
     detect_broken_symlinks,
@@ -292,7 +292,7 @@ class TestFilesystemWithMocks:
         """Set up fresh mock filesystem for each test."""
         self.fs = MockFilesystem()
         # Patch pathlib.Path to use our mock
-        self.path_patcher = patch('src.util.filesystem.Path', self.fs.path)
+        self.path_patcher = patch('normpic.util.filesystem.Path', self.fs.path)
         self.path_patcher.start()
     
     def teardown_method(self):

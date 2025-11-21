@@ -3,9 +3,9 @@
 from datetime import datetime
 
 # These imports will fail initially - that's the point of TDD
-from src.util.exif import extract_exif_data, extract_camera_info
-from src.template.filename import generate_filename
-from src.model.exif import CameraInfo, ExifData
+from normpic.util.exif import extract_exif_data, extract_camera_info
+from normpic.template.filename import generate_filename
+from normpic.model.exif import CameraInfo, ExifData
 
 
 class TestCompleteWorkflows:
@@ -116,7 +116,7 @@ class TestCompleteWorkflows:
             photos.append(photo)
 
         # Act: Use the complete workflow to process burst sequence
-        from src.manager.photo_manager import organize_photos
+        from normpic.manager.photo_manager import organize_photos
         manifest = organize_photos(
             source_dir=source_dir,
             dest_dir=dest_dir,

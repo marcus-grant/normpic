@@ -22,9 +22,9 @@ dev = [
     "psutil>=6.1.0",
 ]
 
-[tool.setuptools]
-packages = ["normpic"]
-package-dir = {"normpic" = "src"}
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["normpic*"]
 
 [tool.pytest.ini_options]
 pythonpath = "."
