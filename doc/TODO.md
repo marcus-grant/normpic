@@ -18,45 +18,30 @@
 
 ## Remaining Tasks
 
-### Critical MVP: Packaging Fix 🚨
-**BLOCKS PARENT PROJECT INTEGRATION** - Fix import structure to enable `from normpic import organize_photos`
+### Critical MVP: Packaging Fix ✅ COMPLETED
+**ENABLES PARENT PROJECT INTEGRATION** - Package now supports `from normpic import organize_photos`
 
-**Current Issue**: All internal imports use `from src.X` preventing proper package installation
-- **26 total files** identified with incorrect imports
-- CLI, tests, and core modules all affected  
-- Package currently not installable for parent projects
+**✅ COMPLETED - All Goals Achieved:**
+- ✅ Restructured to conventional `PROJECT_ROOT/normpic/` layout (was `src/`)
+- ✅ All 26 files with imports successfully updated
+- ✅ Clean API entry point with `organize_photos`, `Manifest`, `Pic`, `Config`
+- ✅ Package properly installable for parent projects
 
-**Affected Files:**
+**✅ Implementation Completed** (6 commits on `fix/packaging` branch):
+- ✅ **Commit 1**: Fixed all 6 core modules (relative imports `from ..X`)
+- ✅ **Commit 2**: Fixed unit test imports (kept `src.` for development)
+- ✅ **Commit 3**: Integration tests worked without changes
+- ✅ **Commit 4**: Fixed CLI imports + created API entry point
+- ✅ **Commit 5**: Restructured to `normpic/` package layout
+- ✅ **Commit 6**: Updated all test imports to use `normpic.*`
 
-**Core src/ modules (6 files, ~1079 LOC total):**
-- `src/manager/photo_manager.py` - 8 import lines need `from src.X` → `from .X` 
-- `src/serializer/manifest.py` - 3 import lines need fixing
-- `src/manager/manifest_manager.py` - 2 import lines need fixing
-- `src/template/filename.py` - 1 import line needs fixing
-- `src/util/exif.py` - 1 import line needs fixing
-- `src/manager/config_manager.py` - 1 import line needs fixing
+**✅ Success Criteria Met:**
+- ✅ `from normpic import organize_photos` works after `uv pip install -e .`
+- ✅ All 200 tests pass with new structure
+- ✅ Ruff linting passes on all code
+- ✅ CLI functional with `uv run python cli/main.py`
 
-**CLI module (1 file):**
-- `cli/main.py` - needs absolute package imports (`from normpic.X`)
-
-**Test files (19 files total):**
-- **Integration tests (6 files)**: `test/integration/test_*.py`
-- **Unit tests (13 files)**: `test/unit/test_*.py`
-
-**Implementation Plan** (Small commits ~300 LOC each for easy review):
-- [ ] **Commit 1**: Fix all 6 core `src/` modules (relative imports `from .X`)
-- [ ] **Commit 2**: Fix 13 unit test files (package imports)
-- [ ] **Commit 3**: Fix 6 integration test files (package imports)
-- [ ] **Commit 4**: Fix CLI + create clean API entry point in `src/__init__.py`
-- [ ] **Commit 5**: Update `pyproject.toml` package config + test installation
-- [ ] **Commit 6**: Update documentation to reflect new import structure
-
-**Branch**: `fix/packaging` (separate from main for safe iteration)
-
-**Success Criteria**: 
-- `from normpic import organize_photos` works after `pip install -e .`
-- All 109+ tests continue to pass
-- Ruff linting passes on all changed files
+**Ready for integration into parent projects!**
 
 ### Final Cleanup
 **Task**: Remove obsolete deleteme directory after verification

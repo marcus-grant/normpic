@@ -13,6 +13,7 @@ NormPic follows a manifest-centric, TDD-driven architecture with clear separatio
 ### Module Organization
 - [Module Organization](module-organization.md) - Functional module patterns, avoiding catch-all anti-patterns, and template/utility separation
 - [Template/Util Split](template-util-split.md) - Architecture pattern for separating generic utilities from domain-specific templates
+- [Package Structure](package-structure.md) - Import architecture, conventional package layout, and restructuring decisions
 
 ## Architecture Principles
 
@@ -24,20 +25,21 @@ NormPic follows a manifest-centric, TDD-driven architecture with clear separatio
 ## System Structure
 
 ```
-src/
-├── model/          # Data structures (Pic, Manifest, Config)
-│   └── schema_v0.py # JSON Schema definitions as Python constants
-├── serializer/     # JSON serialization/validation layer
-├── util/           # Generic utilities (EXIF extraction, filesystem ops)
-├── template/       # Template application (filename generation)
-├── manager/        # High-level workflow orchestration
+normpic/               # Main package (conventional layout)
+├── __init__.py       # Clean API exports: organize_photos, Manifest, Pic, Config
+├── model/            # Data structures (Pic, Manifest, Config)
+│   └── schema_v0.py  # JSON Schema definitions as Python constants
+├── serializer/       # JSON serialization/validation layer
+├── util/             # Generic utilities (EXIF extraction, filesystem ops)
+├── template/         # Template application (filename generation)
+├── manager/          # High-level workflow orchestration
 │   └── photo_manager.py # Complete photo organization workflow
 └── [future modules organized by function]
 ```
 
 ## Implemented Workflows
 
-### Photo Organization (src/manager/photo_manager.py)
+### Photo Organization (normpic/manager/photo_manager.py)
 
 Complete photo collection processing workflow:
 - **Temporal Ordering**: EXIF timestamp → filename → mtime precedence with subsecond precision
