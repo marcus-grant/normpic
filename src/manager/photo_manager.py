@@ -4,13 +4,13 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional, List
 
-from src.model.manifest import Manifest
-from src.model.pic import Pic
-from src.util.exif import extract_exif_data, extract_camera_info
-from src.template.filename import generate_filename
-from src.serializer.manifest import ManifestSerializer
-from src.manager.manifest_manager import ManifestManager
-from src.util.error_handling import ErrorHandler
+from ..model.manifest import Manifest
+from ..model.pic import Pic
+from ..util.exif import extract_exif_data, extract_camera_info
+from ..template.filename import generate_filename
+from ..serializer.manifest import ManifestSerializer
+from .manifest_manager import ManifestManager
+from ..util.error_handling import ErrorHandler
 
 
 def organize_photos(
@@ -310,7 +310,7 @@ def _create_ordered_pics(pics_data, collection_name: str, dest_dir: Path) -> Lis
             )
         else:
             # Multiple photos at same timestamp+camera - all need counters
-            from src.template.filename import BASE32_ALPHABET, get_camera_code, format_timestamp
+            from ..template.filename import BASE32_ALPHABET, get_camera_code, format_timestamp
             
             # Generate base filename components
             parts = []
