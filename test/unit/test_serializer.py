@@ -6,9 +6,9 @@ from datetime import datetime
 import pytest
 from jsonschema import ValidationError
 
-from src.model.pic import Pic
-from src.model.manifest import Manifest
-from src.serializer.manifest import ManifestSerializer
+from normpic.model.pic import Pic
+from normpic.model.manifest import Manifest
+from normpic.serializer.manifest import ManifestSerializer
 
 
 class TestManifestSerializer:

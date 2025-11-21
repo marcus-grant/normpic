@@ -1,5 +1,21 @@
 # NormPic Development Changelog
 
+## 2025-11-21
+
+### Major Package Restructuring for Parent Project Integration
+
+- **Critical MVP Fix**: Resolved packaging issues blocking parent project integration
+  - Restructured from `src/` to conventional `normpic/` package layout  
+  - Fixed all 26 files with import issues (`from src.X` → relative/package imports)
+  - Created clean API entry point in `normpic/__init__.py` with main exports
+  - Updated all test imports from `src.` to `normpic.` package imports
+  - **Package Integration Now Working**: `from normpic import organize_photos` functional
+- **Package Configuration**: Simplified pyproject.toml with conventional setuptools discovery
+- **Quality Assurance**: All 200 tests pass, ruff linting clean, CLI functional with `uv run`
+- **Implementation**: 6 systematic commits on `fix/packaging` branch for easy review
+- **Documentation**: Updated TODO.md with completion status and success criteria
+- **Ready for Parent Projects**: Package can now be installed and imported by gallery builders
+
 ## 2025-11-13
 
 ### Integration Documentation Completion

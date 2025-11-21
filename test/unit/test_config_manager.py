@@ -6,14 +6,14 @@ import json
 from pathlib import Path
 from unittest.mock import patch
 
-from src.manager.config_manager import (
+from normpic.manager.config_manager import (
     get_env_config,
     validate_env_paths,
     load_config_with_env_override,
     load_config_with_full_precedence,
     ALLOWED_ENV_VARS
 )
-from src.model.config import Config
+from normpic.model.config import Config
 
 
 class TestGetEnvConfig:

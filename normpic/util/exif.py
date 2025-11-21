@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Union
 import piexif
 
-from src.model.exif import CameraInfo, ExifData
+from ..model.exif import CameraInfo, ExifData
 
 
 def extract_exif_data(photo_path: Union[Path, str]) -> ExifData:

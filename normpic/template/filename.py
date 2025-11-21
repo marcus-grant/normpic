@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from typing import Optional, Set
-from src.model.exif import CameraInfo, ExifData
+from ..model.exif import CameraInfo, ExifData
 
 # Base32 alphabet for counter system (lexically ordered)
 BASE32_ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUV"

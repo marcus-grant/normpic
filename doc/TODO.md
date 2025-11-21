@@ -18,6 +18,31 @@
 
 ## Remaining Tasks
 
+### Critical MVP: Packaging Fix ✅ COMPLETED
+**ENABLES PARENT PROJECT INTEGRATION** - Package now supports `from normpic import organize_photos`
+
+**✅ COMPLETED - All Goals Achieved:**
+- ✅ Restructured to conventional `PROJECT_ROOT/normpic/` layout (was `src/`)
+- ✅ All 26 files with imports successfully updated
+- ✅ Clean API entry point with `organize_photos`, `Manifest`, `Pic`, `Config`
+- ✅ Package properly installable for parent projects
+
+**✅ Implementation Completed** (6 commits on `fix/packaging` branch):
+- ✅ **Commit 1**: Fixed all 6 core modules (relative imports `from ..X`)
+- ✅ **Commit 2**: Fixed unit test imports (kept `src.` for development)
+- ✅ **Commit 3**: Integration tests worked without changes
+- ✅ **Commit 4**: Fixed CLI imports + created API entry point
+- ✅ **Commit 5**: Restructured to `normpic/` package layout
+- ✅ **Commit 6**: Updated all test imports to use `normpic.*`
+
+**✅ Success Criteria Met:**
+- ✅ `from normpic import organize_photos` works after `uv pip install -e .`
+- ✅ All 200 tests pass with new structure
+- ✅ Ruff linting passes on all code
+- ✅ CLI functional with `uv run python cli/main.py`
+
+**Ready for integration into parent projects!**
+
 ### Final Cleanup
 **Task**: Remove obsolete deleteme directory after verification
 - Review `deleteme-normpic-modules/` content, verify all specs adapted

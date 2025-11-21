@@ -316,8 +316,7 @@ dependencies = [
 
 **build.py**:
 ```python
-from normpic.manager.photo_manager import organize_photos
-from normpic.model.config import Config
+from normpic import organize_photos, Config
 from pathlib import Path
 
 def build_galleries():

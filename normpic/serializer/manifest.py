@@ -5,9 +5,9 @@ from datetime import datetime
 
 from jsonschema import validate
 
-from src.model.manifest import Manifest
-from src.model.pic import Pic
-from src.model.schema_v0 import MANIFEST_SCHEMA
+from ..model.manifest import Manifest
+from ..model.pic import Pic
+from ..model.schema_v0 import MANIFEST_SCHEMA
 
 
 class ManifestSerializer:

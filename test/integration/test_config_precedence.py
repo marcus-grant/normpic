@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 from unittest.mock import patch
 
-from src.manager.config_manager import load_config_with_env_override, load_config_with_full_precedence
+from normpic.manager.config_manager import load_config_with_env_override, load_config_with_full_precedence
 
 
 class TestConfigPrecedence:

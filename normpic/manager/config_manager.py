@@ -8,7 +8,7 @@ import os
 from pathlib import Path
 from typing import Optional, Dict, Any
 
-from src.model.config import Config
+from ..model.config import Config
 
 
 # Whitelisted environment variables for security

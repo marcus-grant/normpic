@@ -3,7 +3,7 @@
 import json
 
 
-from src.manager.manifest_manager import ManifestManager, load_existing_manifest
+from normpic.manager.manifest_manager import ManifestManager, load_existing_manifest
 
 
 class TestManifestManager:
@@ -150,7 +150,7 @@ class TestChangeDetection:
             Model="EOS R5"
         )
         
-        from src.manager.manifest_manager import ManifestManager
+        from normpic.manager.manifest_manager import ManifestManager
         manager = ManifestManager()
         
         # Get actual hash of the photo
@@ -184,7 +184,7 @@ class TestChangeDetection:
         
         original_mtime = photo_path.stat().st_mtime
         
-        from src.manager.manifest_manager import ManifestManager
+        from normpic.manager.manifest_manager import ManifestManager
         manager = ManifestManager()
         
         # Act: Check with same mtime (should not need reprocessing)
@@ -216,7 +216,7 @@ class TestChangeDetection:
 
     def test_detect_config_changes(self, tmp_path):
         """Test detecting when config changes affect processing requirements."""
-        from src.manager.manifest_manager import ManifestManager
+        from normpic.manager.manifest_manager import ManifestManager
         manager = ManifestManager()
         
         # Test with same collection names (should not affect processing)
@@ -258,7 +258,7 @@ class TestChangeDetection:
         dest_dir.mkdir()
         dest_path = dest_dir / "test-20241005T143045.jpg"
         
-        from src.manager.manifest_manager import ManifestManager
+        from normpic.manager.manifest_manager import ManifestManager
         manager = ManifestManager()
         
         # Act: Test with missing destination file
@@ -286,7 +286,7 @@ class TestChangeDetection:
         
         current_mtime = photo_path.stat().st_mtime
         
-        from src.manager.manifest_manager import ManifestManager
+        from normpic.manager.manifest_manager import ManifestManager
         manager = ManifestManager()
         
         # Get the actual hash

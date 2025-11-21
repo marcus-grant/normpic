@@ -7,8 +7,8 @@ from typing import Optional, Dict, Any, Union
 
 from jsonschema import ValidationError
 
-from src.model.manifest import Manifest
-from src.serializer.manifest import ManifestSerializer
+from ..model.manifest import Manifest
+from ..serializer.manifest import ManifestSerializer
 
 
 class ManifestManager:

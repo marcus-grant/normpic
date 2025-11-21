@@ -1,8 +1,8 @@
 """Integration tests for error handling workflow with comprehensive file format testing."""
 
 # These imports will fail initially - that's the point of TDD
-from src.manager.photo_manager import organize_photos
-from src.serializer.manifest import ManifestSerializer
+from normpic.manager.photo_manager import organize_photos
+from normpic.serializer.manifest import ManifestSerializer
 
 
 class TestErrorHandlingWorkflow:
