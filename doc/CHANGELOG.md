@@ -1,5 +1,127 @@
 # NormPic Development Changelog
 
+## 2026-06-09
+
+### Phase A Planning Completes
+
+Completes the Phase A planning artifacts tracked in
+`doc/TODO.md`; v0.1 implementation work (Phase B) is now unblocked.
+
+- **Conformance Requirement Defined**: new planning artifact at
+  `doc/architecture/conformance.md` specifies what any normpic
+  implementation must demonstrate to claim v0.1 conformance.
+  Documents the two-layer validation model (schema-mechanical
+  versus implementation-semantic), three fixture categories
+  (valid, invalid, consumer-lenient), the full fixture inventory by
+  case with the catching layer for each invalid case, producer and
+  consumer responsibilities, and v0.1.0 acceptance criteria.
+  Peer to `manifest-contract.md`, references it as source of truth.
+- **Architecture README Updated**: `doc/architecture/README.md` now
+  references the conformance requirement alongside the manifest
+  contract.
+- **Schema Versioning Rewritten**: `doc/architecture/schema-versioning.md`
+  reframed as implementation-side mechanics.
+  Contract-side versioning policy stays in `manifest-contract.md`,
+  referenced not duplicated.
+  Updated to current `normpic/` layout (was `src/`), aligned to
+  v0.1.0 schema (was v1), documents the deferred decision on how
+  `schema/v0.1.0.json` relates to the Python schema module, and
+  retains the serializer-separation and future-migration sections.
+- **TODO Restructured for Conformance Discipline**: `doc/TODO.md`
+  gains a "Conformance Fixture Discipline" section near the top
+  pointing at `architecture/conformance.md` as the fixture spec.
+  Fixtures are now explicitly Phase B implementation work, built
+  one fixture at a time per project TDD discipline, with full
+  inventory coverage required before Phase D verification.
+  Phase A items updated to reflect completion of
+  `conformance.md`, `schema/v0.1.0.json`, and the schema-versioning
+  rewrite.
+- **MVP Scope Decision Documented**: new section in `doc/TODO.md`
+  parks compressed-variant collections as a v0.1 open question
+  rather than a roadmap item.
+  The ongoing wedding gallery work will inform whether this lands
+  in v0.1 or rolls to v0.2; design constraints (ergonomic handling,
+  minimal schema impact) documented for the in-v0.1 case.
+- **Roadmap Gaps Filled**: `doc/ROADMAP.md` gains entries migrated
+  from an obsolete Galleria FUTURE document covering progress
+  reporting, dry-run mode, configurable filename counter, enhanced
+  subsecond-ordering refinements, direct upload from source,
+  streaming for large collections, fully remote operation,
+  automated archive upload, and async processing pipeline.
+- **Data Model Layer Rewritten**: `doc/architecture/data-models.md`
+  rewritten as the Python-implementation companion to the manifest
+  contract.
+  Updated to `normpic/` paths (was `src/`), refreshed dataclass
+  shapes to v0.1.0 (relative_path, collection_root,
+  original_filename, tag, b2b120: hash, removed errors), kept
+  serializer/migration design via cross-reference to
+  schema-versioning.md, removed stale test counts, added Related
+  projects section.
+
+## 2026-06-08
+
+### v0.1 Contract Redesign Begins
+
+Marks the end of the project hiatus and the start of v0.1 contract
+alignment work.
+
+- **Manifest Contract Defined**: new foundational planning artifact
+  at `doc/architecture/manifest-contract.md` captures the durable
+  v0.1 manifest contract that consumers and reimplementations depend
+  on.
+  Implementation-agnostic, designed to survive the anticipated Rust
+  rewrite and any future Static Site Generator plugin adapters.
+- **Contract Changes from Pre-Hiatus State**:
+  - Hash: SHA-256 hex replaced with BLAKE2b-120 (15-byte digest)
+    encoded as Crockford Base32 uppercase, prefixed with `b2b120:`.
+  - Paths: absolute `source_path` and `dest_path` removed from the
+    public schema; replaced with `relative_path`
+    (collection-relative).
+    Source location moves to producer operational state, out of
+    contract.
+  - Added: `collection_root` top-level field for collection location
+    resolution; allows `..` segments at the start for navigating
+    from manifest location to collection root.
+  - Added: `original_filename` per-pic optional field.
+  - Added: `tag` per-pic optional array (reserved, not populated in
+    v0.1.0).
+  - Removed: `errors`, `warnings`, `processing_status` from the
+    manifest.
+    Diagnostics now logs-only at runtime; a structured sidecar is
+    deferred for a future version.
+- **Two-Layer Contract Architecture**: the contract is now split
+  into a prose document (`manifest-contract.md`) for semantics and
+  rationale, and a JSON Schema artifact (`schema/v0.1.0.json`,
+  pending) for mechanical validation.
+- **Defensive Decisions Locked**: forward-compatibility seams,
+  canonical forms (paths, Crockford case, RFC 3339 timestamps),
+  parse-time version semantics, optional/nullable/absent matrix, and
+  deterministic-per-implementation ordering are all pinned in the
+  contract.
+- **Pre-Hiatus MVP Status Reframed**: the pre-hiatus "MVP complete
+  with 200 tests" claim is subsumed by the larger v0.1 contract
+  alignment work.
+  Existing tests still pass against the old contract; alignment to
+  the new contract is the Phase B implementation work tracked in
+  `doc/TODO.md`.
+- **Planning Documents Restructured**:
+  - `doc/TODO.md` rewritten to track v0.1 contract alignment with
+    sequenced phases and explicit upstream triggers per task.
+  - `doc/ROADMAP.md` created to hold post-v0.1 work; TODO no longer
+    carries the feature wishlist.
+  - `doc/architecture/README.md` updated to index
+    `manifest-contract.md` as the first entry under Schema and Data
+    Management.
+  - `doc/README.md` status block updated to reflect the contract
+    redesign in progress.
+  - Top `README.md` adjusted: S3 dropped from advertised features
+    (deferred post-v0.1, tracked in `ROADMAP.md`).
+- **Pre-Hiatus Field-Name Reconciliation Pending**: the existing
+  Python implementation may use field names from the pre-hiatus
+  contract.
+  An audit and alignment PR is the first task in Phase B of the
+  sequenced TODO.
+
 ## 2025-11-21
 
 ### Major Package Restructuring for Parent Project Integration
@@ -215,7 +337,7 @@
   - Updated `doc/architecture/module-organization.md` with implemented modules list
 - **Architecture Documentation**: Comprehensive updates for photo organization workflow
   - Updated `doc/architecture/README.md` with implemented photo_manager.py workflow
-  - Added Manager Pattern documentation for `src/manager/photo_manager.py` 
+  - Added Manager Pattern documentation for `src/manager/photo_manager.py`
   - Documented temporal ordering, burst preservation, and workflow orchestration
   - Updated system structure diagram to reflect actual implementation
 - **Organization Algorithm Documentation**: Created detailed ordering algorithm docs

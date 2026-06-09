@@ -1,58 +1,126 @@
-# Data Models Architecture
+# Python Data Model Layer
 
-## Overview
+This document covers the Python reference implementation's data
+model layer.
+It maps the v0.1.0 manifest contract onto Python types, documents
+the dataclass-first design, and points to the surrounding
+implementation modules.
 
-NormPic uses a clean separation between data models and serialization logic, following dataclass patterns for type safety and JSON Schema validation for interoperability.
+The contract itself, including field semantics, canonical forms,
+nullability rules, and forward-compatibility constraints, lives in
+[manifest-contract.md](manifest-contract.md).
+This document does not duplicate those rules.
+Where contract behavior is referenced here, the contract is
+authoritative if the two ever disagree.
 
-## Architecture Decisions
+## Status
 
-### Dataclass-First Design
-- **Models**: Pure dataclasses in `src/model/` with no serialization logic
-- **Serializers**: Separate layer in `src/serializer/` handles JSON operations
-- **Benefits**: Clean separation of concerns, easy testing, type safety
+v0.1 draft, aligned with `manifest-contract.md` v0.1.0.
+Field set, types, and module paths track the contract.
+Updates here follow contract revisions, never the reverse.
 
-### TDD Implementation Approach
-1. **RED**: Write failing unit tests first
-2. **GREEN**: Implement minimal code to pass tests  
-3. **REFACTOR**: Clean up implementation
-4. **Result**: 20 comprehensive unit tests covering all scenarios
+## Design principles
 
-### Model Structure
+The Python data model layer is dataclass-first and pure.
+Models hold data, nothing else.
+Serialization, validation, file I/O, and migration are separate
+concerns living in adjacent modules.
+This makes models trivial to test in isolation and lets the
+serializer evolve (formats, validation strategies, version
+detection) without touching the models themselves.
 
-#### Pic Dataclass
+The separation between model and serializer is covered in detail
+in [schema-versioning.md](schema-versioning.md).
+That document also covers the relationship between
+`schema/v0.1.0.json` (canonical schema artifact) and
+`normpic/model/schema_v0.py` (Python schema module).
+
+## Module organization
+
+Data models live under `normpic/model/`.
+Serialization lives under `normpic/serializer/`.
+
+```
+normpic/
+|-- model/
+|   |-- schema_v0.py    # Python schema module
+|   |-- pic.py          # Pic dataclass
+|   |-- manifest.py     # Manifest dataclass
+|   `-- config.py       # producer Config dataclass
+`-- serializer/
+    `-- manifest.py     # JSON serialize/deserialize/validate
+```
+
+## Dataclasses
+
+The code shown below is illustrative.
+Field types and presence mirror the manifest contract; refer to
+[manifest-contract.md](manifest-contract.md) for what each field
+means and which canonical forms are required.
+
+### Pic
+
 ```python
 @dataclass
 class Pic:
-    # Required fields
-    source_path: str
-    dest_path: str  
-    hash: str
+    # required
+    hash: str               # b2b120: prefixed Crockford Base32
+    relative_path: str
     size_bytes: int
-    
-    # Optional fields
+    mtime: datetime
+
+    # optional non-nullable
+    original_filename: Optional[str] = None
+
+    # optional nullable
     timestamp: Optional[datetime] = None
     timestamp_source: Optional[str] = None
     camera: Optional[str] = None
     gps: Optional[Dict[str, float]] = None
-    errors: List[str] = field(default_factory=list)
+
+    # optional array (reserved, unpopulated in v0.1.0)
+    tag: List[str] = field(default_factory=list)
 ```
 
-#### Manifest Dataclass
+The nullability distinction is contract-meaningful.
+`original_filename` is optional but non-nullable: absent or a
+non-empty string, never `None` in the serialized form.
+The other optionals are nullable: absent and `None` are
+equivalent.
+See `manifest-contract.md` for the full nullability matrix.
+
+### Manifest
+
 ```python
 @dataclass
 class Manifest:
-    # Required fields
-    version: str
+    # required
+    version: str            # "0.1.0"
     collection_name: str
     generated_at: datetime
-    pics: List[Pic]
-    
-    # Optional fields
+    collection_root: str    # always emitted; "." when manifest sits
+                            # at the collection root
+    pic: List[Pic]
+
+    # optional nullable
     collection_description: Optional[str] = None
     config: Optional[Dict[str, Any]] = None
 ```
 
-#### Config Dataclass
+`collection_root` is always emitted explicitly, including the
+default `"."` case.
+The `config` field is intentionally loose: it stores whatever
+producer-side record the producer chose to embed.
+It is not the typed producer Config below.
+
+### Config
+
+The producer-side typed configuration model.
+Distinct from the manifest's `config` field, which is a loose
+record.
+This dataclass is the typed state the producer uses during a
+processing run.
+
 ```python
 @dataclass
 class Config:
@@ -62,45 +130,35 @@ class Config:
     force_reprocess: bool = False
 ```
 
-## Serialization Layer
+Field set is illustrative.
+Phase B implementation may add, remove, or rename fields here as
+the producer matures.
+This is implementation-side state, not contract.
 
-### ManifestSerializer
-- **Location**: `src/serializer/manifest.py`
-- **Methods**: `serialize()`, `deserialize()`, `validate()`
-- **Features**: JSON Schema validation, round-trip serialization, error handling
+## Serialization
 
-### Key Features
-- **Schema Validation**: Automatic validation during deserialization
-- **Type Conversion**: Handles datetime ↔ ISO string conversion
-- **Error Handling**: Clear validation errors with schema violations
-- **Round-trip Safety**: serialize → deserialize preserves all data
+The serializer layer at `normpic/serializer/` is responsible for
+JSON read/write, schema validation, and the
+datetime-to-RFC-3339-string conversions the contract requires on
+the wire.
+Models never serialize themselves.
 
-## Testing Strategy
+Design rationale and the schema-artifact relationship are covered
+in [schema-versioning.md](schema-versioning.md).
 
-### Unit Test Coverage
-- **Schema Tests**: 7 tests validating JSON Schema definitions
-- **Model Tests**: 7 tests covering dataclass creation and serialization
-- **Serializer Tests**: 6 tests for JSON operations and validation
+## Related projects
 
-### Test Structure
-```
-test/unit/
-├── test_schema.py      # Schema validation tests
-├── test_models.py      # Dataclass behavior tests
-└── test_serializer.py  # JSON serialization tests
-```
-
-## Design Benefits
-
-1. **Type Safety**: Dataclasses provide IDE support and runtime type checking
-2. **Separation of Concerns**: Models focus on data, serializers handle format
-3. **Testability**: Each layer tested independently
-4. **Extensibility**: Easy to add new serialization formats (YAML, TOML)
-5. **Schema Evolution**: Versioned schemas enable backward compatibility
-
-## Integration Points
-
-- **Schema Validation**: Models validated against `schema_v0.py` definitions
-- **JSON Conversion**: `to_dict()` methods prepare data for serialization
-- **Error Handling**: Schema violations caught at serialization boundaries
-- **Future Migration**: Schema versioning enables manifest format evolution
+- [manifest-contract.md](manifest-contract.md): contract source of
+  truth.
+  This document is its Python-implementation companion.
+- [schema-versioning.md](schema-versioning.md): versioning
+  mechanics, serializer separation rationale, schema artifact
+  relationship.
+- [conformance.md](conformance.md): the conformance requirement
+  that this data model layer must satisfy when used as part of a
+  conforming producer or consumer.
+- `schema/v0.1.0.json`: canonical schema artifact; the data model
+  layer validates against this.
+- **future Rust port of normpic** (planned): will have its own
+  data-model document with native Rust types.
+  The same contract applies to both implementations.
