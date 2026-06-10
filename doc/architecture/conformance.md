@@ -162,6 +162,10 @@ The "Layer" column states which layer is responsible.
 | empty required string                 | non-empty required strings | schema         |
 | null for non-nullable optional        | nullability rules          | schema         |
 | missing required field                | required-field rule        | schema         |
+| relative_path with backslash          | canonical forms            | schema         |
+| original_filename with path separator | no path component          | schema         |
+| timestamp with invalid calendar value | RFC 3339 validity          | implementation |
+| collection_root with URI scheme       | no URI in v0.1.0           | schema         |
 
 Implementations MAY add cases for additional violations of the same
 rules (multiple hash-length variants, additional canonical-form

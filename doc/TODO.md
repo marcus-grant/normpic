@@ -38,6 +38,87 @@ They are built one fixture at a time against the inventory in
 `architecture/conformance.md`, per project TDD discipline.
 Full inventory coverage is required before Phase D verification.
 
+## Working Discipline
+
+This preamble defines the workflow and document-maintenance rules
+that apply to every PR listed in Phase B below.
+It exists so individual PR descriptions can stay focused on the
+work and not repeat process rules.
+
+### PR workflow
+
+Each PR follows the same shape:
+
+1. Branch from the current head with a kebab-case branch name
+   matching the PR name (e.g. `Fix/contract-schema-reconciliation`).
+2. Work in commits sized for review.
+   Group changes by single concern; do not pile unrelated work
+   into one commit.
+3. Commit titles use the enforced prefix convention: `Pln:`, `Ft:`,
+   `Fix:`, `Doc:`, `Ref:`, `Chr:`.
+   The commit-msg hook will reject anything else.
+   Commit bodies use bullet points with nested detail.
+4. The final commit of every PR is the doc-update commit.
+   It updates doc/TODO.md, doc/CHANGELOG.md, and any other
+   documents affected by the PR's changes (module docs,
+   architecture docs, integration guides).
+5. Push and submit the PR for review.
+
+### TDD cycle and commits
+
+TDD is the default for any PR that produces behavior change.
+Each RED-GREEN-REFACTOR cycle is one logical unit of work.
+Cycle phases map to commit prefixes as follows:
+
+- RED (failing test): `Ft:` when introducing a test for a new
+  capability, `Fix:` when reproducing a bug.
+  The commit message should make clear the test is expected to
+  fail at this point and what the failure mode looks like.
+- GREEN (minimal implementation): `Ft:` or `Fix:` as appropriate.
+  Smallest implementation that turns the test green.
+- REFACTOR (optional): `Ref:` for any cleanup that follows.
+  Skip the commit if no refactor is warranted.
+
+One fixture or one behavior per cycle.
+No bulk generation.
+
+### Document maintenance during a PR
+
+Two documents need maintenance throughout: doc/TODO.md and
+doc/CHANGELOG.md.
+Both are already large and will grow.
+Treat them as append-and-prune.
+
+**Context warning.**
+Never `cat` either file in full to make an edit.
+Use targeted reads: `grep -n` to find the section, `sed -n A,Bp`
+to view a few lines around it, then surgical edits with
+`str_replace` or appending with `>>`.
+Reading these files end-to-end on every commit burns context for
+no benefit.
+
+**Per-commit hygiene.**
+After each commit, append one concise line to doc/CHANGELOG.md
+under today's date header (create today's header if it does not
+yet exist).
+Mark the corresponding doc/TODO.md checkbox done in-place, but
+do not delete the line yet.
+
+**PR-close consolidation.**
+The final doc-update commit of every PR rewrites the per-commit
+CHANGELOG one-liners under today's date as one concise
+PR-summary block, with the PR name as a sub-header.
+Delete the granular one-liners that were just consolidated.
+Then delete the now-complete task lines from doc/TODO.md so the
+TODO does not balloon.
+
+**Related-document updates.**
+If a PR changes anything referenced by a module doc, an
+architecture doc, or an integration guide, update those documents
+in the same final doc-update commit.
+Do not leave reference docs out of sync with the contract or the
+implementation.
+
 ## Critical Technical Details
 
 - This is a uv-managed project: use `uv run pytest` (NOT
@@ -61,23 +142,6 @@ The list shrinks to zero before v0.1.0 is published.
 
 Each task carries an explicit upstream trigger so a developer
 picking this up knows what to do and when.
-
-### Phase A: Planning Artifacts
-
-- [x] Define manifest contract:
-      `architecture/manifest-contract.md`.
-- [x] Define conformance requirement:
-      `architecture/conformance.md`.
-- [x] Update `architecture/README.md` with the manifest-contract
-      reference.
-- [x] Update `architecture/README.md` to add the
-      conformance-requirement reference.
-- [x] Update planning docs: this TODO, `README.md`, top `README.md`,
-      `CHANGELOG.md`, `ROADMAP.md` (initial v0.1 planning PR).
-- [x] Create `schema/v0.1.0.json` (machine-readable schema artifact).
-- [x] Split or expand `architecture/schema-versioning.md` to
-      distinguish implementation migration from consumer-facing
-      contract stability.
 
 ### Phase B: Implementation Alignment
 
