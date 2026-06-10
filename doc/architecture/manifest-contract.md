@@ -150,7 +150,9 @@ encoding of this schema.
   Format in [Canonical forms](#canonical-forms).
 - `original_filename` (string, optional): filename as found in the
   source, with no path component.
-- `size_bytes` (integer, required): source file size in bytes.
+  MUST NOT contain `/` or `\`; path separator characters are not
+  permitted.
+- `size_bytes` (non-negative integer, required): source file size in bytes.
 - `mtime` (string, required): filesystem mtime of the source file in
   RFC 3339 UTC.
   Format in [Canonical forms](#canonical-forms).
@@ -266,6 +268,8 @@ Where:
   (`//`), no empty string.
 - UTF-8 encoded, NFC Unicode normalized.
 - No leading URI scheme (`s3://`, `https://`, etc.) in v0.1.0.
+  Rejection is enforced by an explicit `not` pattern in the JSON
+  Schema, not incidentally by any other constraint.
   URI schemes are reserved for future versions.
 
 Valid examples: `.`, `..`, `../..`, `../photos`,
@@ -345,8 +349,8 @@ Applies to `relative_path` on each pic.
 The following rules apply to `relative_path`:
 
 - UTF-8 encoded.
-- Forward slash (`/`) as the only path separator; no backslashes or
-  platform-specific separators.
+- Forward slash (`/`) as the only path separator.
+  Backslashes and all other platform-specific separators MUST NOT appear.
 - No leading `./`, no trailing slash, no empty segments (no `//`).
 - No `.` or `..` segments anywhere in the path.
 - No absolute paths (no leading `/`, no drive letter).
@@ -419,6 +423,11 @@ consumers should treat the distinction (or non-distinction) between
 absence, null, and empty values.
 
 ### Categories
+
+For all string-typed fields in any category below, the schema
+enforces `minLength: 1`.
+Empty strings are not valid for any string field, required or
+optional, nullable or non-nullable.
 
 Each field in the schema falls into one of four categories.
 
