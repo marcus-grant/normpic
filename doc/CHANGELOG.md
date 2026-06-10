@@ -1,5 +1,30 @@
 # NormPic Development Changelog
 
+## 2026-06-10
+
+### Fix/contract-schema-reconciliation
+
+Pre-ship tightening of the v0.1.0 schema artifact, manifest contract
+doc, and conformance inventory.
+No version bump; all changes are intra-draft corrections.
+
+- **Schema** (`schema/v0.1.0.json`): added backslash prohibition to
+  `relative_path`; added `minLength:1` and path-separator
+  prohibitions to `original_filename`; added `minLength:1` to
+  `collection_description`, `camera`, and `tag` items; added
+  explicit URI-scheme `not` pattern and `"default": "."` annotation
+  to `collection_root`.
+- **Contract doc** (`manifest-contract.md`): `size_bytes` described
+  as non-negative integer; backslash ban in `relative_path` is now
+  an explicit MUST; `original_filename` has an explicit MUST
+  prohibiting path separators; empty-string rejection note added at
+  the `Categories` section level for all string fields; `collection_root`
+  URI rejection corrects to cite the explicit `not` pattern.
+- **Conformance inventory** (`conformance.md`): four new invalid
+  cases added: `relative_path` with backslash (schema), `original_filename`
+  with path separator (schema), timestamp with invalid calendar value
+  (implementation), `collection_root` with URI scheme (schema).
+
 ## 2026-06-09
 
 ### Phase A Planning Completes

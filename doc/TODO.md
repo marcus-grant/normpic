@@ -45,60 +45,6 @@ that apply to every PR listed in Phase B below.
 It exists so individual PR descriptions can stay focused on the
 work and not repeat process rules.
 
-## Critical Technical Details
-
-- This is a uv-managed project: use `uv run pytest` (NOT
-  `python -m pytest`).
-- Source code location: `normpic/` directory (was `src/` before the
-  packaging fix).
-- Test command: `uv run pytest test/` for the full suite.
-- Linting: `uv run ruff check` (must pass before commits).
-
-## Open Contract Decisions
-
-See the "Decide before v0.1 ships" section in
-`architecture/manifest-contract.md`.
-
-Currently one open item: pre-hiatus field-name reconciliation
-(addressed in Phase B below).
-
-The list shrinks to zero before v0.1.0 is published.
-
-## Sequenced Tasks to Ship v0.1.0
-
-Each task carries an explicit upstream trigger so a developer
-picking this up knows what to do and when.
-
-### Phase B: Implementation Alignment
-
-Triggered by Phase A planning artifacts merged.
-
-- [ ] Field-name reconciliation audit.
-      Own PR, early task.
-      Identify any pre-hiatus field names still in the codebase and
-      align them to the contract.
-- [ ] Build conformance fixtures per
-      `architecture/conformance.md`, one fixture at a time per
-      project TDD discipline.
-      Each fixture drives the implementation work that makes it
-      pass.
-      Full inventory coverage required before Phase D.
-- [ ] Update `normpic/model/schema_v0.py` to encode the new contract.
-- [ ] Update hash module: SHA-256 to BLAKE2b-120 with Crockford
-      Base32 and `b2b120:` prefix.
-- [ ] Implement strict `relative_path` semantics (relative-only, no
-      `./`, no `..`, no aliasing).
-- [ ] Implement `collection_root` field with explicit-default
-      emission (`"."` when manifest sits at collection root).
-- [ ] Add `original_filename` field.
-- [ ] Remove diagnostics from manifest (logs-only at runtime).
-- [ ] Reject `null` for non-nullable optionals (validation).
-- [ ] Reject empty strings for required string fields (validation).
-- [ ] Validate GPS coordinate ranges (`-90 <= lat <= 90`,
-      `-180 <= lon <= 180`).
-- [ ] Update test fixtures to the new contract.
-- [ ] Update integration tests to validate against the new schema.
-
 ### PR workflow
 
 Each PR follows the same shape:
@@ -172,6 +118,60 @@ architecture doc, or an integration guide, update those documents
 in the same final doc-update commit.
 Do not leave reference docs out of sync with the contract or the
 implementation.
+
+## Critical Technical Details
+
+- This is a uv-managed project: use `uv run pytest` (NOT
+  `python -m pytest`).
+- Source code location: `normpic/` directory (was `src/` before the
+  packaging fix).
+- Test command: `uv run pytest test/` for the full suite.
+- Linting: `uv run ruff check` (must pass before commits).
+
+## Open Contract Decisions
+
+See the "Decide before v0.1 ships" section in
+`architecture/manifest-contract.md`.
+
+Currently one open item: pre-hiatus field-name reconciliation
+(addressed in Phase B below).
+
+The list shrinks to zero before v0.1.0 is published.
+
+## Sequenced Tasks to Ship v0.1.0
+
+Each task carries an explicit upstream trigger so a developer
+picking this up knows what to do and when.
+
+### Phase B: Implementation Alignment
+
+Triggered by Phase A planning artifacts merged.
+
+- [ ] Field-name reconciliation audit.
+      Own PR, early task.
+      Identify any pre-hiatus field names still in the codebase and
+      align them to the contract.
+- [ ] Build conformance fixtures per
+      `architecture/conformance.md`, one fixture at a time per
+      project TDD discipline.
+      Each fixture drives the implementation work that makes it
+      pass.
+      Full inventory coverage required before Phase D.
+- [ ] Update `normpic/model/schema_v0.py` to encode the new contract.
+- [ ] Update hash module: SHA-256 to BLAKE2b-120 with Crockford
+      Base32 and `b2b120:` prefix.
+- [ ] Implement strict `relative_path` semantics (relative-only, no
+      `./`, no `..`, no aliasing).
+- [ ] Implement `collection_root` field with explicit-default
+      emission (`"."` when manifest sits at collection root).
+- [ ] Add `original_filename` field.
+- [ ] Remove diagnostics from manifest (logs-only at runtime).
+- [ ] Reject `null` for non-nullable optionals (validation).
+- [ ] Reject empty strings for required string fields (validation).
+- [ ] Validate GPS coordinate ranges (`-90 <= lat <= 90`,
+      `-180 <= lon <= 180`).
+- [ ] Update test fixtures to the new contract.
+- [ ] Update integration tests to validate against the new schema.
 
 ### Phase C: Documentation Downstream of Contract
 
