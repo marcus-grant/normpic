@@ -38,9 +38,10 @@ grep -rn '"latitude"\|"longitude"\|\.latitude\b\|\.longitude\b' $DIRS $TEST
 ### R1: pics -> pic (Manifest array)
 
 `pics -> pic, files: [normpic/model/manifest.py, normpic/model/schema_v0.py,
-normpic/serializer/manifest.py, test/unit/test_error_handling.py,
-test/unit/test_manifest_manager.py, test/unit/test_models.py,
-test/unit/test_schema.py, test/unit/test_serializer.py,
+normpic/serializer/manifest.py, normpic/util/error_handling.py,
+test/unit/test_error_handling.py, test/unit/test_manifest_manager.py,
+test/unit/test_models.py, test/unit/test_schema.py,
+test/unit/test_serializer.py,
 test/integration/test_exif_filename_workflow.py,
 test/integration/test_manifest_loading_workflow.py,
 test/integration/test_photo_organization_workflow.py]`
@@ -55,6 +56,7 @@ Specific hits:
 - `normpic/serializer/manifest.py:55` -- `data["pics"]` in deserialize
 - `normpic/manager/photo_manager.py:47` -- `existing_manifest.pics`
   attribute access
+- `normpic/util/error_handling.py:132,134,137` -- `"pics"` key checks
 - `test/unit/test_error_handling.py:63,73` -- `"pics"` in test dict
 - `test/unit/test_manifest_manager.py:22,73,101` -- `"pics"` in
   fixture dicts; `result.pics` at line 37
@@ -95,9 +97,16 @@ on any manifest containing GPS data.
 
 `errors, concept: global error list attached to the manifest, files:
 [normpic/model/manifest.py, normpic/model/schema_v0.py,
-normpic/serializer/manifest.py, test/unit/test_error_handling.py,
-test/unit/test_schema.py, test/unit/test_serializer.py,
+normpic/serializer/manifest.py, normpic/util/error_handling.py,
+test/unit/test_error_handling.py, test/unit/test_schema.py,
+test/unit/test_serializer.py,
 test/integration/test_manifest_loading_workflow.py]`
+
+Specific hits (out-of-scope; for follow-on PR reference):
+
+- `normpic/util/error_handling.py:143` -- reads `manifest_data["errors"]`
+  to validate it is a list; dangling read if D1 is dropped without
+  updating this site
 
 Defer: `ref/manifest-model-v01-contract`.
 
@@ -156,17 +165,13 @@ Defer: `ref/pic-model-v01-contract`.
 
 ---
 
-## Out-of-Scope Flags
+## Commit Body Notes
 
-Hits found in `normpic/util/error_handling.py` (out of scope per
-working discipline -- flagged, not acted on):
+### R2 GPS rename
 
-- `normpic/util/error_handling.py:132` -- `"pics"` key check
-- `normpic/util/error_handling.py:134` -- `"pics"` type check
-- `normpic/util/error_handling.py:137` -- `manifest_data["pics"]`
-  iteration
-- `normpic/util/error_handling.py:143` -- `"errors"` key check
+Include this bullet in the `Ref: rename latitude/longitude to lat/lon`
+commit body:
 
-Manager decision needed before `ref/field-name-reconciliation` closes:
-does `normpic/util/error_handling.py` absorb the R1 rename here or in a
-follow-on PR?
+- Fixes latent producer bug: both schema_v0.py and schema/v0.1.0.json
+  already require lat/lon; the pre-rename code path would produce a
+  schema-invalid manifest for any pic carrying GPS metadata.
