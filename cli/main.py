@@ -111,7 +111,7 @@ def main(
         )
 
         # Output summary
-        pic_count = len(manifest.pics)
+        pic_count = len(manifest.pic)
         warnings = 0  # TODO: Count warnings from manifest
         errors = 0  # TODO: Count errors from manifest
 

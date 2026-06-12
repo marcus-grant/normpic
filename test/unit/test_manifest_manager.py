@@ -19,7 +19,7 @@ class TestManifestManager:
             "generated_at": "2024-10-05T14:00:00Z",
             "collection_description": None,
             "config": None,
-            "pics": [],
+            "pic": [],
         }
 
         with open(manifest_path, "w") as f:
@@ -34,7 +34,7 @@ class TestManifestManager:
         assert result is not None
         assert result.version == "0.1.0"
         assert result.collection_name == "test"
-        assert len(result.pics) == 0
+        assert len(result.pic) == 0
 
     def test_load_manifest_file_not_exists(self, tmp_path):
         """Test loading manifest when file doesn't exist."""
@@ -70,7 +70,7 @@ class TestManifestManager:
         invalid_manifest_data = {
             "version": "0.1.0",
             # Missing required fields: collection_name, generated_at
-            "pics": [],
+            "pic": [],
         }
 
         with open(manifest_path, "w") as f:
@@ -98,7 +98,7 @@ class TestLoadExistingManifestFunction:
             "generated_at": "2024-10-05T14:00:00Z",
             "collection_description": None,
             "config": None,
-            "pics": [],
+            "pic": [],
         }
 
         with open(manifest_path, "w") as f:

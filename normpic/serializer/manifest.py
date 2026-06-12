@@ -52,7 +52,7 @@ class ManifestSerializer:
         
         # Convert to objects
         pics = []
-        for pic_data in data["pics"]:
+        for pic_data in data["pic"]:
             # Parse timestamp if present
             timestamp = None
             if pic_data["timestamp"]:
@@ -79,7 +79,7 @@ class ManifestSerializer:
             version=data["version"],
             collection_name=data["collection_name"],
             generated_at=generated_at,
-            pics=pics,
+            pic=pics,
             collection_description=data.get("collection_description"),
             config=data.get("config"),
             errors=data.get("errors"),

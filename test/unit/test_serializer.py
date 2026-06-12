@@ -32,7 +32,7 @@ class TestManifestSerializer:
             version="0.1.0",
             collection_name="test-collection",
             generated_at=generated_at,
-            pics=pics,
+            pic=pics,
         )
 
         serializer = ManifestSerializer()
@@ -43,7 +43,7 @@ class TestManifestSerializer:
         assert parsed["version"] == "0.1.0"
         assert parsed["collection_name"] == "test-collection"
         assert parsed["generated_at"] == "2025-11-06T19:30:00"
-        assert len(parsed["pics"]) == 1
+        assert len(parsed["pic"]) == 1
 
     def test_deserialize_json_to_manifest(self):
         """Test deserializing JSON string to Manifest object."""
@@ -51,7 +51,7 @@ class TestManifestSerializer:
             "version": "0.1.0",
             "collection_name": "test-collection",
             "generated_at": "2025-11-06T19:30:00",
-            "pics": [
+            "pic": [
                 {
                     "source_path": "/path/to/source.jpg",
                     "dest_path": "/path/to/dest.jpg",
@@ -75,8 +75,8 @@ class TestManifestSerializer:
         assert manifest.version == "0.1.0"
         assert manifest.collection_name == "test-collection"
         assert manifest.generated_at == datetime(2025, 11, 6, 19, 30, 0)
-        assert len(manifest.pics) == 1
-        assert manifest.pics[0].source_path == "/path/to/source.jpg"
+        assert len(manifest.pic) == 1
+        assert manifest.pic[0].source_path == "/path/to/source.jpg"
 
     def test_round_trip_serialization(self):
         """Test that serialize -> deserialize preserves data."""
@@ -86,7 +86,7 @@ class TestManifestSerializer:
             version="0.1.0",
             collection_name="test-collection",
             generated_at=generated_at,
-            pics=[
+            pic=[
                 Pic(
                     source_path="/path/to/source.jpg",
                     dest_path="/path/to/dest.jpg",
@@ -108,10 +108,10 @@ class TestManifestSerializer:
             deserialized_manifest.collection_name == original_manifest.collection_name
         )
         assert deserialized_manifest.generated_at == original_manifest.generated_at
-        assert len(deserialized_manifest.pics) == len(original_manifest.pics)
+        assert len(deserialized_manifest.pic) == len(original_manifest.pic)
 
-        original_pic = original_manifest.pics[0]
-        deserialized_pic = deserialized_manifest.pics[0]
+        original_pic = original_manifest.pic[0]
+        deserialized_pic = deserialized_manifest.pic[0]
         assert deserialized_pic.source_path == original_pic.source_path
         assert deserialized_pic.timestamp == original_pic.timestamp
         assert deserialized_pic.timestamp_source == original_pic.timestamp_source
@@ -122,7 +122,7 @@ class TestManifestSerializer:
             version="0.1.0",
             collection_name="test-collection",
             generated_at=datetime(2025, 11, 6, 19, 30, 0),
-            pics=[
+            pic=[
                 Pic(
                     source_path="/path/to/source.jpg",
                     dest_path="/path/to/dest.jpg",
@@ -153,7 +153,7 @@ class TestManifestSerializer:
             version="0.1.0",
             collection_name="test-collection",
             generated_at=datetime(2025, 11, 6, 19, 30, 0),
-            pics=[invalid_pic],
+            pic=[invalid_pic],
         )
 
         serializer = ManifestSerializer()
@@ -166,7 +166,7 @@ class TestManifestSerializer:
             version="0.1.0",
             collection_name="test-collection",
             generated_at=datetime(2025, 11, 6, 19, 30, 0),
-            pics=[
+            pic=[
                 Pic(
                     source_path="/path/to/source.jpg",
                     dest_path="/path/to/dest.jpg",

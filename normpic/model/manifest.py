@@ -15,7 +15,7 @@ class Manifest:
     version: str
     collection_name: str
     generated_at: datetime
-    pics: List[Pic]
+    pic: List[Pic]
     
     # Optional fields
     collection_description: Optional[str] = None
@@ -30,7 +30,7 @@ class Manifest:
             "version": self.version,
             "collection_name": self.collection_name,
             "generated_at": self.generated_at.isoformat(),
-            "pics": [pic.to_dict() for pic in self.pics],
+            "pic": [p.to_dict() for p in self.pic],
         }
         
         # Add optional fields only if they have values

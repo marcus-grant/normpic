@@ -44,7 +44,7 @@ def organize_photos(
     # Build lookup of existing photos by source path
     existing_pics_by_path = {}
     if existing_manifest:
-        for pic in existing_manifest.pics:
+        for pic in existing_manifest.pic:
             existing_pics_by_path[pic.source_path] = pic
     
     # Find all files in source directory and handle supported/unsupported formats
@@ -160,7 +160,7 @@ def organize_photos(
         version="0.1.0",
         collection_name=collection_name,
         generated_at=datetime.now(),
-        pics=all_pics,
+        pic=all_pics,
         collection_description=collection_description,
         config={"collection_name": collection_name},
         errors=all_errors if all_errors else None,

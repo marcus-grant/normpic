@@ -60,7 +60,7 @@ class TestErrorHandler:
         error_handler = ErrorHandler()
         invalid_manifest_data = {
             "version": "0.1.0",
-            "pics": [{"invalid": "structure"}],  # Missing required fields
+            "pic": [{"invalid": "structure"}],  # Missing required fields
             "errors": "should be list",  # Wrong type
         }
         
@@ -70,7 +70,7 @@ class TestErrorHandler:
         # Assert
         assert not result["is_valid"]
         assert len(result["validation_errors"]) > 0
-        assert any("pics" in error for error in result["validation_errors"])
+        assert any("pic" in error for error in result["validation_errors"])
 
     def test_error_severity_levels(self):
         """Test: Different error types → appropriate severity levels → proper handling."""

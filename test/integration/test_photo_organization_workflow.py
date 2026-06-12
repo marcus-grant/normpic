@@ -66,7 +66,7 @@ class TestPhotoOrganizationWorkflow:
         )
 
         # Assert: Verify proper temporal ordering in manifest
-        assert len(manifest.pics) == 4
+        assert len(manifest.pic) == 4
 
         # Expected order: canon_early → iphone_middle → canon_late → nikon_conflict
         # (EXIF timestamp with subsec precedence, then filename for conflicts)
@@ -84,7 +84,7 @@ class TestPhotoOrganizationWorkflow:
         ]
 
         for i, (expected_filename, source_photo) in enumerate(expected_order):
-            pic = manifest.pics[i]
+            pic = manifest.pic[i]
             assert pic.dest_path == expected_filename
             assert pic.source_path == str(source_photo)
             assert pic.timestamp_source == "exif"
@@ -96,7 +96,7 @@ class TestPhotoOrganizationWorkflow:
         assert isinstance(manifest.generated_at, datetime)
 
         # Assert: Verify symlinks created
-        for pic in manifest.pics:
+        for pic in manifest.pic:
             dest_file = dest_dir / pic.dest_path
             assert dest_file.exists()
             assert dest_file.is_symlink()
@@ -110,7 +110,7 @@ class TestPhotoOrganizationWorkflow:
         serializer = ManifestSerializer()
         manifest_json = manifest_file.read_text()
         deserialized = serializer.deserialize(manifest_json)
-        assert len(deserialized.pics) == 4
+        assert len(deserialized.pic) == 4
         assert deserialized.collection_name == "wedding"
 
     def test_burst_sequence_preservation(self, create_photo_with_exif, tmp_path):
@@ -164,11 +164,11 @@ class TestPhotoOrganizationWorkflow:
 
         # Assert: Canon burst photos are adjacent (burst preservation)
         # iPhone should not interrupt the Canon sequence
-        canon_pics = [pic for pic in manifest.pics if "r5a" in pic.dest_path]
+        canon_pics = [pic for pic in manifest.pic if "r5a" in pic.dest_path]
         assert len(canon_pics) == 3
 
-        # Canon pics should be consecutive in manifest.pics
-        canon_positions = [manifest.pics.index(pic) for pic in canon_pics]
+        # Canon pics should be consecutive in manifest.pic
+        canon_positions = [manifest.pic.index(pic) for pic in canon_pics]
         assert canon_positions == [0, 1, 2] or canon_positions == [1, 2, 3]
 
         # Verify burst counter progression
@@ -211,9 +211,9 @@ class TestPhotoOrganizationWorkflow:
 
         # Assert: Filename ordering takes precedence over mtime
         # Expected order: photo_a_first → photo_m_middle → photo_z_last
-        assert len(manifest.pics) == 3
+        assert len(manifest.pic) == 3
 
-        filenames = [Path(pic.source_path).name for pic in manifest.pics]
+        filenames = [Path(pic.source_path).name for pic in manifest.pic]
         assert filenames == [
             "photo_a_first.jpg",
             "photo_m_middle.jpg",
@@ -221,6 +221,6 @@ class TestPhotoOrganizationWorkflow:
         ]
 
         # All should have timestamp_source="filename" since no EXIF
-        for pic in manifest.pics:
+        for pic in manifest.pic:
             assert pic.timestamp_source == "filename"
             assert pic.camera is None  # No EXIF camera data

@@ -15,7 +15,7 @@ class TestManifestSchema:
             "version": "0.1.0",
             "collection_name": "test-collection",
             "generated_at": "2025-11-06T19:30:00Z",
-            "pics": [
+            "pic": [
                 {
                     "source_path": "/path/to/source.jpg",
                     "dest_path": "/path/to/dest.jpg",
@@ -33,7 +33,7 @@ class TestManifestSchema:
         """Test that manifest missing required fields fails validation."""
         invalid_manifest = {
             "version": "0.1.0",
-            # Missing collection_name, generated_at, pics
+            # Missing collection_name, generated_at, pic
         }
 
         with pytest.raises(ValidationError):
@@ -45,7 +45,7 @@ class TestManifestSchema:
             "version": "0.1.0",
             "collection_name": "test-collection",
             "generated_at": "2025-11-06T19:30:00Z",
-            "pics": [
+            "pic": [
                 {
                     "source_path": "/path/to/source.jpg",
                     # Missing dest_path, hash, size_bytes

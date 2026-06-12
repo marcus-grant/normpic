@@ -124,10 +124,10 @@ class TestCompleteWorkflows:
         )
 
         # Assert: Verify burst sequence gets sequential counters
-        assert len(manifest.pics) == 3
-        
+        assert len(manifest.pic) == 3
+
         # Extract just the filenames for easier testing
-        filenames = [pic.dest_path for pic in manifest.pics]
+        filenames = [pic.dest_path for pic in manifest.pic]
         
         assert filenames[0] == "reception-20241005T143045-r5a-0.jpg"
         assert filenames[1] == "reception-20241005T143045-r5a-1.jpg"

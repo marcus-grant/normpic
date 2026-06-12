@@ -129,16 +129,16 @@ class ErrorHandler:
         """Validate manifest data structure."""
         validation_errors = []
         
-        if "pics" not in manifest_data:
-            validation_errors.append("Missing required field 'pics'")
-        elif not isinstance(manifest_data["pics"], list):
-            validation_errors.append("Field 'pics' must be a list")
+        if "pic" not in manifest_data:
+            validation_errors.append("Missing required field 'pic'")
+        elif not isinstance(manifest_data["pic"], list):
+            validation_errors.append("Field 'pic' must be a list")
         else:
-            for i, pic in enumerate(manifest_data["pics"]):
+            for i, pic in enumerate(manifest_data["pic"]):
                 if not isinstance(pic, dict):
-                    validation_errors.append(f"pics[{i}] must be an object")
+                    validation_errors.append(f"pic[{i}] must be an object")
                 elif "invalid" in pic:
-                    validation_errors.append(f"pics[{i}] has invalid structure")
+                    validation_errors.append(f"pic[{i}] has invalid structure")
         
         if "errors" in manifest_data and not isinstance(manifest_data["errors"], list):
             validation_errors.append("Field 'errors' must be a list")

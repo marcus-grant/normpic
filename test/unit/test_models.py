@@ -108,13 +108,13 @@ class TestManifest:
             version="0.1.0",
             collection_name="test-collection",
             generated_at=generated_at,
-            pics=pics,
+            pic=pics,
         )
 
         assert manifest.version == "0.1.0"
         assert manifest.collection_name == "test-collection"
         assert manifest.generated_at == generated_at
-        assert len(manifest.pics) == 2
+        assert len(manifest.pic) == 2
         assert manifest.collection_description is None
         assert manifest.config is None
 
@@ -136,7 +136,7 @@ class TestManifest:
             version="0.1.0",
             collection_name="test-collection",
             generated_at=generated_at,
-            pics=pics,
+            pic=pics,
         )
 
         result = manifest.to_dict()
@@ -144,8 +144,8 @@ class TestManifest:
         assert result["version"] == "0.1.0"
         assert result["collection_name"] == "test-collection"
         assert result["generated_at"] == generated_at.isoformat()
-        assert len(result["pics"]) == 1
-        assert result["pics"][0]["source_path"] == "/path/to/source.jpg"
+        assert len(result["pic"]) == 1
+        assert result["pic"][0]["source_path"] == "/path/to/source.jpg"
 
 
 class TestConfig:

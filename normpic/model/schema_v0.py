@@ -106,7 +106,7 @@ PIC_SCHEMA = {
 MANIFEST_SCHEMA = {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "type": "object", 
-    "required": ["version", "collection_name", "generated_at", "pics"],
+    "required": ["version", "collection_name", "generated_at", "pic"],
     "properties": {
         "version": {
             "type": "string",
@@ -130,7 +130,7 @@ MANIFEST_SCHEMA = {
             "type": ["object", "null"],
             "description": "Configuration used to generate this manifest"
         },
-        "pics": {
+        "pic": {
             "type": "array",
             "items": PIC_SCHEMA,
             "description": "List of processed photos"
