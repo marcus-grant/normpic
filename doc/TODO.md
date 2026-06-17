@@ -801,6 +801,7 @@ archive produces a valid v0.1.0 manifest end-to-end, exercising
 the wedding-acceptance line for the first time.
 Phase D may rerun this as part of broader verification (Galleria
 consumption etc.).
+
 ### Phase C: Documentation Downstream of Contract
 
 Triggered by Phase A merged; parallelizable with Phase B.

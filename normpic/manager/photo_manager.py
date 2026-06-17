@@ -356,8 +356,8 @@ def _create_ordered_pics(pics_data, collection_name: str, dest_dir: Path) -> Lis
                 timestamp_source=timestamp_source,
                 camera=camera_info.model if camera_info else None,
                 gps={
-                    "latitude": exif_data.gps_latitude,
-                    "longitude": exif_data.gps_longitude
+                    "lat": exif_data.gps_latitude,
+                    "lon": exif_data.gps_longitude
                 } if exif_data.gps_latitude and exif_data.gps_longitude else None,
                 errors=[]
             )
