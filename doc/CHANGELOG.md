@@ -2,6 +2,27 @@
 
 ## 2026-06-17
 
+### tst/conformance-invalid-path-rules
+
+Seven schema-layer invalid fixtures covering path-canonical-form
+violations, plus the parametrized rejection test that exercises them.
+Test count rises to 13 (6 valid + 7 invalid); all pass.
+
+- Adds test_invalid_fixture_rejected_by_schema to test_conformance.py:
+  parametrized over invalid/*.json, asserts schema rejects each.
+- Adds invalid/relative-path-absolute.json: leading / in relative_path.
+- Adds invalid/relative-path-dot-segment.json: . segment in relative_path.
+- Adds invalid/relative-path-dotdot-segment.json: .. segment in relative_path.
+- Adds invalid/relative-path-backslash.json: backslash in relative_path.
+- Adds invalid/collection-root-leading-dotslash.json: ./ prefix in
+  collection_root.
+- Adds invalid/collection-root-uri-scheme.json: s3:// scheme in
+  collection_root; URI schemes reserved for future versions.
+- Adds invalid/original-filename-path-separator.json: / in
+  original_filename.
+- Updates test/fixture/conformance/README.md invalid table to reflect
+  actual fixture filenames and add missing entries.
+
 ### tst/conformance-valid-fixtures
 
 Five valid fixtures completing the required conformance inventory.

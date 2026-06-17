@@ -71,18 +71,21 @@ Filenames carry a hint about which layer catches the violation:
 
 | Fixture                                         | Caught by      |
 |-------------------------------------------------|----------------|
-| `hash-sha256-prefix.json`                       | JSON Schema    |
+| `hash-bad-prefix.json`                          | JSON Schema    |
 | `hash-wrong-length.json`                        | JSON Schema    |
 | `relative-path-absolute.json`                   | JSON Schema    |
 | `relative-path-dot-segment.json`                | JSON Schema    |
 | `relative-path-dotdot-segment.json`             | JSON Schema    |
-| `collection-root-dot-segment.json`              | JSON Schema    |
+| `relative-path-backslash.json`                  | JSON Schema    |
+| `collection-root-leading-dotslash.json`         | JSON Schema    |
+| `collection-root-uri-scheme.json`               | JSON Schema    |
 | `collection-root-dotdot-after-leading.json`     | Implementation |
 | `timestamp-offset-form.json`                    | JSON Schema    |
 | `gps-lat-out-of-range.json`                     | JSON Schema    |
 | `empty-required-string.json`                    | JSON Schema    |
-| `original-filename-null.json`                   | JSON Schema    |
+| `null-for-non-nullable-optional.json`           | JSON Schema    |
 | `missing-required-field.json`                   | JSON Schema    |
+| `original-filename-path-separator.json`         | JSON Schema    |
 
 A conformant implementation rejects all of these regardless of which
 layer detects the violation.

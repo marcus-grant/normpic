@@ -1,0 +1,7 @@
+{
+  "version": "0.1.0",
+  "collection_name": "Invalid: collection_root URI scheme",
+  "generated_at": "2025-01-01T00:00:00Z",
+  "collection_root": "s3://my-bucket/photos",
+  "pic": []
+}

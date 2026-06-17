@@ -1,0 +1,14 @@
+{
+  "version": "0.1.0",
+  "collection_name": "Invalid: relative_path dotdot segment",
+  "generated_at": "2025-01-01T00:00:00Z",
+  "collection_root": ".",
+  "pic": [
+    {
+      "hash": "b2b120:PZDRE6BC90T0BS0FGG0ZM7Y9",
+      "relative_path": "photos/../IMG_001.jpg",
+      "size_bytes": 1024,
+      "mtime": "2025-01-01T00:00:00Z"
+    }
+  ]
+}
