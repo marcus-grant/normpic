@@ -2,6 +2,35 @@
 
 ## 2026-06-17
 
+### tst/conformance-consumer-lenient
+
+Consumer-lenient fixture and hash normalizer. All three harness
+categories (valid, invalid, consumer-lenient) are now active.
+The invalid category is still missing 7 required schema-layer cases;
+those are deferred to tst/conformance-invalid-misc-rules.
+Test count rises to 18.
+
+- Adds consumer-lenient/hash-lowercase-crockford.json: valid manifest
+  with all-lowercase Crockford hash payload. collection_name is present
+  so lowercase hash is the sole violation; schema rejects the raw form.
+- Adds consumer_normalize() to normpic/util/manifest_validate.
+  Deep-copies the manifest, walks pic[].hash, and for any b2b120: hash
+  applies Crockford lenient read to the 24-char payload: case-folds to
+  uppercase, alias-folds i/I and l/L to 1, o/O to 0. No depo import.
+- Re-exports consumer_normalize from test/helpers/conformance.
+- Adds test_consumer_lenient_fixture_schema_rejects_raw: raw form fails.
+- Adds test_consumer_lenient_fixture_accepted_after_normalize: normalize
+  then schema-validate passes.
+- Adds test_consumer_normalize_crockford_alias_fold: direct unit test of
+  alias branch, input i/I/l/L/o/O maps to 1/1/1/1/0/0.
+- Reconciles test/fixture/conformance/README.md:
+  - 7 invalid entries deferred to tst/conformance-invalid-misc-rules
+    removed from the README table; required inventory in conformance.md.
+  - Consumer-lenient filename corrected (lowercase-crockford-hash.json
+    -> hash-lowercase-crockford.json).
+  - Usage pattern updated to actual harness API.
+  - Reference link to conformance.md added.
+
 ### tst/conformance-invalid-impl-layer
 
 Two impl-layer invalid fixtures and the validator module they drive.
