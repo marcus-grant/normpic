@@ -10,3 +10,13 @@ def test_valid_fixture_passes_schema(path):
     manifest = load_fixture(path)
     errors = schema_validate(manifest)
     assert not errors, f"{path.name}: expected valid, got {errors}"
+
+
+@pytest.mark.parametrize(
+    "path",
+    sorted((CONFORMANCE_DIR / "invalid").glob("*.json"))
+)
+def test_invalid_fixture_rejected_by_schema(path):
+    manifest = load_fixture(path)
+    errors = schema_validate(manifest)
+    assert errors, f"{path.name}: expected invalid, schema accepted"
