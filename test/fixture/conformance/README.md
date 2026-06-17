@@ -71,20 +71,13 @@ Filenames carry a hint about which layer catches the violation:
 
 | Fixture                                         | Caught by      |
 |-------------------------------------------------|----------------|
-| `hash-bad-prefix.json`                          | JSON Schema    |
-| `hash-wrong-length.json`                        | JSON Schema    |
-| `relative-path-absolute.json`                   | JSON Schema    |
-| `relative-path-dot-segment.json`                | JSON Schema    |
-| `relative-path-dotdot-segment.json`             | JSON Schema    |
-| `relative-path-backslash.json`                  | JSON Schema    |
 | `collection-root-leading-dotslash.json`         | JSON Schema    |
 | `collection-root-uri-scheme.json`               | JSON Schema    |
-| `timestamp-offset-form.json`                    | JSON Schema    |
-| `gps-lat-out-of-range.json`                     | JSON Schema    |
-| `empty-required-string.json`                    | JSON Schema    |
-| `null-for-non-nullable-optional.json`           | JSON Schema    |
-| `missing-required-field.json`                   | JSON Schema    |
 | `original-filename-path-separator.json`         | JSON Schema    |
+| `relative-path-absolute.json`                   | JSON Schema    |
+| `relative-path-backslash.json`                  | JSON Schema    |
+| `relative-path-dot-segment.json`                | JSON Schema    |
+| `relative-path-dotdot-segment.json`             | JSON Schema    |
 
 Implementation-layer fixtures live in `invalid/impl/`.
 They pass JSON Schema validation and are caught by
@@ -100,58 +93,70 @@ layer detects the violation.
 The split exists so a dev debugging a failing fixture knows where to
 look.
 
+The required invalid-case inventory (which lists cases not yet
+implemented here) lives in
+[doc/architecture/conformance.md](../../../doc/architecture/conformance.md).
+
 ### Consumer-Lenient
 
 Manifests that violate the producer side of the contract but that
 consumers SHOULD accept (the "be lenient in what you accept" half of
 Postel's law, applied at the points the contract explicitly allows).
 
-- `lowercase-crockford-hash.json`: hash emitted in lowercase
-  Crockford Base32.
-  Producers MUST emit uppercase, but consumers SHOULD tolerate
-  lowercase on read (see Hash identity section of the contract doc).
+| Fixture                          | Normalization applied         |
+|----------------------------------|-------------------------------|
+| `hash-lowercase-crockford.json`  | Crockford case-fold to upper  |
+
+Producers MUST NOT emit these.
+Consumers SHOULD accept them after calling `consumer_normalize` from
+`normpic.util.manifest_validate`.
 
 ## Usage Pattern
 
-The intended test pattern in Python:
+The intended test pattern in Python (see `test/unit/test_conformance.py`
+and `test/helpers/conformance.py` for the live harness):
 
 ```python
-import json
-from pathlib import Path
 import pytest
-from jsonschema import Draft202012Validator
-
-CONFORMANCE = Path(__file__).parent / "fixture" / "conformance"
-SCHEMA = json.loads(
-    (Path(__file__).parent.parent / "schema" / "v0.1.0.json").read_text()
+from test.helpers.conformance import (
+    CONFORMANCE_DIR,
+    consumer_normalize,
+    impl_validate,
+    load_fixture,
+    schema_validate,
 )
-VALIDATOR = Draft202012Validator(SCHEMA)
 
 
-@pytest.mark.parametrize("path", sorted((CONFORMANCE / "valid").glob("*.json")))
+@pytest.mark.parametrize("path", sorted((CONFORMANCE_DIR / "valid").glob("*.json")))
 def test_valid_fixture_passes_schema(path):
-    manifest = json.loads(path.read_text())
-    errors = list(VALIDATOR.iter_errors(manifest))
+    manifest = load_fixture(path)
+    errors = schema_validate(manifest)
     assert not errors, f"{path.name}: expected valid, got {errors}"
 
 
-@pytest.mark.parametrize("path", sorted((CONFORMANCE / "invalid").glob("*.json")))
-def test_invalid_fixture_rejected(path):
-    manifest = json.loads(path.read_text())
-    schema_errors = list(VALIDATOR.iter_errors(manifest))
-    impl_errors = normpic.validate_manifest_extra_rules(manifest)
-    assert schema_errors or impl_errors, (
-        f"{path.name}: expected rejection, neither layer caught it"
-    )
+@pytest.mark.parametrize("path", sorted((CONFORMANCE_DIR / "invalid").glob("*.json")))
+def test_invalid_fixture_rejected_by_schema(path):
+    manifest = load_fixture(path)
+    errors = schema_validate(manifest)
+    assert errors, f"{path.name}: expected invalid, schema accepted"
 
 
 @pytest.mark.parametrize(
-    "path", sorted((CONFORMANCE / "consumer-lenient").glob("*.json"))
+    "path", sorted((CONFORMANCE_DIR / "invalid" / "impl").glob("*.json"))
 )
-def test_consumer_lenient_fixture_accepted_by_consumer(path):
-    manifest = json.loads(path.read_text())
-    result = normpic.read_manifest(manifest)
-    assert result is not None
+def test_impl_layer_fixture_rejected_by_impl(path):
+    manifest = load_fixture(path)
+    assert not schema_validate(manifest), "impl fixture must pass schema"
+    assert impl_validate(manifest), "impl fixture must fail impl check"
+
+
+@pytest.mark.parametrize(
+    "path", sorted((CONFORMANCE_DIR / "consumer-lenient").glob("*.json"))
+)
+def test_consumer_lenient_fixture_accepted_after_normalize(path):
+    manifest = load_fixture(path)
+    assert schema_validate(manifest), "raw form must fail schema"
+    assert not schema_validate(consumer_normalize(manifest))
 ```
 
 The Rust port runs the equivalent against its own validator and
@@ -182,3 +187,5 @@ When adding a fixture:
 - [Schema versioning](../../../doc/architecture/schema-versioning.md):
   implementation-side migration mechanics (distinct from the
   consumer-facing contract).
+- [Conformance spec](../../../doc/architecture/conformance.md):
+  required fixture inventory and layer assignments.
