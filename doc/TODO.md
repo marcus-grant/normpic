@@ -196,7 +196,7 @@ The PRs in order:
 - fix/contract-schema-reconciliation [complete]
 - ref/field-name-reconciliation [complete]
 - tst/conformance-harness [complete]
-- tst/conformance-valid-fixtures
+- tst/conformance-valid-fixtures [complete]
 - tst/conformance-invalid-path-rules
 - tst/conformance-invalid-misc-rules
 - tst/conformance-invalid-impl-layer
@@ -223,31 +223,9 @@ See CHANGELOG entry under 2026-06-17 for the full summary.
 
 #### tst/conformance-valid-fixtures
 
-Add the remaining five valid fixtures per
-`architecture/conformance.md` inventory.
-One TDD cycle per fixture: write the test that loads it through
-the harness and validates against `schema/v0.1.0.json`, add the
-fixture file, confirm green, refactor if warranted.
-
-Files touched: `test/fixture/conformance/valid/`,
-`test/unit/test_conformance.py`.
-
-Commits:
-
-- `Ft: conformance fixture, valid/full`.
-  Every top-level and per-pic field populated, exercising every
-  optional field including `tag`, `gps`, `timestamp_source`, and
-  the loose `config` object.
-- `Ft: conformance fixture, valid/collection-root-default`.
-  `collection_root` set to the literal `"."` with at least one pic.
-- `Ft: conformance fixture, valid/collection-root-traversal`.
-  `collection_root` set to a path with leading `..` segments and
-  no segments after the leading run.
-- `Ft: conformance fixture, valid/empty-collection`.
-  Zero pics with top-level optional fields populated.
-- `Ft: conformance fixture, valid/optional-fields-null`.
-  Every nullable optional field set explicitly to `null`.
-- `Doc: PR close per discipline preamble`.
+Status: complete (2026-06-17).
+Five valid fixtures completing the required inventory.
+See CHANGELOG entry under 2026-06-17 for the full summary.
 
 Verification at PR close: `uv run pytest test/` green; harness
 test reports six passing valid fixtures (minimal from

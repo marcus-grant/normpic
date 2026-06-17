@@ -1,0 +1,20 @@
+{
+  "version": "0.1.0",
+  "collection_name": "Nullable Fields",
+  "collection_description": null,
+  "generated_at": "2025-06-15T12:00:00Z",
+  "config": null,
+  "collection_root": ".",
+  "pic": [
+    {
+      "hash": "b2b120:PZDRE6BC90T0BS0FGG0ZM7Y9",
+      "relative_path": "photos/IMG_0001.jpg",
+      "size_bytes": 1024,
+      "mtime": "2024-01-15T09:00:00Z",
+      "timestamp": null,
+      "timestamp_source": null,
+      "camera": null,
+      "gps": null
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "version": "0.1.0",
+  "collection_name": "Empty Collection",
+  "collection_description": "No photos yet.",
+  "generated_at": "2025-06-15T12:00:00Z",
+  "config": { "source_dir": "photos/source" },
+  "collection_root": ".",
+  "pic": []
+}

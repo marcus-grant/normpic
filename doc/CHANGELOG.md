@@ -2,6 +2,24 @@
 
 ## 2026-06-17
 
+### tst/conformance-valid-fixtures
+
+Five valid fixtures completing the required conformance inventory.
+Test count rises from one to six parametrized valid cases; all pass.
+
+- Adds valid/full.json: every top-level and per-pic field populated,
+  including collection_description, config, original_filename,
+  timestamp, timestamp_source (exif), camera, gps, tag.
+- Adds valid/collection-root-default.json: collection_root "." with
+  one pic; verifies the most common producer output shape.
+- Adds valid/collection-root-traversal.json: collection_root "../.."
+  (leading ".." only, no segments after); verifies traversal case.
+- Adds valid/empty-collection.json: zero pics with top-level optional
+  fields populated; verifies empty pic array alongside metadata.
+- Adds valid/optional-fields-as-null.json: all nullable optional
+  fields set to explicit null at top-level and per-pic; verifies
+  consumers treat null and absence as equivalent.
+
 ### tst/conformance-harness
 
 Conformance fixture directory structure, schema-layer harness, and
