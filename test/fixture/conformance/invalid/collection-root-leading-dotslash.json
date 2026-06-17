@@ -1,0 +1,7 @@
+{
+  "version": "0.1.0",
+  "collection_name": "Invalid: collection_root leading dotslash",
+  "generated_at": "2025-01-01T00:00:00Z",
+  "collection_root": "./photos",
+  "pic": []
+}
