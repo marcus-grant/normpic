@@ -35,6 +35,8 @@ test/
 
 ## Documentation
 
+- [Conformance Harness](conformance.md) - Conformance fixture harness,
+  two-layer model, and how to add fixtures
 - [Integration Tests](integration-tests.md) - Complex end-to-end test scenarios and workflows
 - [Fixtures](fixtures.md) - Available fixtures and usage patterns
 - [Patterns](patterns.md) - Integration vs unit test patterns
