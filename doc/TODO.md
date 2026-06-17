@@ -198,9 +198,9 @@ The PRs in order:
 - tst/conformance-harness [complete]
 - tst/conformance-valid-fixtures [complete]
 - tst/conformance-invalid-path-rules [complete]
-- tst/conformance-invalid-misc-rules
 - tst/conformance-invalid-impl-layer [complete]
-- tst/conformance-consumer-lenient
+- tst/conformance-consumer-lenient [complete]
+- tst/conformance-invalid-misc-rules
 - ft/hash-blake2b-crockford
 - ref/pic-model-v01-contract
 - ref/manifest-model-v01-contract
@@ -282,41 +282,9 @@ See CHANGELOG entry under 2026-06-17 for the full summary.
 
 #### tst/conformance-consumer-lenient
 
-Add the one consumer-lenient fixture (lowercase Crockford in
-hash).
-Drives the case-normalization-on-read code into existence.
-
-The harness extends here once more: add a consumer-normalize
-function that runs after layer-2 validation when reading a
-consumer-lenient fixture, returning the normalized form for
-downstream comparison.
-
-Files touched: `test/fixture/conformance/consumer-lenient/`,
-`test/unit/test_conformance.py`, harness module, and the hash
-module (or a thin normalizer near it) for the case-folding logic.
-
-Commits:
-
-- `Ft: conformance fixture, lowercase Crockford hash with
-  normalize`.
-  One TDD cycle.
-  Test asserts the schema rejects the lowercase form (per the
-  schema pattern, which is uppercase-only), and the
-  consumer-normalize path accepts after case-folding to canonical
-  uppercase.
-  Implementation adds a hash-case normalizer the consumer side
-  calls on read.
-  Fixture: `consumer-lenient/hash-lowercase-crockford.json`.
-- `Doc: PR close per discipline preamble`.
-
-This PR completes the conformance fixture inventory.
-After it lands, every case in `architecture/conformance.md` has at
-least one fixture and the harness exercises all three categories
-(valid, invalid, consumer-lenient).
-
-Verification at PR close: `uv run pytest test/` green; harness
-test reports the full conformance inventory passing per layer
-assignments.
+Status: complete (2026-06-17).
+Consumer-lenient fixture and consumer_normalize harness function.
+See CHANGELOG entry under 2026-06-17 for the full summary.
 
 #### ft/hash-blake2b-crockford
 

@@ -2,6 +2,7 @@ import pytest
 
 from test.helpers.conformance import (
     CONFORMANCE_DIR,
+    consumer_normalize,
     impl_validate,
     load_fixture,
     schema_validate,
@@ -39,3 +40,44 @@ def test_impl_layer_fixture_rejected_by_impl(path):
     )
     errors = impl_validate(manifest)
     assert errors, f"{path.name}: expected impl rejection, got none"
+
+
+@pytest.mark.parametrize(
+    "path",
+    sorted((CONFORMANCE_DIR / "consumer-lenient").glob("*.json"))
+)
+def test_consumer_lenient_fixture_schema_rejects_raw(path):
+    manifest = load_fixture(path)
+    errors = schema_validate(manifest)
+    assert errors, f"{path.name}: expected schema rejection of raw form"
+
+
+@pytest.mark.parametrize(
+    "path",
+    sorted((CONFORMANCE_DIR / "consumer-lenient").glob("*.json"))
+)
+def test_consumer_lenient_fixture_accepted_after_normalize(path):
+    manifest = load_fixture(path)
+    normalized = consumer_normalize(manifest)
+    errors = schema_validate(normalized)
+    assert not errors, f"{path.name}: expected valid after normalize, got {errors}"
+
+
+def test_consumer_normalize_crockford_alias_fold():
+    manifest = {
+        "version": "0.1.0",
+        "collection_name": "Alias Test",
+        "generated_at": "2025-06-15T12:00:00Z",
+        "collection_root": ".",
+        "pic": [
+            {
+                "hash": "b2b120:iIlLoO000000000000000000",
+                "relative_path": "img.jpg",
+                "original_filename": "img.jpg",
+                "size_bytes": 1,
+                "mtime": "2024-01-01T00:00:00Z",
+            }
+        ],
+    }
+    result = consumer_normalize(manifest)
+    assert result["pic"][0]["hash"] == "b2b120:111100000000000000000000"
