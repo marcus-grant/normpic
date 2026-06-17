@@ -1,5 +1,28 @@
 # NormPic Development Changelog
 
+## 2026-06-17
+
+### ref/field-name-reconciliation
+
+Pre-hiatus field names aligned to the v0.1 contract.
+Pure rename refactor; no behavior change; 200 tests green throughout.
+
+- Manifest array field renamed from `"pics"` to `"pic"` across
+  `normpic/model/manifest.py`, `normpic/model/schema_v0.py`,
+  `normpic/serializer/manifest.py`, `normpic/manager/photo_manager.py`,
+  `normpic/util/error_handling.py`, `normpic/cli/main.py`,
+  and all nine affected unit and integration test files.
+- GPS dict keys in `normpic/manager/photo_manager.py` renamed from
+  `"latitude"`/`"longitude"` to `"lat"`/`"lon"`.
+  Fixes a latent producer bug: both `schema_v0.py` and
+  `schema/v0.1.0.json` already required `lat`/`lon`; the pre-rename
+  code would produce schema-invalid manifests for any pic with GPS
+  data.
+- Pre-hiatus diagnostic fields on Manifest and Pic (error lists,
+  warnings, processing_status) identified but not removed; removal
+  is behavior change, deferred to `ref/manifest-model-v01-contract`
+  and `ref/pic-model-v01-contract`.
+
 ## 2026-06-10
 
 ### Fix/contract-schema-reconciliation

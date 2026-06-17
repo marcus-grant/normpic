@@ -194,7 +194,7 @@ Each PR follows the Working Discipline preamble above.
 The PRs in order:
 
 - fix/contract-schema-reconciliation [complete]
-- ref/field-name-reconciliation
+- ref/field-name-reconciliation [complete]
 - tst/conformance-harness
 - tst/conformance-valid-fixtures
 - tst/conformance-invalid-path-rules
@@ -213,38 +213,6 @@ Status: complete (2026-06-10).
 Pre-flight tightening of v0.1.0 schema, manifest contract doc, and
 conformance inventory.
 See CHANGELOG entry under 2026-06-10 for the full summary.
-
-#### ref/field-name-reconciliation
-
-Audit the codebase for pre-hiatus field names and align them to the
-v0.1 contract.
-Pure rename refactor, no behavior change.
-Tests stay green after every commit (parallel-change pattern:
-rename source and tests in the same commit).
-
-Files touched: `normpic/model/`, `normpic/serializer/`,
-`normpic/manager/`, `test/unit/`, `test/integration/`.
-
-Commits:
-
-- `Doc: field-name reconciliation audit findings`.
-  Grep `normpic/` for field names used in manifest and pic
-  structures.
-  Grep `test/` for references.
-  Compare against the v0.1 contract field list.
-  Write findings to `doc/architecture/field-rename-audit.md` as a
-  temporary working document.
-  Each finding line: `old_name -> new_name, files: [list]`.
-- `Ref: rename <old> to <new> across normpic and test`.
-  One commit per logical rename group.
-  Count determined by audit findings.
-  If audit surfaces zero discrepancies, this commit set is empty.
-- `Chr: drop field-rename-audit.md`.
-  The audit doc is working scaffolding; once renames are done it
-  has no readers.
-- `Doc: PR close per discipline preamble`.
-
-Verification at PR close: `uv run pytest test/` green.
 
 #### tst/conformance-harness
 
@@ -612,6 +580,31 @@ Pic fields per the v0.1 contract (full semantic detail in
 
 Commits:
 
+Deferred from ref/field-name-reconciliation:
+
+- [ ] Drop Pic.errors (per-pic error list; not in v0.1 contract).
+  Files: normpic/model/pic.py, normpic/model/schema_v0.py,
+  normpic/serializer/manifest.py, test/unit/test_models.py,
+  test/unit/test_schema.py, test/unit/test_serializer.py,
+  test/unit/test_error_handling.py,
+  test/integration/test_manifest_loading_workflow.py
+- [ ] Resolve Pic.source_path: not a rename of relative_path;
+  relative_path is computed by stripping collection_root from
+  the source path.
+  Files: normpic/model/pic.py, normpic/model/schema_v0.py,
+  normpic/serializer/manifest.py, test/unit/test_models.py,
+  test/unit/test_schema.py, test/unit/test_serializer.py,
+  test/integration/test_manifest_loading_workflow.py
+- [ ] Resolve Pic.dest_path: operational state, no v0.1 mapping.
+  Decide between removing from serialization or keeping as a
+  non-serialized internal attribute.
+  Files: normpic/model/pic.py, normpic/model/schema_v0.py,
+  normpic/serializer/manifest.py, test/unit/test_models.py,
+  test/unit/test_schema.py, test/unit/test_serializer.py,
+  test/integration/test_manifest_loading_workflow.py,
+  test/integration/test_exif_filename_workflow.py,
+  test/integration/test_photo_organization_workflow.py
+
 - `Ft: add original_filename field to Pic model`.
   One TDD cycle.
   Test: construct a Pic with `original_filename` set, with it
@@ -669,6 +662,21 @@ Manifest top-level fields per the v0.1 contract:
 Diagnostics fields from the pre-hiatus contract are removed.
 Diagnostics are runtime logs only and do not appear in the
 manifest.
+
+Deferred from ref/field-name-reconciliation:
+
+- [ ] Drop Manifest.errors (global error list; not in v0.1 contract).
+  Files: normpic/model/manifest.py, normpic/model/schema_v0.py,
+  normpic/serializer/manifest.py, normpic/util/error_handling.py,
+  test/unit/test_error_handling.py, test/unit/test_schema.py,
+  test/unit/test_serializer.py,
+  test/integration/test_manifest_loading_workflow.py
+- [ ] Drop Manifest.warnings.
+  Files: normpic/model/manifest.py, normpic/model/schema_v0.py,
+  normpic/serializer/manifest.py
+- [ ] Drop Manifest.processing_status.
+  Files: normpic/model/manifest.py, normpic/model/schema_v0.py,
+  normpic/serializer/manifest.py, normpic/manager/photo_manager.py
 
 Commits:
 
