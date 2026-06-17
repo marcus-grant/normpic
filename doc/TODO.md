@@ -195,7 +195,7 @@ The PRs in order:
 
 - fix/contract-schema-reconciliation [complete]
 - ref/field-name-reconciliation [complete]
-- tst/conformance-harness
+- tst/conformance-harness [complete]
 - tst/conformance-valid-fixtures
 - tst/conformance-invalid-path-rules
 - tst/conformance-invalid-misc-rules
@@ -216,41 +216,10 @@ See CHANGELOG entry under 2026-06-10 for the full summary.
 
 #### tst/conformance-harness
 
-Build the conformance test harness with the first valid fixture
-(`minimal`).
-Establish the directory structure and harness API that every later
-fixture PR reuses.
-Read `test/fixture/conformance/README.md` before designing the
-harness; honor any existing spec there.
-
-Files touched: `test/fixture/conformance/`, `test/unit/` (or
-equivalent test home), `doc/test/conformance.md` (new),
-`doc/test/README.md`.
-
-Commits:
-
-- `Chr: review existing test/fixture/conformance/README.md`.
-  No-code commit.
-  Read the README, confirm or revise harness design, note any
-  constraints it imposes.
-- `Ft: conformance harness with minimal valid fixture`.
-  One TDD cycle.
-  Test loads `valid/minimal.json` through a harness loader and
-  validates it against `schema/v0.1.0.json` using `jsonschema`.
-  Implementation creates
-  `test/fixture/conformance/{valid,invalid,consumer-lenient}/`
-  subdirectories, adds `valid/minimal.json` with required top-level
-  fields only (empty pic array, `collection_root` `"."`), and
-  implements the loader plus schema-validate function under
-  `test/helpers/` or `test/conformance.py`.
-- `Doc: add doc/test/conformance.md and reference in peer README`.
-  New doc covering harness usage, fixture categories, two-layer
-  model cross-reference to `architecture/conformance.md`, and how
-  to add new fixtures.
-  Update `doc/test/README.md` per doc discipline.
-- `Doc: PR close per discipline preamble`.
-
-Verification at PR close: `uv run pytest test/` green.
+Status: complete (2026-06-17).
+Conformance fixture directory structure, schema-layer harness, and
+minimal valid fixture.
+See CHANGELOG entry under 2026-06-17 for the full summary.
 
 #### tst/conformance-valid-fixtures
 

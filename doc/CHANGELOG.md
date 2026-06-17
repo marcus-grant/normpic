@@ -2,6 +2,25 @@
 
 ## 2026-06-17
 
+### tst/conformance-harness
+
+Conformance fixture directory structure, schema-layer harness, and
+first valid fixture.
+
+- Created test/fixture/conformance/{valid,invalid,consumer-lenient}/
+  subdirectories.
+- Added valid/minimal.json: required fields only, empty pic array,
+  collection_root "." (always-emit contract rule).
+- Added test/helpers/conformance.py: load_schema, load_fixture,
+  schema_validate using Draft202012Validator.
+  Extension points for impl_validate and consumer_normalize noted for
+  later conformance PRs.
+- Added test/unit/test_conformance.py: parametrized
+  test_valid_fixture_passes_schema; one case passes (minimal.json).
+- Added doc/test/conformance.md: harness purpose, two-layer model,
+  fixture categories, API reference, how to add fixtures.
+- Updated doc/test/README.md with conformance.md entry.
+
 ### ref/field-name-reconciliation
 
 Pre-hiatus field names aligned to the v0.1 contract.
