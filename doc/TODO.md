@@ -200,7 +200,7 @@ The PRs in order:
 - tst/conformance-invalid-path-rules [complete]
 - tst/conformance-invalid-impl-layer [complete]
 - tst/conformance-consumer-lenient [complete]
-- tst/conformance-invalid-misc-rules
+- tst/conformance-invalid-misc-rules [complete]
 - ft/hash-blake2b-crockford
 - ref/pic-model-v01-contract
 - ref/manifest-model-v01-contract
@@ -239,39 +239,9 @@ See CHANGELOG entry under 2026-06-17 for the full summary.
 
 #### tst/conformance-invalid-misc-rules
 
-Add the seven invalid schema-layer fixtures covering hash,
-timestamp, range, and presence/type rule violations.
-Grouped by rule family so each commit covers one boundary.
-
-Files touched: `test/fixture/conformance/invalid/`,
-`test/unit/test_conformance.py`.
-
-Commits:
-
-- `Ft: conformance fixtures, invalid hash forms`.
-  Two fixtures asserting schema-layer rejection:
-  - `invalid/hash-bad-prefix.json` (non-`b2b120:` prefix)
-  - `invalid/hash-wrong-length.json` (wrong digest length after
-    prefix)
-- `Ft: conformance fixture, invalid timestamp offset form`.
-  One fixture asserting schema-layer rejection:
-  - `invalid/timestamp-offset-form.json` (`+00:00` instead of `Z`)
-- `Ft: conformance fixture, invalid GPS latitude range`.
-  One fixture asserting schema-layer rejection:
-  - `invalid/gps-lat-out-of-range.json` (latitude outside -90..90)
-- `Ft: conformance fixtures, invalid presence and string rules`.
-  Three fixtures asserting schema-layer rejection:
-  - `invalid/empty-required-string.json`
-  - `invalid/null-for-non-nullable-optional.json`
-  - `invalid/missing-required-field.json`
-- `Doc: PR close per discipline preamble`.
-
-Each fixture's accompanying test asserts schema rejection with the
-error path pointing at the violated field.
-
-Verification at PR close: `uv run pytest test/` green; harness
-test reports all seven invalid-misc fixtures rejected by the
-schema layer.
+Status: complete (2026-06-18).
+Seven schema-layer invalid fixtures completing the invalid category.
+See CHANGELOG entry under 2026-06-18 for the full summary.
 
 #### tst/conformance-invalid-impl-layer
 
