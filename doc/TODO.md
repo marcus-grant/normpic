@@ -197,7 +197,7 @@ The PRs in order:
 - ref/field-name-reconciliation [complete]
 - tst/conformance-harness [complete]
 - tst/conformance-valid-fixtures [complete]
-- tst/conformance-invalid-path-rules
+- tst/conformance-invalid-path-rules [complete]
 - tst/conformance-invalid-misc-rules
 - tst/conformance-invalid-impl-layer
 - tst/conformance-consumer-lenient
@@ -233,39 +233,9 @@ tst/conformance-harness plus the five added here).
 
 #### tst/conformance-invalid-path-rules
 
-Add the seven invalid schema-layer fixtures covering path-rule
-violations.
-Grouped by field so each commit validates one rule family
-end-to-end.
-
-Files touched: `test/fixture/conformance/invalid/`,
-`test/unit/test_conformance.py`.
-
-Commits:
-
-- `Ft: conformance fixtures, invalid relative_path forms`.
-  Four fixtures asserting schema-layer rejection:
-  - `invalid/relative-path-absolute.json` (leading `/`)
-  - `invalid/relative-path-dot-segment.json`
-  - `invalid/relative-path-dotdot-segment.json`
-  - `invalid/relative-path-backslash.json`
-- `Ft: conformance fixtures, invalid collection_root forms`.
-  Two fixtures asserting schema-layer rejection:
-  - `invalid/collection-root-leading-dotslash.json`
-  - `invalid/collection-root-uri-scheme.json`
-- `Ft: conformance fixture, invalid original_filename with path
-  separator`.
-  One fixture asserting schema-layer rejection:
-  - `invalid/original-filename-path-separator.json`
-- `Doc: PR close per discipline preamble`.
-
-Each fixture's accompanying test asserts the schema rejects the
-fixture and the rejection's error path points at the violated
-field.
-
-Verification at PR close: `uv run pytest test/` green; harness
-test reports all seven invalid fixtures rejected by the schema
-layer.
+Status: complete (2026-06-17).
+Seven schema-layer invalid fixtures covering path-rule violations.
+See CHANGELOG entry under 2026-06-17 for the full summary.
 
 #### tst/conformance-invalid-misc-rules
 
