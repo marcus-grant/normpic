@@ -199,7 +199,7 @@ The PRs in order:
 - tst/conformance-valid-fixtures [complete]
 - tst/conformance-invalid-path-rules [complete]
 - tst/conformance-invalid-misc-rules
-- tst/conformance-invalid-impl-layer
+- tst/conformance-invalid-impl-layer [complete]
 - tst/conformance-consumer-lenient
 - ft/hash-blake2b-crockford
 - ref/pic-model-v01-contract
@@ -275,52 +275,10 @@ schema layer.
 
 #### tst/conformance-invalid-impl-layer
 
-Add the two invalid implementation-layer fixtures.
-Each fixture passes schema validation but is rejected by the
-implementation layer.
-These fixtures drive the first implementation-layer validator code
+Status: complete (2026-06-17).
+Two impl-layer fixtures driving normpic/util/manifest_validate.py
 into existence.
-
-The harness from tst/conformance-harness extends here: alongside
-the existing schema-validate function, add an
-implementation-validate function that runs after schema validation
-and applies layer-2 checks.
-
-Files touched: `test/fixture/conformance/invalid/`,
-`test/unit/test_conformance.py`, harness module from
-tst/conformance-harness, and a new implementation-layer validator
-module (surface its location during the cycle, likely
-`normpic/util/manifest_validate.py` or under `normpic/model/`).
-
-Commits:
-
-- `Ft: conformance fixture, invalid collection_root with non-leading
-  ..`.
-  One TDD cycle.
-  Test asserts schema accepts the fixture but implementation
-  rejects it with an error identifying the non-leading `..`.
-  Implementation adds a `collection_root` validator that checks
-  `..` appears only in the leading run.
-  Fixture: `invalid/collection-root-nonleading-dotdot.json`.
-- `Ft: conformance fixture, invalid timestamp with bad calendar
-  value`.
-  One TDD cycle.
-  Test asserts schema accepts the fixture but implementation
-  rejects it via Python's datetime parser failing on an impossible
-  calendar value (e.g. month 13).
-  Implementation ensures the timestamp parser is invoked at
-  validate time and surfaces a clear error.
-  Fixture: `invalid/timestamp-bad-calendar.json` (well-formed
-  pattern, invalid value).
-- `Doc: PR close per discipline preamble`.
-
-The implementation-layer validator module emerging from this PR is
-the seam through which later PRs may add further rules that the
-schema cannot express.
-
-Verification at PR close: `uv run pytest test/` green; harness
-test reports both fixtures schema-accepted and
-implementation-rejected.
+See CHANGELOG entry under 2026-06-17 for the full summary.
 
 #### tst/conformance-consumer-lenient
 

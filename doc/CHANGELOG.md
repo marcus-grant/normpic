@@ -2,6 +2,28 @@
 
 ## 2026-06-17
 
+### tst/conformance-invalid-impl-layer
+
+Two impl-layer invalid fixtures and the validator module they drive.
+Test count rises to 15 (6 valid + 7 schema-invalid + 2 impl-invalid).
+
+- Adds normpic/util/manifest_validate.py with impl_validate().
+- impl_validate checks collection_root: .. segment after the leading
+  run is a violation; returns a descriptive error string.
+- impl_validate checks timestamps: generated_at, pic.mtime, and
+  pic.timestamp are parsed via datetime.fromisoformat; ValueError
+  surfaces as an error string (catches impossible calendar values).
+- Re-exports impl_validate from test/helpers/conformance.py.
+- Adds test_impl_layer_fixture_rejected_by_impl to test_conformance.py;
+  globs invalid/impl/*.json; asserts schema-accept and impl-reject.
+- Adds invalid/impl/collection-root-nonleading-dotdot.json:
+  collection_root "photos/../more" passes schema, fails impl check.
+- Adds invalid/impl/timestamp-bad-calendar.json:
+  timestamp "2025-13-01T00:00:00Z" passes schema regex, fails
+  datetime parse (month 13).
+- Fixtures placed in invalid/impl/ subdirectory to keep the
+  schema-only test glob (invalid/*.json) unchanged.
+
 ### tst/conformance-invalid-path-rules
 
 Seven schema-layer invalid fixtures covering path-canonical-form
