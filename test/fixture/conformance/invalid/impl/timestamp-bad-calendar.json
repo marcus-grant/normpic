@@ -1,0 +1,15 @@
+{
+  "version": "0.1.0",
+  "collection_name": "Invalid: timestamp bad calendar value",
+  "generated_at": "2025-01-01T00:00:00Z",
+  "collection_root": ".",
+  "pic": [
+    {
+      "hash": "b2b120:PZDRE6BC90T0BS0FGG0ZM7Y9",
+      "relative_path": "photos/IMG_001.jpg",
+      "size_bytes": 1024,
+      "mtime": "2025-01-01T00:00:00Z",
+      "timestamp": "2025-13-01T00:00:00Z"
+    }
+  ]
+}

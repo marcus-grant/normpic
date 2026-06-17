@@ -79,13 +79,21 @@ Filenames carry a hint about which layer catches the violation:
 | `relative-path-backslash.json`                  | JSON Schema    |
 | `collection-root-leading-dotslash.json`         | JSON Schema    |
 | `collection-root-uri-scheme.json`               | JSON Schema    |
-| `collection-root-dotdot-after-leading.json`     | Implementation |
 | `timestamp-offset-form.json`                    | JSON Schema    |
 | `gps-lat-out-of-range.json`                     | JSON Schema    |
 | `empty-required-string.json`                    | JSON Schema    |
 | `null-for-non-nullable-optional.json`           | JSON Schema    |
 | `missing-required-field.json`                   | JSON Schema    |
 | `original-filename-path-separator.json`         | JSON Schema    |
+
+Implementation-layer fixtures live in `invalid/impl/`.
+They pass JSON Schema validation and are caught by
+`normpic.util.manifest_validate.impl_validate`:
+
+| Fixture (in `invalid/impl/`)                    | Caught by      |
+|-------------------------------------------------|----------------|
+| `collection-root-nonleading-dotdot.json`        | Implementation |
+| `timestamp-bad-calendar.json`                   | Implementation |
 
 A conformant implementation rejects all of these regardless of which
 layer detects the violation.
