@@ -73,11 +73,18 @@ Filenames carry a hint about which layer catches the violation:
 |-------------------------------------------------|----------------|
 | `collection-root-leading-dotslash.json`         | JSON Schema    |
 | `collection-root-uri-scheme.json`               | JSON Schema    |
+| `empty-required-string.json`                    | JSON Schema    |
+| `gps-lat-out-of-range.json`                     | JSON Schema    |
+| `hash-bad-prefix.json`                          | JSON Schema    |
+| `hash-wrong-length.json`                        | JSON Schema    |
+| `missing-required-field.json`                   | JSON Schema    |
+| `null-for-non-nullable-optional.json`           | JSON Schema    |
 | `original-filename-path-separator.json`         | JSON Schema    |
 | `relative-path-absolute.json`                   | JSON Schema    |
 | `relative-path-backslash.json`                  | JSON Schema    |
 | `relative-path-dot-segment.json`                | JSON Schema    |
 | `relative-path-dotdot-segment.json`             | JSON Schema    |
+| `timestamp-offset-form.json`                    | JSON Schema    |
 
 Implementation-layer fixtures live in `invalid/impl/`.
 They pass JSON Schema validation and are caught by
@@ -93,8 +100,7 @@ layer detects the violation.
 The split exists so a dev debugging a failing fixture knows where to
 look.
 
-The required invalid-case inventory (which lists cases not yet
-implemented here) lives in
+The required invalid-case inventory lives in
 [doc/architecture/conformance.md](../../../doc/architecture/conformance.md).
 
 ### Consumer-Lenient

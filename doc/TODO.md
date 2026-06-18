@@ -189,23 +189,45 @@ picking this up knows what to do and when.
 
 Triggered by Phase A planning artifacts merged.
 
-Phase B is sequenced as 13 PRs.
+Phase B is sequenced as 14 PRs.
 Each PR follows the Working Discipline preamble above.
 The PRs in order:
 
-- fix/contract-schema-reconciliation [complete]
-- ref/field-name-reconciliation [complete]
-- tst/conformance-harness [complete]
-- tst/conformance-valid-fixtures [complete]
-- tst/conformance-invalid-path-rules [complete]
-- tst/conformance-invalid-impl-layer [complete]
-- tst/conformance-consumer-lenient [complete]
-- tst/conformance-invalid-misc-rules
+- fix/contract-schema-reconciliation **complete**
+- ref/field-name-reconciliation **complete**
+- tst/conformance-harness **complete**
+- tst/conformance-valid-fixtures **complete**
+- tst/conformance-invalid-path-rules **complete**
+- tst/conformance-invalid-impl-layer **complete**
+- tst/conformance-consumer-lenient **complete**
+- tst/conformance-invalid-misc-rules **complete**
+- fix/schema-not-pattern-typeguard
 - ft/hash-blake2b-crockford
 - ref/pic-model-v01-contract
 - ref/manifest-model-v01-contract
 - ref/serializer-v01-contract
 - ref/manifest-manager-v01-contract
+
+#### Schema source of truth (decided 2026-06-18)
+
+The canonical schema/v0.1.0.json is the single source of truth for
+manifest validity.
+The producer loads and validates against it directly, on both emit
+and read.
+The hand-maintained dicts in normpic/model/schema_v0.py
+(MANIFEST_SCHEMA, PIC_SCHEMA, ERROR_SCHEMA) are deleted.
+This closes the prior dual-schema split, where the producer
+self-validated against a code dict that could drift from the
+contract.
+Nothing downstream consumes normpic yet, so this is a clean cutover
+with nothing to preserve.
+Each PR lands green.
+The model PRs keep schema_v0.py in lockstep as their bodies
+specify, so the producer stays valid throughout.
+ref/serializer-v01-contract performs the cutover: once pic.py and
+manifest.py are contract-shaped, it switches validation to
+schema/v0.1.0.json and deletes schema_v0.py, and the
+producer-conformance test is added and lands green there.
 
 #### fix/contract-schema-reconciliation
 
@@ -239,39 +261,9 @@ See CHANGELOG entry under 2026-06-17 for the full summary.
 
 #### tst/conformance-invalid-misc-rules
 
-Add the seven invalid schema-layer fixtures covering hash,
-timestamp, range, and presence/type rule violations.
-Grouped by rule family so each commit covers one boundary.
-
-Files touched: `test/fixture/conformance/invalid/`,
-`test/unit/test_conformance.py`.
-
-Commits:
-
-- `Ft: conformance fixtures, invalid hash forms`.
-  Two fixtures asserting schema-layer rejection:
-  - `invalid/hash-bad-prefix.json` (non-`b2b120:` prefix)
-  - `invalid/hash-wrong-length.json` (wrong digest length after
-    prefix)
-- `Ft: conformance fixture, invalid timestamp offset form`.
-  One fixture asserting schema-layer rejection:
-  - `invalid/timestamp-offset-form.json` (`+00:00` instead of `Z`)
-- `Ft: conformance fixture, invalid GPS latitude range`.
-  One fixture asserting schema-layer rejection:
-  - `invalid/gps-lat-out-of-range.json` (latitude outside -90..90)
-- `Ft: conformance fixtures, invalid presence and string rules`.
-  Three fixtures asserting schema-layer rejection:
-  - `invalid/empty-required-string.json`
-  - `invalid/null-for-non-nullable-optional.json`
-  - `invalid/missing-required-field.json`
-- `Doc: PR close per discipline preamble`.
-
-Each fixture's accompanying test asserts schema rejection with the
-error path pointing at the violated field.
-
-Verification at PR close: `uv run pytest test/` green; harness
-test reports all seven invalid-misc fixtures rejected by the
-schema layer.
+Status: complete (2026-06-18).
+Seven schema-layer invalid fixtures completing the invalid category.
+See CHANGELOG entry under 2026-06-18 for the full summary.
 
 #### tst/conformance-invalid-impl-layer
 
@@ -285,6 +277,40 @@ See CHANGELOG entry under 2026-06-17 for the full summary.
 Status: complete (2026-06-17).
 Consumer-lenient fixture and consumer_normalize harness function.
 See CHANGELOG entry under 2026-06-17 for the full summary.
+
+#### fix/schema-not-pattern-typeguard
+
+Fix the vacuous not-pattern construction in schema/v0.1.0.json.
+The not:{pattern} clauses on relative_path, collection_root, and
+original_filename fire vacuously on non-string values, because
+pattern is string-only, so not of a vacuously-true pattern is
+false.
+A null is therefore rejected with misattributed path-separator
+errors instead of a clean type error, and the idiom would silently
+reject null if reused on a nullable field.
+
+Canonical schema only; no production code, since the producer does
+not yet validate against this file (see Schema source of truth).
+
+Commits:
+
+- Fix: type-guard string-content constraints in v0.1.0 schema.
+  One TDD cycle.
+  Rewrite the three defs so string-content rules apply only to
+  strings: a positive pattern where simple (original_filename), an
+  if:{type:string} guard around the existing not-pattern set where
+  complex (relative_path, collection_root).
+  RED: null-for-non-nullable-optional.json yields three errors
+  including path-separator misattribution.
+  GREEN: one error attributed to type.
+  Full suite stays green; no accept/reject verdict changes.
+- Doc: PR close per discipline preamble.
+  Note in manifest-contract.md that string-content constraints
+  must be type-guarded so they never vacuously reject non-strings,
+  so the model refactors do not reintroduce a bare not:{pattern}.
+
+Verification: uv run pytest test/ green; the null fixture rejects
+with a single type-attributed error.
 
 #### ft/hash-blake2b-crockford
 
@@ -591,6 +617,16 @@ Commits:
   no trailing whitespace differences across runs.
   A determinism test that serializes the same model twice and
   asserts byte-identical output anchors the cycle.
+- Ref: cut serializer validation over to the canonical schema.
+  Load schema/v0.1.0.json and validate against it on both
+  serialize and deserialize; remove the schema_v0.MANIFEST_SCHEMA
+  import and use; delete the schema_v0.py dicts (whole module if
+  nothing else imports it).
+  Add a producer-conformance test: build a contract-shaped
+  Manifest, serialize, and assert the output validates against
+  schema/v0.1.0.json.
+  Depends on ref/pic-model and ref/manifest-model landing first so
+  the emitted manifest validates clean.
 - `Doc: PR close per discipline preamble`.
 
 Verification at PR close: `uv run pytest
@@ -660,10 +696,17 @@ Triggered by Phase A merged; parallelizable with Phase B.
 - [ ] Update `modules/manifest.md` examples to the new contract.
 - [ ] Update `guides/manifest-integration.md`.
 - [ ] Update `guides/gallery-builder-integration.md`.
-- [ ] Update `modules/schema.md`.
+- [ ] Update `modules/schema.md` to document `schema/v0.1.0.json`
+      as the single schema artifact the producer loads and
+      validates against; remove any reference to the deleted
+      `schema_v0.py` code module.
 - [ ] Update `architecture/data-models.md` to point at
-      `manifest-contract.md` as the source of truth and retain its
-      role as the Python-implementation companion.
+      `manifest-contract.md` as the source of truth, dropping the
+      parallel code-schema framing; the canonical
+      `schema/v0.1.0.json` is the only schema.
+- [ ] Flip `architecture/schema-versioning.md` to "load
+      `schema/v{version}.json`" instead of the
+      code-dict-per-version approach; `schema_v0.py` is deleted.
 
 ### Phase D: Verification
 
@@ -677,6 +720,9 @@ Triggered by Phase B and Phase C merged.
 - [ ] Conformance fixtures pass against the Python implementation,
       with the layer (schema or implementation) catching each
       invalid case matching `architecture/conformance.md`.
+- [ ] Producer-conformance: every emitted manifest validates
+      against `schema/v0.1.0.json`, with no separate code schema in
+      the validation path.
 - [ ] Wedding archive processes successfully end-to-end.
 - [ ] Galleria consumes a v0.1.0 manifest and produces a working
       gallery.

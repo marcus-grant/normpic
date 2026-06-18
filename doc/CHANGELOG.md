@@ -1,5 +1,32 @@
 # NormPic Development Changelog
 
+## 2026-06-18
+
+### tst/conformance-invalid-misc-rules
+
+Seven schema-layer invalid fixtures completing the invalid category.
+With the consumer-lenient fixture already landed, the full conformance
+fixture inventory is now complete: 6 valid, 14 schema-invalid, 2
+impl-invalid, 1 consumer-lenient. Test count rises to 225.
+
+- Adds invalid/hash-bad-prefix.json: hash with b2b256: prefix instead
+  of b2b120:; schema rejects at $.pic[0].hash (1 error).
+- Adds invalid/hash-wrong-length.json: b2b120: prefix with 23-char
+  payload; schema rejects at $.pic[0].hash (1 error).
+- Adds invalid/timestamp-offset-form.json: generated_at uses +00:00
+  instead of Z; schema rejects at $.generated_at (1 error).
+- Adds invalid/gps-lat-out-of-range.json: gps.lat 91.0, lon valid;
+  schema rejects at $.pic[0].gps (1 error).
+- Adds invalid/empty-required-string.json: collection_name set to "";
+  schema rejects at $.collection_name (1 error).
+- Adds invalid/null-for-non-nullable-optional.json: original_filename
+  null; schema rejects at $.pic[0].original_filename (3 errors, all
+  same field and root cause: type + vacuous-truth not-pattern).
+- Adds invalid/missing-required-field.json: pic.mtime omitted; schema
+  rejects at $.pic[0] (1 error).
+- Updates test/fixture/conformance/README.md: 7 rows added to invalid
+  table; stale "not yet implemented" caveat removed.
+
 ## 2026-06-17
 
 ### tst/conformance-consumer-lenient
