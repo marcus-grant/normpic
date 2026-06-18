@@ -69,38 +69,41 @@
     "relative_path": {
       "type": "string",
       "minLength": 1,
-      "allOf": [
-        {
-          "not": {
-            "pattern": "^/"
+      "if": { "type": "string" },
+      "then": {
+        "allOf": [
+          {
+            "not": {
+              "pattern": "^/"
+            }
+          },
+          {
+            "not": {
+              "pattern": "^[A-Za-z]:"
+            }
+          },
+          {
+            "not": {
+              "pattern": "/$"
+            }
+          },
+          {
+            "not": {
+              "pattern": "//"
+            }
+          },
+          {
+            "not": {
+              "pattern": "(?:^|/)\\.{1,2}(?:/|$)"
+            }
+          },
+          {
+            "not": {
+              "pattern": "\\\\"
+            }
           }
-        },
-        {
-          "not": {
-            "pattern": "^[A-Za-z]:"
-          }
-        },
-        {
-          "not": {
-            "pattern": "/$"
-          }
-        },
-        {
-          "not": {
-            "pattern": "//"
-          }
-        },
-        {
-          "not": {
-            "pattern": "(?:^|/)\\.{1,2}(?:/|$)"
-          }
-        },
-        {
-          "not": {
-            "pattern": "\\\\"
-          }
-        }
-      ],
+        ]
+      },
       "description": "Path relative to the collection root. No leading slash or Windows drive (no absolute paths). No trailing slash. No empty segments. No '.' or '..' segments anywhere. No backslashes. UTF-8, NFC normalized (NFC enforced by implementations, not the schema)."
     },
     "collection_root": {
@@ -112,38 +115,41 @@
           "const": "."
         },
         {
-          "allOf": [
-            {
-              "not": {
-                "pattern": "^/"
+          "if": { "type": "string" },
+          "then": {
+            "allOf": [
+              {
+                "not": {
+                  "pattern": "^/"
+                }
+              },
+              {
+                "not": {
+                  "pattern": "^[A-Za-z]:"
+                }
+              },
+              {
+                "not": {
+                  "pattern": "/$"
+                }
+              },
+              {
+                "not": {
+                  "pattern": "//"
+                }
+              },
+              {
+                "not": {
+                  "pattern": "(?:^|/)\\.(?:/|$)"
+                }
+              },
+              {
+                "not": {
+                  "pattern": "^[a-zA-Z][a-zA-Z0-9+\\-.]*:"
+                }
               }
-            },
-            {
-              "not": {
-                "pattern": "^[A-Za-z]:"
-              }
-            },
-            {
-              "not": {
-                "pattern": "/$"
-              }
-            },
-            {
-              "not": {
-                "pattern": "//"
-              }
-            },
-            {
-              "not": {
-                "pattern": "(?:^|/)\\.(?:/|$)"
-              }
-            },
-            {
-              "not": {
-                "pattern": "^[a-zA-Z][a-zA-Z0-9+\\-.]*:"
-              }
-            }
-          ]
+            ]
+          }
         }
       ],
       "description": "Location of the collection root relative to the manifest file's directory. Default value '.' is emitted explicitly. Allows '..' segments at the start (zero or more), followed by zero or more non-special segments. The schema enforces no '.' segments, no aliasing constructs, and no leading URI schemes (e.g. 's3://', 'https://'). The additional restriction that '..' may not appear after the leading run is enforced by implementations. URI schemes are reserved for future versions."
@@ -201,18 +207,7 @@
         "original_filename": {
           "type": "string",
           "minLength": 1,
-          "allOf": [
-            {
-              "not": {
-                "pattern": "/"
-              }
-            },
-            {
-              "not": {
-                "pattern": "\\\\"
-              }
-            }
-          ],
+          "pattern": "^[^/\\\\]*$",
           "description": "Filename as found in source, with no path component. Optional, non-nullable: if present must be a non-empty string with no path separators (no '/' or '\\')."
         },
         "size_bytes": {

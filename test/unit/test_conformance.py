@@ -63,6 +63,17 @@ def test_consumer_lenient_fixture_accepted_after_normalize(path):
     assert not errors, f"{path.name}: expected valid after normalize, got {errors}"
 
 
+def test_null_for_non_nullable_optional_single_type_error():
+    path = CONFORMANCE_DIR / "invalid" / "null-for-non-nullable-optional.json"
+    manifest = load_fixture(path)
+    errors = schema_validate(manifest)
+    type_errors = [e for e in errors if "is not of type" in e.message]
+    assert len(errors) == 1, (
+        f"expected exactly 1 error, got {len(errors)}: {[e.message for e in errors]}"
+    )
+    assert type_errors, f"expected a type error, got: {[e.message for e in errors]}"
+
+
 def test_consumer_normalize_crockford_alias_fold():
     manifest = {
         "version": "0.1.0",
