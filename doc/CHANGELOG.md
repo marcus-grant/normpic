@@ -2,6 +2,27 @@
 
 ## 2026-06-18
 
+### fix/schema-not-pattern-typeguard
+
+Type-guard the string-content constraints in schema/v0.1.0.json so
+non-string values (null, integer) are rejected with a clean type error
+instead of spurious path-separator misattributions. Test count 225 → 226.
+
+- original_filename: replace two not:{pattern} entries with a single
+  positive pattern ^[^/\\]*$ — positive patterns are absent (not
+  vacuously false) for non-strings; star not plus so minLength owns
+  emptiness and pattern owns separators.
+- relative_path: wrap existing allOf in if:{type:string}/then guard;
+  regexes unchanged.
+- collection_root: same guard on inner allOf inside anyOf; regexes
+  unchanged.
+- Add test_null_for_non_nullable_optional_single_type_error: null
+  fixture must yield exactly 1 error whose message contains
+  "is not of type"; RED before schema change, GREEN after.
+- Append schema authoring note to manifest-contract.md §Format rules:
+  string-content constraints must be type-guarded; canonical forms are
+  positive pattern (simple) or if/then wrapper (multi-constraint).
+
 ### tst/conformance-invalid-misc-rules
 
 Seven schema-layer invalid fixtures completing the invalid category.

@@ -201,7 +201,7 @@ The PRs in order:
 - tst/conformance-invalid-impl-layer **complete**
 - tst/conformance-consumer-lenient **complete**
 - tst/conformance-invalid-misc-rules **complete**
-- fix/schema-not-pattern-typeguard
+- fix/schema-not-pattern-typeguard **complete**
 - ft/hash-blake2b-crockford
 - ref/pic-model-v01-contract
 - ref/manifest-model-v01-contract

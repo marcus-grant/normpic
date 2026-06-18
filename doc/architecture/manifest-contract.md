@@ -272,6 +272,16 @@ Where:
   Schema, not incidentally by any other constraint.
   URI schemes are reserved for future versions.
 
+**Schema authoring note:** String-content constraints (`pattern`,
+`not: {pattern}`, `minLength`) must always be type-guarded so they
+do not evaluate against non-string values. A bare `not: {pattern}`
+is vacuously false for null/integer/etc., producing spurious
+path-separator errors instead of a clean type error. Use either a
+positive `pattern` (for simple single-field cases like
+`original_filename`) or an `if: {type: string} / then: {allOf: [...]}`
+wrapper (for multi-constraint sets like `relative_path` and
+`collection_root`) — both forms are in `schema/v0.1.0.json`.
+
 Valid examples: `.`, `..`, `../..`, `../photos`,
 `../../shared/wedding`, `subdir`, `subdir/more`.
 
