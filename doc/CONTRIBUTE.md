@@ -1,189 +1,321 @@
-# Development Guidelines
+# Contributing to NormPic
 
-## Important Donts
+This document is the canonical statement of how work is done in this
+repository: how changes are planned, tested, committed, reviewed, and
+documented.
+It is the source of truth for these conventions.
+Other documents (including doc/TODO.md) point here rather than
+restating them, so the rules live in one place and do not drift.
 
-* NEVER EVER READ SHELL ENV VARIABLES
-* Don't commit code without ruff linting checks
-* Never implement without associated test
-* Delete parts of `deleteme-normpic-modules/` as they become obsolete
-* Consider `deleteme-normpic-modules/` when specs arise around ordering or timestamp precedence
+## Security
 
-## Testing Requirements
+This repository handles credentials for production infrastructure.
+Never read shell environment variables.
+Reading them risks leaking secrets into logs, command output, commits,
+or generated files, and recovering from a leak means rotating live
+credentials.
+There is no contribution that requires reading the environment.
 
-* This is a `**uv**`` managed project
-  * **Test Command**: Use `uv run pytest` to run tests
-    * **NOT**: `python -m pytest`
-* **Specific Test Files**:
-  * Use `uv run pytest test/test_filename.py -v` for focused testing
-  * **ALWAYS** run full suites before every commit
-* Follow E2E + TDD approach:
-  * E2E/Integration tests to surface larger missing or broken pieces
-    * Therefore they should be prioritized first
-    * Nest into Unit tests when missing or broken piece discovered
-      * Should try and find existing tests needing modification first.
-      * If no test exists for that spec, make a new one
-  * TDD fills or fixes those pieces incrementally
-  * Build tests singularly first
-  * Ensure test fails as expected (red)
-  * Implement change to make test pass (green)
-  * Consider refactors for better solution (refactor)
-  * Move to next test when complete or to parent integration/E2E test
-* Task management:
-  * Each test typically corresponds to a TODO task
-  * Some tasks require multiple tests
-  * After test(s) pass and refactors complete: update TODO.md, update documentation, git commit
-* Pre-commit documentation process:
-  * Mark completed TODO items as done
-  * Add entry to doc/CHANGELOG.md with H2 date header and bullet points
-  * Document architectural decisions in doc/architecture/ or doc/modules/
-  * Delete completed TODO entries to prevent size explosion
-  * TODO should shrink overall as MVP approaches completion
-* Documentation updates (Green phase):
-  * When tests pass, update relevant documentation in `doc/`
-  * Each subdirectory in `doc/` represents a topic
-  * Follow documentation hierarchy: documents link to same-level README → subdirectory README → parent README
-  * Only top-level README provides high-level overviews and links to directory-level or subdirectory READMEs
-  * **CRITICAL**: Every document must be linked in the documentation hierarchy starting from doc/README.md
-  * No document should be a link orphan - all must be discoverable through the hierarchy
-* Implement in small steps with clear logical breaks:
-  * Add one test case or feature at a time
-  * Test immediately after each testable addition
-  * Never write massive amounts of code without testing
+## Ways of working
 
-## Commit Message Format
+Every change moves through the same path: plan, review, implement,
+verify, submit.
+Three roles participate, whoever fills them:
 
-* Title: Maximum 50 characters including prefix
-* Body: Maximum 72 characters per line
-* Body text should use '-' bullets with proper nesting
-* Use prefixes:
-  * `Tst:` for test-related changes
-  * `Fix:` for bug fixes
-  * `Ft:` for new features
-  * `Ref:` for refactoring
-  * `Doc:` for documentation
-  * `Pln:` for planning/TODO updates
-* No signature block - do not include emoji, links, or Co-Authored-By lines
+- Author: writes the plan, implements it, and reports a short summary
+  after each commit.
+- Reviewer: signs off the plan before any code is written, and runs
+  quality assurance before the change is submitted.
+- Maintainer: approves and performs the merge.
 
-## Code Style
+Plan-first is the rule.
+No implementation begins before the plan is reviewed and signed off.
+The plan is also the baseline that review grades against, so the
+effort spent making it precise is repaid at review time.
 
-* Follow existing patterns in the codebase
-* Check neighboring files for conventions
-* Never assume a library is available - verify in package.json/requirements
-* Functions should have a proper docstring
-* We type annotate our code and prefer dataclasses for basic data structures
-* Match indentation and formatting of existing code
-* Follow PEP 8, ruff and typical Python conventions:
-  * No trailing whitespace
-  * Blank line at end of file
-  * Two blank lines between top-level definitions
-  * One blank line between method definitions
-  * Spaces around operators and after commas
-  * No unnecessary blank lines within functions
-  * Maximum line length of 88 characters (Black/Ruff default)
-* **2-space indentation** throughout templates and JS
-  * **NOT** Python - Python uses 4 spaces
+## Planning
 
-## Key Implementation Details
+A change begins as a written plan: an ordered task list precise enough
+that following it top to bottom produces the change and satisfies the
+conventions in this document.
 
-* **Local-only MVP**:
-  * Rename files to proper time & photographer order & counter filenames
-  * Source of time truth occurs in this order:
-    * EXIF timestamp
-      * Subsecond if it has it
-        * otherwise from same src filenames with same/adjacent timestamps
-      * Any other ordering EXIF data
-    * Filename sequencing order
-    * FS timestamps
-  * Ordering conflicts
-    * Filename lexically orders to this order
-    * Timestamp goes first
-    * Need an ability to handle same/similar timestamps by different cameras
-    * Then choose a camera by EXIF make/model
-      * Bursts shouldn't be interrupted by another camera
-        * even if next timestamp+subsec by other camera suggests it's next
-    * Final filename:
-      * `collection_name`
-        * The name of the collection
-        * *i.e. wedding, graduation, Crete holiday, etc.*
-        * kebab case for everything
-        * Could be blank, in which case don't include following '-' hyphen
-      * `timestamp`
-        * Format: `YY-MM-DDTHHMMSS` in 24hr local time
-        * No `Z` or UTC offset characters like in the ISO standard
-        * Assumed local timezone unless timezone specified
-        * May implement Explicit UTC timezone offsets in future
-      * `camera`
-        * EXIF extracted camera make/model
-        * Usually a string
-        * I know for a fact the real world first collection this will use...
-          * ...has a string `r5a` for its cameras (more than one of them)
-        * Could be missing
-          * in which case don't include nor its following `-` separator
-      * `count`
-        * Counter to order bursts with
-        * Single Base32 (Hex) digit
-        * 32 is enough burst ordering for a single timestamp
-        * Very often, no need for a counter, so don't include it if not needed
-          * This includes the separator `-` before it
-      * Final filename format:
-        * `{collection_name-?}{timestamp}{-camera?}{-count?}.{extension}`
-  * Default is to simply symlink from source to destination for each pic
-    * Only case it's impossible if config specifies something overriding EXIF
-      * Not a case we will implement in MVP
-  * Follows config JSON
-  * Produces manifest.json in destination directory
-    * Uses schema validated JSON for interoperability by other programs
-    * Holds configs that produced it
-    * Holds timestamp for its modification time
-    * For each photo:
-      * Timestamp of best-effort guess from available metadata for pic creation
-        * The source of truth that gave the timestamp
-      * Hash of source photo & destination photo
-        * Image data shouldn't be modified
-          * but EXIF could be, causing a different destination hash
-      * Size of file
-      * Camera make/model (if available)
-      * GPS coords (if available)
-      * Timeszone/UTC offset (if available)
-  * In short:
-    * users should be able to scroll through and clearly see the order of events
-    * Only exception is bursts should be adjacent from same camera/photographer
-    * And it should be possible with lexical sorting of filename
+A well-formed plan has this shape:
 
-* **Post MVP (near term)**:
-  * Implement configurable for symlink vs copy
-  * S3-compatible is next adaptor/integration post-MVP
-  * Rich CLI styling
-    * Textual TUI (eventually)
-  * UTC offset, implied by EXIF or GPS or explicitly through config
-  * Timestamp systematic correction through config
-  * SSH/SFTP
-  * Proton Drive
+- The first task is branching.
+  `git checkout -b <prefix>/<slug>` from the current head, using one of
+  the branch prefixes below.
+- The body is a sequence of spec-then-test-then-implement cycles,
+  grouped by behavior rather than by category.
+  Each cycle names the spec it satisfies, the test that pins it, and
+  the implementation that makes the test pass.
+  Related cases for one rule stay in one cycle, because they verify a
+  single boundary and a reviewer should see them together.
+- Where a behavior has a known boundary or trap (an empty input, a
+  leading-zero value, a null where a string is expected), the plan
+  names the test that closes it.
+  This is required wherever such a boundary exists,
+  because a named boundary test is what allows to evaluate the plan &
+  what review verifies directly.
+- The plan cites the spec source each cycle satisfies
+  (doc/architecture/manifest-contract.md,
+  doc/architecture/conformance.md, schema/v0.1.0.json), so tests pin
+  the documented contract and not an interpretation of it.
+- The plan states scope concretely: which files change and roughly how
+  much.
+  A later diff that is disproportionate to this is a signal of drift.
+- The final task is the documentation-and-planning update commit,
+  described under Documentation discipline, leaving the change ready to
+  submit.
 
-## Project-Specific Instructions
+When a planned change is recorded in doc/TODO.md, it takes the same
+shape: a branch-named section, a short framing of the work, an ordered
+task list that opens with the branch task, runs the cycles through the
+middle, and closes with the documentation update.
+A reader should be able to execute the section without reconstructing
+the plan.
 
-* This is a photo collection management utility
-* Ensures a original copy exists while maintaining a more frequently used copy
-* Current focus areas are tracked in TODO.md
-* Keep TODO.md updated:
-  * Update "Current Tasks" section when starting/stopping work
-  * Mark completed items with [x]
-  * Add new tasks as they're discovered
-  * Document progress for easy resumption
-* Keep `./doc` updated
-  * `doc/README.md`
-    * The overview and index to other documentation documents
-  * The rest are named after key documentation topics
-  * If a new documentation topic is needed:
-    * Check if a pre-existing document just needs updating or adding to
-      * If not - check with topic directory it should be in
-        * If a new one is needed - create a new topic directory/subdir
-  * Ensure a chain of doc links leading from project root README to doc exists
-* The only document every contribution should need is the root README.md
-  * From there it should be clear what if any other documents need reading
+## Test-driven development
 
-## Important Reminders
+Test-driven development is the default discipline for any change that
+alters behavior.
 
-* Do what has been asked; nothing more, nothing less
-* NEVER create files unless they're absolutely necessary for achieving your goal
-* ALWAYS prefer editing an existing file to creating a new one
+At the keyboard the rhythm is red, green, refactor: write a failing
+test, make it pass, then improve the code with the test still green.
+This is a working rhythm, not a commit boundary.
+A single commit may contain several closely related cycles when they
+form one coherent piece of work.
+
+Build one behavior at a time, in small steps with clear logical breaks.
+Run the relevant tests immediately after each testable addition.
+Broken code is never committed: every commit leaves the suite green.
+
+The conformance fixtures under test/fixture/conformance/ are a
+language-agnostic artifact.
+They are exercised through the Python suite today, but they are meant
+to validate against schema/v0.1.0.json directly so that other
+implementations can run them.
+Do not bake Python-only assumptions into a fixture.
+
+## Commits and branches
+
+### The pre-commit quality gate
+
+Before every commit, all applicable checks must pass.
+For the Python code today, in this order:
+
+1. `uv run ruff check`
+2. `uv run pyright`
+3. `uv run pytest` (the full suite, not a single file)
+
+ruff and the full pytest suite are enforced now.
+pyright is part of the gate and becomes blocking once the tree is
+brought to green under it.
+When code in another language lands, that code's own checks join the
+gate and must also pass.
+
+Use `uv run`, not a bare interpreter.
+Run a focused file with `uv run pytest test/unit/test_name.py -v`
+during development, but always run the full suite before committing.
+
+### Commit sizing
+
+Group commits by logical coherence.
+A commit is a self-contained unit of related work that leaves the tree
+green.
+
+Sizes below are guidelines, not gates:
+
+- A code commit around 300 lines is a soft ceiling.
+  Going well past it usually means the work was divided badly, though
+  not always.
+  Staying under it is normal and is not a target to pad toward.
+- Roughly two to eight commits per change.
+  Added complexity can justify exceeding this.
+
+A coherent, slightly larger unit is better than fragmenting one
+behavior across many tiny commits or changes.
+
+### Commit message format
+
+- Title: at most 50 characters including the prefix.
+- Title starts with a capital letter or a digit after the prefix and
+  colon.
+- Body: lines at most 72 characters, using "-" bullets with nested
+  detail.
+- No signature block: no emoji, links, or co-authored-by lines.
+
+Commit prefixes:
+
+- `Pln:` planning and TODO updates
+- `Ft:` new feature or capability
+- `Fix:` bug fix
+- `Ref:` pure refactor, no new behavior
+- `Doc:` documentation
+- `Chr:` chore and maintenance
+- `Tst:` test-only changes
+
+### Branch names
+
+Branches use a lowercase prefix, a slash, and a kebab-case slug:
+`pln/`, `ft/`, `fix/`, `ref/`, `doc/`, `chr/`, `tst/`.
+Examples: `ft/hash-blake2b-crockford`, `tst/conformance-harness`.
+Refer to other work by branch name, never by an ordinal position,
+which loses meaning when the sequence shifts.
+
+## Quality assurance
+
+Quality assurance is a gated, progressive hunt run before a change is
+submitted.
+It is a shared standard: the reviewer performs it, and the author
+writes summaries and tests knowing how the work will be probed.
+
+Its premise is that the green suite already proves mechanical
+correctness, so review never re-derives that the code works.
+Review spends its effort only on what tests cannot catch: a misread
+spec, a missing but required thing, a false claim, and a latent trap.
+It grades commits against the approved plan, starting from the author's
+summary before reading the repository.
+
+### The author's summary
+
+After each commit the author reports: the subject, one sentence of what
+changed, pass or fail, and a `git diff --stat`.
+The stat is required, because scope drift is invisible in prose.
+A one-line change that touched four hundred lines shows up only as a
+number.
+
+### The ladder
+
+The checks run cheapest first.
+Each rung runs only when its failure is possible for this change, which
+is read for free from the plan and the summary.
+
+- Summary against plan: does it describe doing what was approved?
+  Watch for overclaims ("complete", "all", a specific count) and for
+  scope beyond the plan.
+- Scope, from the stat: only the expected files, and a size
+  proportionate to the plan?
+  A disproportionate diff is stopped and flagged before any content is
+  read.
+- Signatures, by targeted diff or grep rather than reading whole files:
+  is the substantive change the one that was specified?
+- Claims against ground truth, run only when the summary makes a
+  falsifiable claim such as a count or an "all" or a "complete":
+  verify it against the repository, not the prose.
+- Completeness, run only when the change contributes to a defined set
+  whose tests discover their members dynamically: a missing required
+  member raises no failure, so check the set against its inventory.
+- Trap reasoning, run only when the change touches correctness-bearing
+  logic: the failure classes a passing suite does not exercise, such as
+  vacuous conditions, boundary inputs, one defect producing many
+  errors, and misattributed errors.
+
+### The probe kit
+
+A few load-bearing reads, around fifteen lines total, confirm that
+tests assert what was intended.
+Derive the targets from the plan, which names the new symbol, the
+removed token, and the assertions it promised:
+
+- Grep `assert` in the changed test files to read the assertions
+  themselves, not just the test names.
+  This catches an assertion that a good name hides but that verifies
+  little.
+- Grep the source for the removed or old token to confirm the migration
+  is complete and any trap pattern is gone.
+  Empty output is the proof.
+- Grep test/ for the newly introduced symbol to confirm a test
+  exercises it, rather than it being defined and never called.
+
+Use `grep -I --include='*.py'` so compiled bytecode and other binaries
+do not muddy the results.
+
+These greps confirm the tests assert the right thing for the cases they
+name.
+Extending that confidence past the cases the author chose requires
+independent ground truth, such as vectors computed by a separate tool,
+not the implementation under test.
+
+### Deleting a rung
+
+The strongest check is one that no longer needs a reviewer.
+When a failure mode recurs, push it into a suite assertion so it goes
+red on its own instead of costing a review pass.
+For example, asserting that a fixture count equals its inventory count
+means a skipped member can never again pass silently.
+
+### Sign-off
+
+A change is signed off when its commits match the plan, its scope is
+contained, every claim checks against ground truth, and the applicable
+trap and completeness rungs found nothing.
+Open items go back as specific, surgical requests, not as a direction
+to start over.
+
+## Style and formatting
+
+These rules apply to all text in the repository: code, comments,
+docstrings, commit messages, and pull request descriptions.
+
+- ASCII only.
+  No em dashes, no emoji, no decorative Unicode.
+  A rare document may justify an exception, called out explicitly when
+  it arises.
+- Line length depends on context:
+  - Commit body lines at most 72 characters (enforced).
+  - Prose and documentation lines at most 80 characters.
+  - Python code lines at most 88 characters (ruff default).
+- In prose, sentence-ending punctuation is followed by a newline.
+  A sentence longer than the prose limit breaks at a natural point
+  before the limit.
+- Singular directory and field names by default: `doc/` not `docs/`,
+  `test/` not `tests/`, `asset/` not `assets/`.
+
+Code conventions:
+
+- Functions carry a docstring.
+- Code is type annotated; prefer dataclasses for basic data structures.
+- Match the patterns and formatting of neighboring files.
+- Verify a library is available before using it.
+- Follow PEP 8 and ruff: no trailing whitespace, a blank line at end of
+  file, two blank lines between top-level definitions, one between
+  methods, spaces around operators and after commas.
+
+## Documentation discipline
+
+### Single source of truth
+
+A fact lives in exactly one place.
+The manifest's fields, semantics, and canonical forms live in
+doc/architecture/manifest-contract.md.
+Conformance rules live in doc/architecture/conformance.md.
+The machine-readable schema is schema/v0.1.0.json.
+Do not restate these in other documents.
+Point to them, so they cannot drift out of agreement.
+
+### Documentation hierarchy
+
+Every document is reachable from the root README through a chain of
+links.
+The top-level README gives the overview and links into doc/README.md.
+Each directory has a README acting as its index.
+A document links to peers at its own level or to a subdirectory README
+one level down, never deeper.
+No document is an orphan.
+
+### Maintaining state during a change
+
+doc/TODO.md and doc/CHANGELOG.md are maintained throughout, treated as
+append-and-prune.
+Do not read either file end to end to make an edit.
+Find the section with `grep -n`, view a few lines around it, and edit
+surgically.
+
+After each commit, append one concise line to doc/CHANGELOG.md under
+today's date header, and mark the corresponding doc/TODO.md item done
+in place without deleting it yet.
+
+The final commit of a change consolidates the per-commit CHANGELOG
+lines under today's date into one summary block, deletes the granular
+lines, removes the now-complete task lines from doc/TODO.md, and updates
+any reference document the change affected.

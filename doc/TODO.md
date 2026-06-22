@@ -40,126 +40,22 @@ Full inventory coverage is required before Phase D verification.
 
 ## Working Discipline
 
-This preamble defines the workflow and document-maintenance rules
-that apply to every PR listed in Phase B below.
-It exists so individual PR descriptions can stay focused on the
-work and not repeat process rules.
+The workflow, planning, TDD, commit, QA, style, and
+document-maintenance rules for every PR below live in
+[doc/CONTRIBUTE.md](CONTRIBUTE.md).
+That document is the source of truth for how work is done here.
+This file does not restate those rules, so they cannot drift.
 
-### PR workflow
+Two points specific to this phase, not in CONTRIBUTE:
 
-Each PR follows the same shape:
-
-1. Branch from the current head.
-   Branch and PR names use a lowercase prefix, a slash, and a
-   kebab-case slug: `pln/`, `ft/`, `fix/`, `doc/`, `ref/`, `chr/`,
-   plus `tst/` for test-only PRs.
-   Examples: `tst/conformance-harness`,
-   `ref/manifest-manager-v01-contract`.
-2. Work in commits sized for review.
-   Group changes by single concern; do not pile unrelated work
-   into one commit.
-3. Commit titles use a different convention than branch names.
-   The enforced six prefixes only, with leading capital and a
-   colon: `Pln:`, `Ft:`, `Fix:`, `Doc:`, `Ref:`, `Chr:`.
-   The commit-msg hook will reject anything else.
-   Commit bodies use bullet points with nested detail.
-4. Reference other PRs by branch name, never by an ordinal like
-   "PR 4."
-   Ordinals are positional, lose meaning when the sequence shifts,
-   and force the reader to count.
-5. The final commit of every PR is the doc-update commit.
-   It updates doc/TODO.md, doc/CHANGELOG.md, and any other
-   documents affected by the PR's changes (module docs,
-   architecture docs, integration guides).
-6. Push and submit the PR for review.
-
-### TDD cycle and commits
-
-TDD is the default for any PR that produces behavior change.
-RED-GREEN-REFACTOR is the workflow you follow at the keyboard, not
-a sequence of commits.
-Each commit captures a completed cycle: one test added, the
-implementation that makes it pass, any refactor done in the same
-sitting.
-The RED moment is ephemeral; broken code is not committed.
-
-One commit, one cycle, one behavior.
-The commit prefix reflects what the commit ultimately delivers:
-`Ft:` for new capability, `Fix:` for a bug, `Ref:` only when the
-commit is pure refactor with no new test or behavior.
-
-Group cycles by acceptance unit, not by category.
-A rule's valid and invalid cases belong together because they test
-the same boundary.
-Splitting "all valid" from "all invalid" across two PRs forces a
-reviewer to hold two PRs in mind to verify one rule.
-
-One fixture per commit when building conformance fixtures, except
-when several variants exercise the same rule, in which case group
-by rule.
-No bulk generation.
-
-### Document maintenance during a PR
-
-Two documents need maintenance throughout: doc/TODO.md and
-doc/CHANGELOG.md.
-Both are already large and will grow.
-Treat them as append-and-prune.
-
-**Context warning.**
-Never `cat` either file in full to make an edit.
-Use targeted reads: `grep -n` to find the section, `sed -n A,Bp`
-to view a few lines around it, then surgical edits with
-`str_replace` or appending with `>>`.
-Reading these files end-to-end on every commit burns context for
-no benefit.
-
-**Per-commit hygiene.**
-After each commit, append one concise line to doc/CHANGELOG.md
-under today's date header (create today's header if it does not
-yet exist).
-Mark the corresponding doc/TODO.md checkbox done in-place, but
-do not delete the line yet.
-
-**PR-close consolidation.**
-The final doc-update commit of every PR rewrites the per-commit
-CHANGELOG one-liners under today's date as one concise
-PR-summary block, with the PR name as a sub-header.
-Delete the granular one-liners that were just consolidated.
-Then delete the now-complete task lines from doc/TODO.md so the
-TODO does not balloon.
-
-**Related-document updates.**
-If a PR changes anything referenced by a module doc, an
-architecture doc, or an integration guide, update those documents
-in the same final doc-update commit.
-Do not leave reference docs out of sync with the contract or the
-implementation.
-
-**CHANGELOG archival, pre-MVP.**
-Before MVP ships, the current doc/CHANGELOG.md will be archived
-(e.g. moved to doc/CHANGELOG-v0.1.md) and a fresh CHANGELOG.md
-started.
-Out of Phase B scope; flagged here so the discipline above is
-sustainable until that archival lands.
-
-### Style and format conventions
-
-These apply to all in-repo prose: markdown, code comments,
-docstrings, commit messages.
-
-- Lines under 80 characters.
-- ASCII only.
-  No em dashes; use sentence breaks with periods instead.
-- Sentence-ending punctuation (`.`, `!`, `?`) is always followed by
-  a newline.
-- Singular directory and field names by default: `doc/` not
-  `docs/`, `test/` not `tests/`, `asset/` not `assets/`.
-- Every new document gets a reference and one-line summary added
-  to its peer `README.md`.
-- README link convention: each directory level links only to peer
-  markdown files at the same level or one level down to a
-  subdirectory README, never deeper.
+- Group conformance fixtures by rule, not by field.
+  Several variants of one rule may share a commit; do not bulk
+  generate.
+- CHANGELOG archival, pre-MVP.
+  Before MVP ships, the current doc/CHANGELOG.md is archived (e.g.
+  doc/CHANGELOG-v0.1.md) and a fresh CHANGELOG.md started.
+  Flagged so the append-and-prune discipline stays sustainable until
+  that archival lands.
 
 ## Critical Technical Details
 
@@ -207,8 +103,29 @@ The PRs in order:
 - ref/manifest-model-v01-contract
 - ref/serializer-v01-contract
 - ref/manifest-manager-v01-contract
+- chr/pyright-clean (end of Phase B; see body below)
 
-#### Schema source of truth (decided 2026-06-18)
+#### chr/pyright-clean
+
+Bring the tree to green under `uv run pyright`, then wire pyright
+into the enforced quality gate (pyproject or task runner) so it is
+machine-checked, not convention-only.
+The tree currently reports 42 pyright errors.
+
+Plan must triage before implementing:
+
+- Real typing gaps in live code: fix with annotations only, no
+  change to implementation or test logic.
+- Errors originating in stale code (`deleteme-normpic-modules/` or
+  other dead artifacts): the fix is deletion, which is a scope and
+  behavior change, not a typing pass.
+  Escalate the triage outcome for approval before proceeding, since
+  it changes the nature of the PR.
+
+Deconflict any deletions here against the Phase E pre-extraction
+sweep so the two do not double-claim the same removals.
+
+#### Schema source of truth
 
 The canonical schema/v0.1.0.json is the single source of truth for
 manifest validity.
@@ -626,7 +543,13 @@ Triggered by Phase B and Phase C merged.
 
 Triggered by Phase D verified.
 
-- [ ] Remove `deleteme-normpic-modules/`.
+- [ ] Pre-extraction sweep, planned into its own PR with
+      verifications.
+      normpic is extracted to its own repository; confirm and remove
+      `deleteme-normpic-modules/` and any stale code or artifacts,
+      then run the full quality gate green.
+      Coordinate with chr/pyright-clean so stale-code deletions are
+      not claimed twice.
 - [ ] Final stale-content sweep across all docs.
 - [ ] v0.1.0 stable release tag and `CHANGELOG.md` entry.
 - [ ] Confirm "Decide before v0.1 ships" list is empty.
@@ -703,20 +626,11 @@ speculation.
 
 ## Development Rules
 
-1. TDD: Write integration test -> fail -> write unit tests ->
-   implement -> green -> refactor.
-2. No commits without passing tests (except checkpoint branches:
-   `Chk: [description]`).
-3. All code must pass ruff checks.
-4. Use mocked filesystem in tests.
-5. Lazy processing by default (skip unchanged pics).
-6. Warnings continue, errors stop.
-7. JSON Schema validation for all manifest operations.
-8. Update documentation with every commit.
-9. Log changes in `CHANGELOG.md` daily.
-10. Documentation discipline: any new doc gets a reference and
-    summary added to its peer `README.md`.
-    Keep `manifest-contract.md` and its peer-README index in sync.
-11. Reference and adapt useful specs from
-    `deleteme-normpic-modules/`; delete obsolete content there as it
-    is replaced (full directory removal in Phase E).
+Superseded by [doc/CONTRIBUTE.md](CONTRIBUTE.md), which is the source
+of truth for TDD, the quality gate, commits, QA, and documentation
+discipline.
+
+Domain rules specific to normpic's behavior, not covered there:
+
+- Lazy processing by default: skip unchanged pics.
+- Warnings continue; errors stop.
