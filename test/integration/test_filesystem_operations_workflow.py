@@ -57,7 +57,7 @@ def test_symlink_creation_complete_workflow():
         hash1 = compute_file_hash(photo1)
         hash2 = compute_file_hash(photo2)
         assert hash1 != hash2  # Different files should have different hashes
-        assert len(hash1) == 64  # SHA-256 produces 64 char hex string
+        assert len(hash1) == 31
         
         # Phase 4: Test broken symlink detection
         broken_links = detect_broken_symlinks(dest_dir)

@@ -1,5 +1,22 @@
 # NormPic Development Changelog
 
+## 2026-06-22
+
+### ft/hash-blake2b-crockford
+
+Replace SHA-256 with BLAKE2b-120 + Crockford Base32 as the canonical
+producer-side hash format. Test count 226 -> 239 (13 new). All call
+sites updated in lockstep.
+
+- normpic/util/hash.py: b2b120_hash and b2b120_encode_digest;
+  inline Crockford encoder; fixed-width via len*8/5 not bit_length.
+- filesystem.py compute_file_hash: blake2b streaming, b2b120: return.
+- manifest_manager.py compute_file_hash: b2b120_hash one-shot.
+- photo_manager.py: replace built-in hash() with b2b120_hash.
+- test/unit/test_hash.py: encoder boundaries, 256-input length
+  invariant, six depo vectors, two normpic vectors via hash-b32.sh,
+  prefix invariant, alphabet compliance.
+
 ## 2026-06-18
 
 ### fix/schema-not-pattern-typeguard

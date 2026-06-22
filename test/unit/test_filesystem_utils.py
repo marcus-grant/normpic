@@ -266,8 +266,7 @@ class TestComputeFileHash:
             
             hash_result = compute_file_hash(test_file)
             
-            # SHA-256 of "test data" 
-            expected = "916f0027a575074ce72a331777c3478d6513f786a591bd892da1a577bf2335f9"
+            expected = "b2b120:YCDCYQP339E3NEK83KXGA1TT"
             assert hash_result == expected
     
     def test_compute_file_hash_different_content(self):
@@ -284,8 +283,8 @@ class TestComputeFileHash:
             hash2 = compute_file_hash(file2)
             
             assert hash1 != hash2
-            assert len(hash1) == 64  # SHA-256 hex length
-            assert len(hash2) == 64
+            assert len(hash1) == 31
+            assert len(hash2) == 31
     
     def test_compute_file_hash_empty_file(self):
         """Test hash computation for empty file."""
@@ -297,8 +296,7 @@ class TestComputeFileHash:
             
             hash_result = compute_file_hash(empty_file)
             
-            # SHA-256 of empty string
-            expected = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            expected = "b2b120:PZDRE6BC90T0BS0FGG0ZM7Y9"
             assert hash_result == expected
     
     def test_compute_file_hash_nonexistent_file(self):
@@ -323,7 +321,7 @@ class TestComputeFileHash:
             
             hash_result = compute_file_hash(large_file)
             
-            assert len(hash_result) == 64
+            assert len(hash_result) == 31
             assert isinstance(hash_result, str)
     
     @patch("builtins.open", mock_open(read_data=b"mocked data"))
@@ -336,8 +334,7 @@ class TestComputeFileHash:
             mock_stat.return_value.st_size = 11  # len("mocked data")
             hash_result = compute_file_hash(fake_path)
             
-            # SHA-256 of "mocked data"
-            expected = "e3a8081be79613ec801e399d3c0e41dd247e1b614b32c5427ebad8274f762129"
+            expected = "b2b120:E0YDV1FD988BRGHTY97VXCAS"
             assert hash_result == expected
     
     def test_compute_file_hash_custom_chunk_size(self):
@@ -352,7 +349,7 @@ class TestComputeFileHash:
             hash_result = compute_file_hash(test_file, chunk_size=4)
             
             # Should produce same hash regardless of chunk size
-            expected = "916f0027a575074ce72a331777c3478d6513f786a591bd892da1a577bf2335f9"
+            expected = "b2b120:YCDCYQP339E3NEK83KXGA1TT"
             assert hash_result == expected
     
     def test_compute_file_hash_progress_callback(self):
@@ -375,7 +372,7 @@ class TestComputeFileHash:
                 progress_callback=progress_callback
             )
             
-            assert len(hash_result) == 64
+            assert len(hash_result) == 31
             assert len(progress_updates) > 0
             
             # Check progress updates
