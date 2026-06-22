@@ -11,6 +11,7 @@ from ..template.filename import generate_filename
 from ..serializer.manifest import ManifestSerializer
 from .manifest_manager import ManifestManager
 from ..util.error_handling import ErrorHandler
+from ..util.hash import b2b120_hash
 
 
 def organize_photos(
@@ -342,7 +343,7 @@ def _create_ordered_pics(pics_data, collection_name: str, dest_dir: Path) -> Lis
             # Calculate file metadata
             timestamp_source = "exif" if exif_data.timestamp else "filename"
             file_size = photo_path.stat().st_size
-            file_hash = f"sha256-{hash(photo_path.read_bytes())}"  # Simplified
+            file_hash = b2b120_hash(photo_path.read_bytes())
             file_mtime = photo_path.stat().st_mtime
             
             # Create Pic object

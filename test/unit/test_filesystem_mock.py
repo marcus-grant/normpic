@@ -368,7 +368,7 @@ class TestFilesystemWithMocks:
             
             # Assert
             assert isinstance(hash_result, str)
-            assert len(hash_result) == 64  # SHA-256 hex length
+            assert len(hash_result) == 31
     
     def test_atomic_symlink_creation_with_mock_filesystem(self):
         """Test atomic symlink creation using mock filesystem."""

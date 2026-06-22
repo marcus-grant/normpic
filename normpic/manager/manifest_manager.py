@@ -1,11 +1,12 @@
 """Manifest management functionality."""
 
-import hashlib
 import json
 from pathlib import Path
 from typing import Optional, Dict, Any, Union
 
 from jsonschema import ValidationError
+
+from normpic.util.hash import b2b120_hash
 
 from ..model.manifest import Manifest
 from ..serializer.manifest import ManifestSerializer
@@ -82,16 +83,8 @@ class ManifestManager:
         Returns:
             SHA-256 hash as string
         """
-        file_path = Path(file_path)
-        sha256_hash = hashlib.sha256()
-        
         try:
-            with open(file_path, "rb") as f:
-                # Read in chunks for memory efficiency with large files
-                for chunk in iter(lambda: f.read(8192), b""):
-                    sha256_hash.update(chunk)
-            
-            return f"sha256-{sha256_hash.hexdigest()}"
+            return b2b120_hash(Path(file_path).read_bytes())
         except (FileNotFoundError, OSError) as e:
             # Return error indicator for missing/unreadable files
             return f"error-{str(e)}"

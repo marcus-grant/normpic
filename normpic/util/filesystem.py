@@ -8,6 +8,8 @@ import hashlib
 from pathlib import Path
 from typing import List, Callable, Optional
 
+from normpic.util.hash import b2b120_encode_digest
+
 
 def create_symlink(
     source: Path, 
@@ -155,20 +157,20 @@ def compute_file_hash(
     if not file_path.exists():
         raise FileNotFoundError(f"File does not exist: {file_path}")
     
-    sha256_hash = hashlib.sha256()
+    hasher = hashlib.blake2b(digest_size=15)
     file_size = file_path.stat().st_size
     bytes_read = 0
-    
+
     # Optimized chunk size for large files (64KB default)
     with open(file_path, "rb") as f:
         while chunk := f.read(chunk_size):
-            sha256_hash.update(chunk)
+            hasher.update(chunk)
             bytes_read += len(chunk)
-            
+
             if progress_callback:
                 progress_callback(bytes_read, file_size)
-    
-    return sha256_hash.hexdigest()
+
+    return "b2b120:" + b2b120_encode_digest(hasher.digest())
 
 
 def scan_directory_symlinks(
