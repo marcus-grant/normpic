@@ -1,5 +1,24 @@
 # NormPic Development Changelog
 
+## 2026-06-23
+
+### ref/pic-model-v01-contract
+
+Align Pic model with v0.1 contract pic-object fields. Test count
+250 -> 250 (no net change; existing tests updated in lockstep).
+
+- pic.py: MISSING sentinel for absent original_filename;
+  __post_init__ rejects None, empty string, and path separators;
+  _TS_VALUES frozenset; timestamp_source enum validated at
+  construction; tag Optional[List[str]] omitted from to_dict when
+  None; errors field retained (drop deferred to
+  ref/serializer-v01-contract, guard triggered at manifest.py:71).
+- schema_v0.py: PIC_SCHEMA gains original_filename (string, no
+  separator pattern) and tag (optional array of strings).
+- test_models.py: 11 new cases; all_fields and to_dict updated.
+- test_serializer.py: invalid-data fixture switched to size_bytes=-1;
+  invalid timestamp_source now caught at construction, not schema.
+
 ## 2026-06-22
 
 ### ft/hash-blake2b-crockford
