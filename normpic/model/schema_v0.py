@@ -45,6 +45,12 @@ PIC_SCHEMA = {
             "type": "string",
             "description": "SHA-256 hash of photo file"
         },
+        "original_filename": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": r"^[^/\\]+$",
+            "description": "Original filename with no path component"
+        },
         "size_bytes": {
             "type": "integer",
             "minimum": 0,
