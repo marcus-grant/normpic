@@ -91,6 +91,11 @@ PIC_SCHEMA = {
             "required": ["lat", "lon"],
             "description": "GPS coordinates if available"
         },
+        "tag": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "Flat tag strings"
+        },
         "errors": {
             "type": "array",
             "items": ERROR_SCHEMA,

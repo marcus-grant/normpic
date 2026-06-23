@@ -6,6 +6,8 @@ from typing import Any, Dict, List, Optional
 
 MISSING: object = object()
 
+_TS_VALUES = frozenset({"exif", "filename", "filesystem", "unknown"})
+
 
 @dataclass
 class Pic:
@@ -25,6 +27,7 @@ class Pic:
     gps: Optional[Dict[str, float]] = None
     errors: List[str] = field(default_factory=list)
     original_filename: Any = MISSING
+    tag: Optional[List[str]] = None
 
     def __post_init__(self) -> None:
         """Validate fields at construction."""
@@ -39,6 +42,10 @@ class Pic:
                 raise ValueError(
                     "original_filename must not contain path separators"
                 )
+        if self.timestamp_source is not None and self.timestamp_source not in _TS_VALUES:
+            raise ValueError(
+                f"timestamp_source must be one of {sorted(_TS_VALUES)}"
+            )
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert Pic to dictionary for JSON serialization."""
@@ -56,4 +63,6 @@ class Pic:
         }
         if self.original_filename is not MISSING:
             d["original_filename"] = self.original_filename
+        if self.tag is not None:
+            d["tag"] = self.tag
         return d

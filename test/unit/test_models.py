@@ -47,6 +47,7 @@ class TestPic:
             camera="Canon EOS R5",
             gps={"lat": 40.7128, "lon": -74.0060},
             errors=["no_exif"],
+            tag=["holiday"],
         )
 
         assert pic.timestamp == timestamp
@@ -54,6 +55,7 @@ class TestPic:
         assert pic.camera == "Canon EOS R5"
         assert pic.gps == {"lat": 40.7128, "lon": -74.0060}
         assert pic.errors == ["no_exif"]
+        assert pic.tag == ["holiday"]
 
     def test_original_filename_valid(self):
         """Test original_filename set to a valid name is accessible."""
@@ -150,6 +152,83 @@ class TestPic:
         }
 
         assert pic.to_dict() == expected
+        assert "tag" not in pic.to_dict()
+        assert "original_filename" not in pic.to_dict()
+
+    def test_tag_absent_by_default(self):
+        """Test that tag defaults to None (absent)."""
+        pic = Pic(
+            source_path="/path/to/source.jpg",
+            dest_path="/path/to/dest.jpg",
+            hash="abc123def456",
+            size_bytes=1024,
+            mtime=1699123456.789,
+        )
+
+        assert pic.tag is None
+
+    def test_tag_set(self):
+        """Test that tag is accessible when set."""
+        pic = Pic(
+            source_path="/path/to/source.jpg",
+            dest_path="/path/to/dest.jpg",
+            hash="abc123def456",
+            size_bytes=1024,
+            mtime=1699123456.789,
+            tag=["vacation", "2025"],
+        )
+
+        assert pic.tag == ["vacation", "2025"]
+
+    def test_tag_empty_list(self):
+        """Test that empty tag list is allowed (semantically absent)."""
+        pic = Pic(
+            source_path="/path/to/source.jpg",
+            dest_path="/path/to/dest.jpg",
+            hash="abc123def456",
+            size_bytes=1024,
+            mtime=1699123456.789,
+            tag=[],
+        )
+
+        assert pic.tag == []
+
+    def test_timestamp_source_valid_values(self):
+        """Test that all valid enum values are accepted."""
+        for value in ("exif", "filename", "filesystem", "unknown"):
+            Pic(
+                source_path="/path/to/source.jpg",
+                dest_path="/path/to/dest.jpg",
+                hash="abc123def456",
+                size_bytes=1024,
+                mtime=1699123456.789,
+                timestamp_source=value,
+            )
+
+    def test_timestamp_source_invalid_rejected(self):
+        """Test that an unrecognised timestamp_source is rejected."""
+        with pytest.raises(ValueError):
+            Pic(
+                source_path="/path/to/source.jpg",
+                dest_path="/path/to/dest.jpg",
+                hash="abc123def456",
+                size_bytes=1024,
+                mtime=1699123456.789,
+                timestamp_source="bad",
+            )
+
+    def test_timestamp_source_none_accepted(self):
+        """Test that None is accepted (nullable)."""
+        pic = Pic(
+            source_path="/path/to/source.jpg",
+            dest_path="/path/to/dest.jpg",
+            hash="abc123def456",
+            size_bytes=1024,
+            mtime=1699123456.789,
+            timestamp_source=None,
+        )
+
+        assert pic.timestamp_source is None
 
 
 class TestManifest:

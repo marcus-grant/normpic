@@ -139,14 +139,13 @@ class TestManifestSerializer:
 
     def test_validate_manifest_with_invalid_data_raises_error(self):
         """Test schema validation fails for invalid manifest."""
-        # Create manifest with invalid timestamp_source
+        # size_bytes=-1 passes model construction but fails schema (minimum: 0)
         invalid_pic = Pic(
             source_path="/path/to/source.jpg",
             dest_path="/path/to/dest.jpg",
             hash="abc123",
-            size_bytes=1024,
+            size_bytes=-1,
             mtime=1699123456.789,
-            timestamp_source="invalid_source",  # Not in enum
         )
 
         invalid_manifest = Manifest(
