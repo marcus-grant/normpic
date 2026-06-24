@@ -141,6 +141,11 @@ MANIFEST_SCHEMA = {
             "type": ["object", "null"],
             "description": "Configuration used to generate this manifest"
         },
+        "collection_root": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Location of collection root relative to manifest"
+        },
         "pic": {
             "type": "array",
             "items": PIC_SCHEMA,

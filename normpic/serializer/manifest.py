@@ -84,7 +84,8 @@ class ManifestSerializer:
             config=data.get("config"),
             errors=data.get("errors"),
             warnings=data.get("warnings"),
-            processing_status=data.get("processing_status")
+            processing_status=data.get("processing_status"),
+            collection_root=data.get("collection_root", "."),
         )
         
         return manifest
