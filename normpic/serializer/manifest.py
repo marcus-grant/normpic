@@ -82,9 +82,7 @@ class ManifestSerializer:
             pic=pics,
             collection_description=data.get("collection_description"),
             config=data.get("config"),
-            errors=data.get("errors"),
-            warnings=data.get("warnings"),
-            processing_status=data.get("processing_status")
+            collection_root=data.get("collection_root", "."),
         )
         
         return manifest

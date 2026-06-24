@@ -91,11 +91,9 @@ class TestErrorHandlingWorkflow:
         manifest_json = manifest_path.read_text()
         serializer.deserialize(manifest_json)
         
-        # This test expects error handling features to be implemented:
-        # - errors and warnings fields in manifest
-        # - processing_status summary
-        # - specific error type tracking
-        # These assertions will initially fail, driving the implementation
+        # Diagnostics (errors/warnings/processing_status) are not in the
+        # v0.1 manifest contract and were removed in
+        # ref/manifest-model-v01-contract.
 
     def test_all_files_corrupted_graceful_handling(self, tmp_path):
         """Test: All files corrupted → graceful failure → detailed error manifest."""

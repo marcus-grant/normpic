@@ -268,6 +268,30 @@ class TestManifest:
         assert len(manifest.pic) == 2
         assert manifest.collection_description is None
         assert manifest.config is None
+        assert manifest.collection_root == "."
+
+    def test_collection_root_default(self):
+        """Test that collection_root defaults to '.'."""
+        manifest = Manifest(
+            version="0.1.0",
+            collection_name="test-collection",
+            generated_at=datetime(2025, 11, 6, 19, 30, 0),
+            pic=[],
+        )
+
+        assert manifest.collection_root == "."
+
+    def test_collection_root_explicit(self):
+        """Test that an explicit collection_root is accessible."""
+        manifest = Manifest(
+            version="0.1.0",
+            collection_name="test-collection",
+            generated_at=datetime(2025, 11, 6, 19, 30, 0),
+            pic=[],
+            collection_root="subdir",
+        )
+
+        assert manifest.collection_root == "subdir"
 
     def test_manifest_to_dict(self):
         """Test Manifest conversion to dictionary."""
@@ -295,8 +319,29 @@ class TestManifest:
         assert result["version"] == "0.1.0"
         assert result["collection_name"] == "test-collection"
         assert result["generated_at"] == generated_at.isoformat()
+        assert result["collection_root"] == "."
         assert len(result["pic"]) == 1
         assert result["pic"][0]["source_path"] == "/path/to/source.jpg"
+        assert "errors" not in result
+        assert "warnings" not in result
+        assert "processing_status" not in result
+
+    def test_collection_root_round_trip(self):
+        """Test collection_root survives serialize/deserialize."""
+        from normpic.serializer.manifest import ManifestSerializer
+
+        manifest = Manifest(
+            version="0.1.0",
+            collection_name="test-collection",
+            generated_at=datetime(2025, 11, 6, 19, 30, 0),
+            pic=[],
+        )
+
+        serializer = ManifestSerializer()
+        json_str = serializer.serialize(manifest)
+        result = serializer.deserialize(json_str)
+
+        assert result.collection_root == "."
 
 
 class TestConfig:

@@ -141,57 +141,15 @@ MANIFEST_SCHEMA = {
             "type": ["object", "null"],
             "description": "Configuration used to generate this manifest"
         },
+        "collection_root": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Location of collection root relative to manifest"
+        },
         "pic": {
             "type": "array",
             "items": PIC_SCHEMA,
             "description": "List of processed photos"
         },
-        "errors": {
-            "type": "array",
-            "items": ERROR_SCHEMA,
-            "description": "Global processing errors not tied to specific photos"
-        },
-        "warnings": {
-            "type": "array", 
-            "items": ERROR_SCHEMA,
-            "description": "Global processing warnings not tied to specific photos"
-        },
-        "processing_status": {
-            "type": "object",
-            "required": ["status", "total_files", "processed_successfully"],
-            "properties": {
-                "status": {
-                    "type": "string",
-                    "enum": ["completed", "completed_with_warnings", "failed"],
-                    "description": "Overall processing status"
-                },
-                "total_files": {
-                    "type": "integer",
-                    "minimum": 0,
-                    "description": "Total number of files encountered"
-                },
-                "processed_successfully": {
-                    "type": "integer", 
-                    "minimum": 0,
-                    "description": "Number of files processed successfully"
-                },
-                "warnings_count": {
-                    "type": "integer",
-                    "minimum": 0,
-                    "description": "Total number of warnings"
-                },
-                "errors_count": {
-                    "type": "integer",
-                    "minimum": 0,
-                    "description": "Total number of errors"
-                },
-                "files_skipped": {
-                    "type": "integer",
-                    "minimum": 0,
-                    "description": "Number of files skipped due to errors/warnings"
-                }
-            },
-            "description": "Summary of processing results"
-        }
     }
 }

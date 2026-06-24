@@ -163,19 +163,3 @@ class ErrorHandler:
             "files_processed_successfully": files_processed_successfully
         }
 
-    def get_errors_for_manifest(self) -> List[Dict[str, Any]]:
-        """Get error entries formatted for manifest inclusion."""
-        return [{
-            "error_type": entry.error_type,
-            "source_file": entry.source_file,
-            "details": entry.details
-        } for entry in self.errors]
-    
-    def get_warnings_for_manifest(self) -> List[Dict[str, Any]]:
-        """Get warning and info entries formatted for manifest inclusion."""
-        all_warnings = self.warnings + self.info_entries
-        return [{
-            "error_type": entry.error_type,
-            "source_file": entry.source_file,
-            "details": entry.details
-        } for entry in all_warnings]

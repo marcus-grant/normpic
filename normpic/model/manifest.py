@@ -20,9 +20,7 @@ class Manifest:
     # Optional fields
     collection_description: Optional[str] = None
     config: Optional[Dict[str, Any]] = None
-    errors: Optional[List[Dict[str, Any]]] = None
-    warnings: Optional[List[Dict[str, Any]]] = None
-    processing_status: Optional[Dict[str, Any]] = None
+    collection_root: str = "."
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert Manifest to dictionary for JSON serialization."""
@@ -30,6 +28,7 @@ class Manifest:
             "version": self.version,
             "collection_name": self.collection_name,
             "generated_at": self.generated_at.isoformat(),
+            "collection_root": self.collection_root,
             "pic": [p.to_dict() for p in self.pic],
         }
         
@@ -38,11 +37,4 @@ class Manifest:
             result["collection_description"] = self.collection_description
         if self.config is not None:
             result["config"] = self.config
-        if self.errors is not None:
-            result["errors"] = self.errors
-        if self.warnings is not None:
-            result["warnings"] = self.warnings
-        if self.processing_status is not None:
-            result["processing_status"] = self.processing_status
-            
         return result

@@ -1,5 +1,26 @@
 # NormPic Development Changelog
 
+## 2026-06-24
+
+### ref/manifest-model-v01-contract
+
+Align Manifest model with v0.1 contract. Test count 250 -> 253.
+
+- manifest.py: add collection_root: str = "."; always emitted in
+  to_dict() per contract; drop errors, warnings, processing_status
+  fields and their to_dict() branches.
+- MANIFEST_SCHEMA: add collection_root property; drop the three
+  diagnostics entries. ERROR_SCHEMA stays (used by PIC_SCHEMA).
+- serializer deserialize(): add collection_root kwarg; drop three
+  diagnostics kwargs.
+- photo_manager.py: delete 22-line dead block that built the dropped
+  kwargs; error_handler construction and handle_* calls stay.
+- error_handling.py: delete get_errors_for_manifest and
+  get_warnings_for_manifest; no remaining callers.
+- test_models.py: 3 new TestManifest cases (default, explicit,
+  round-trip); existing tests updated in lockstep.
+- test_error_handling_workflow.py: replace stale TDD comment.
+
 ## 2026-06-23
 
 ### ref/pic-model-v01-contract
