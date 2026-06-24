@@ -31,6 +31,10 @@ class Pic:
 
     def __post_init__(self) -> None:
         """Validate fields at construction."""
+        self.validate()
+
+    def validate(self) -> None:
+        """Validate field values; raise ValueError on any violation."""
         if self.original_filename is not MISSING:
             if self.original_filename is None:
                 raise ValueError(
