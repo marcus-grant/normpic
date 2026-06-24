@@ -322,6 +322,9 @@ class TestManifest:
         assert result["collection_root"] == "."
         assert len(result["pic"]) == 1
         assert result["pic"][0]["source_path"] == "/path/to/source.jpg"
+        assert "errors" not in result
+        assert "warnings" not in result
+        assert "processing_status" not in result
 
     def test_collection_root_round_trip(self):
         """Test collection_root survives serialize/deserialize."""

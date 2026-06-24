@@ -132,30 +132,6 @@ def organize_photos(
                 source_path = Path(pic.source_path)
                 dest_path.symlink_to(source_path.resolve())
     
-    # Prepare error information for manifest
-    total_files_found = len(source_photos) + len(error_handler.get_info()) + len(error_handler.get_warnings()) + len(error_handler.get_errors())
-    
-    # Determine overall processing status
-    if error_handler.has_blocking_errors():
-        overall_status = "failed"
-    elif len(error_handler.get_warnings()) > 0 or len(error_handler.get_info()) > 0:
-        overall_status = "completed_with_warnings"
-    else:
-        overall_status = "completed"
-    
-    processing_status_data = {
-        "status": overall_status,
-        "total_files": total_files_found,
-        "processed_successfully": len(all_pics),
-        "warnings_count": len(error_handler.get_warnings()),
-        "errors_count": len(error_handler.get_errors()),
-        "files_skipped": len(error_handler.get_info()) + len(error_handler.get_warnings()) + len(error_handler.get_errors())
-    }
-    
-    # Get error entries for manifest
-    all_errors = error_handler.get_errors_for_manifest() if error_handler.get_errors() else None
-    all_warnings = error_handler.get_warnings_for_manifest() if (error_handler.get_warnings() or error_handler.get_info()) else None
-
     # Create and save manifest
     manifest = Manifest(
         version="0.1.0",
@@ -164,9 +140,6 @@ def organize_photos(
         pic=all_pics,
         collection_description=collection_description,
         config={"collection_name": collection_name},
-        errors=all_errors if all_errors else None,
-        warnings=all_warnings if all_warnings else None,
-        processing_status=processing_status_data
     )
     
     # Save manifest (with .dryrun suffix in dry-run mode)
