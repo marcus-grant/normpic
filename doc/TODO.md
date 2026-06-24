@@ -326,41 +326,6 @@ Diagnostics fields from the pre-hiatus contract are removed.
 Diagnostics are runtime logs only and do not appear in the
 manifest.
 
-Deferred from ref/field-name-reconciliation:
-
-- [ ] Drop Manifest.errors (global error list; not in v0.1 contract).
-  Files: normpic/model/manifest.py, normpic/model/schema_v0.py,
-  normpic/serializer/manifest.py, normpic/util/error_handling.py,
-  test/unit/test_error_handling.py, test/unit/test_schema.py,
-  test/unit/test_serializer.py,
-  test/integration/test_manifest_loading_workflow.py
-- [ ] Drop Manifest.warnings.
-  Files: normpic/model/manifest.py, normpic/model/schema_v0.py,
-  normpic/serializer/manifest.py
-- [ ] Drop Manifest.processing_status.
-  Files: normpic/model/manifest.py, normpic/model/schema_v0.py,
-  normpic/serializer/manifest.py, normpic/manager/photo_manager.py
-
-Commits:
-
-- `Ft: add version and collection_root fields to Manifest model`.
-  One TDD cycle covering both adds.
-  Test: construct a Manifest with explicit `version` and
-  `collection_root`, then with both at their defaults (`"0.1.0"`
-  and `"."`); verify both attributes are accessible.
-  Implementation: add the two fields with the documented defaults.
-- `Ref: remove diagnostics and align remaining Manifest fields with
-  v0.1 contract`.
-  Drop any diagnostics-related attribute, helper, or doc reference
-  from the model.
-  Adjust nullability for `collection_description` and `config` to
-  match the contract.
-  Update `test_schema.py` in lockstep so tests stay green.
-- `Doc: PR close per discipline preamble`.
-
-Verification at PR close: `uv run pytest test/unit/test_schema.py
-test/unit/test_models.py` green; the test failures deferred from
-fix/contract-schema-reconciliation are now resolved.
 
 #### ref/serializer-v01-contract
 
