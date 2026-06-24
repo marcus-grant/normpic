@@ -45,6 +45,12 @@ PIC_SCHEMA = {
             "type": "string",
             "description": "SHA-256 hash of photo file"
         },
+        "original_filename": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": r"^[^/\\]+$",
+            "description": "Original filename with no path component"
+        },
         "size_bytes": {
             "type": "integer",
             "minimum": 0,
@@ -84,6 +90,11 @@ PIC_SCHEMA = {
             },
             "required": ["lat", "lon"],
             "description": "GPS coordinates if available"
+        },
+        "tag": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "Flat tag strings"
         },
         "errors": {
             "type": "array",

@@ -1,9 +1,10 @@
 """Tests for data models."""
 
+import pytest
 from datetime import datetime
 
 
-from normpic.model.pic import Pic
+from normpic.model.pic import Pic, MISSING
 from normpic.model.manifest import Manifest
 from normpic.model.config import Config
 
@@ -46,6 +47,7 @@ class TestPic:
             camera="Canon EOS R5",
             gps={"lat": 40.7128, "lon": -74.0060},
             errors=["no_exif"],
+            tag=["holiday"],
         )
 
         assert pic.timestamp == timestamp
@@ -53,6 +55,78 @@ class TestPic:
         assert pic.camera == "Canon EOS R5"
         assert pic.gps == {"lat": 40.7128, "lon": -74.0060}
         assert pic.errors == ["no_exif"]
+        assert pic.tag == ["holiday"]
+
+    def test_original_filename_valid(self):
+        """Test original_filename set to a valid name is accessible."""
+        pic = Pic(
+            source_path="/path/to/source.jpg",
+            dest_path="/path/to/dest.jpg",
+            hash="abc123def456",
+            size_bytes=1024,
+            mtime=1699123456.789,
+            original_filename="photo.jpg",
+        )
+
+        assert pic.original_filename == "photo.jpg"
+
+    def test_original_filename_absent(self):
+        """Test absent original_filename is the MISSING sentinel, not None."""
+        pic = Pic(
+            source_path="/path/to/source.jpg",
+            dest_path="/path/to/dest.jpg",
+            hash="abc123def456",
+            size_bytes=1024,
+            mtime=1699123456.789,
+        )
+
+        assert pic.original_filename is MISSING
+        assert pic.original_filename is not None
+
+    def test_original_filename_explicit_none_rejected(self):
+        """Test that explicit None is rejected at construction."""
+        with pytest.raises(ValueError):
+            Pic(
+                source_path="/path/to/source.jpg",
+                dest_path="/path/to/dest.jpg",
+                hash="abc123def456",
+                size_bytes=1024,
+                mtime=1699123456.789,
+                original_filename=None,
+            )
+
+    def test_original_filename_empty_rejected(self):
+        """Test that empty string is rejected at construction."""
+        with pytest.raises(ValueError):
+            Pic(
+                source_path="/path/to/source.jpg",
+                dest_path="/path/to/dest.jpg",
+                hash="abc123def456",
+                size_bytes=1024,
+                mtime=1699123456.789,
+                original_filename="",
+            )
+
+    def test_original_filename_separator_rejected(self):
+        """Test that path separators in original_filename are rejected."""
+        with pytest.raises(ValueError):
+            Pic(
+                source_path="/path/to/source.jpg",
+                dest_path="/path/to/dest.jpg",
+                hash="abc123def456",
+                size_bytes=1024,
+                mtime=1699123456.789,
+                original_filename="a/b.jpg",
+            )
+        with pytest.raises(ValueError):
+            Pic(
+                source_path="/path/to/source.jpg",
+                dest_path="/path/to/dest.jpg",
+                hash="abc123def456",
+                size_bytes=1024,
+                mtime=1699123456.789,
+                original_filename="a\\b.jpg",
+            )
 
     def test_pic_to_dict(self):
         """Test Pic conversion to dictionary."""
@@ -78,6 +152,83 @@ class TestPic:
         }
 
         assert pic.to_dict() == expected
+        assert "tag" not in pic.to_dict()
+        assert "original_filename" not in pic.to_dict()
+
+    def test_tag_absent_by_default(self):
+        """Test that tag defaults to None (absent)."""
+        pic = Pic(
+            source_path="/path/to/source.jpg",
+            dest_path="/path/to/dest.jpg",
+            hash="abc123def456",
+            size_bytes=1024,
+            mtime=1699123456.789,
+        )
+
+        assert pic.tag is None
+
+    def test_tag_set(self):
+        """Test that tag is accessible when set."""
+        pic = Pic(
+            source_path="/path/to/source.jpg",
+            dest_path="/path/to/dest.jpg",
+            hash="abc123def456",
+            size_bytes=1024,
+            mtime=1699123456.789,
+            tag=["vacation", "2025"],
+        )
+
+        assert pic.tag == ["vacation", "2025"]
+
+    def test_tag_empty_list(self):
+        """Test that empty tag list is allowed (semantically absent)."""
+        pic = Pic(
+            source_path="/path/to/source.jpg",
+            dest_path="/path/to/dest.jpg",
+            hash="abc123def456",
+            size_bytes=1024,
+            mtime=1699123456.789,
+            tag=[],
+        )
+
+        assert pic.tag == []
+
+    def test_timestamp_source_valid_values(self):
+        """Test that all valid enum values are accepted."""
+        for value in ("exif", "filename", "filesystem", "unknown"):
+            Pic(
+                source_path="/path/to/source.jpg",
+                dest_path="/path/to/dest.jpg",
+                hash="abc123def456",
+                size_bytes=1024,
+                mtime=1699123456.789,
+                timestamp_source=value,
+            )
+
+    def test_timestamp_source_invalid_rejected(self):
+        """Test that an unrecognised timestamp_source is rejected."""
+        with pytest.raises(ValueError):
+            Pic(
+                source_path="/path/to/source.jpg",
+                dest_path="/path/to/dest.jpg",
+                hash="abc123def456",
+                size_bytes=1024,
+                mtime=1699123456.789,
+                timestamp_source="bad",
+            )
+
+    def test_timestamp_source_none_accepted(self):
+        """Test that None is accepted (nullable)."""
+        pic = Pic(
+            source_path="/path/to/source.jpg",
+            dest_path="/path/to/dest.jpg",
+            hash="abc123def456",
+            size_bytes=1024,
+            mtime=1699123456.789,
+            timestamp_source=None,
+        )
+
+        assert pic.timestamp_source is None
 
 
 class TestManifest:
