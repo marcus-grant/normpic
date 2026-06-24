@@ -286,24 +286,6 @@ Deferred from ref/field-name-reconciliation:
   test/integration/test_exif_filename_workflow.py,
   test/integration/test_photo_organization_workflow.py
 
-- [x] `Ft: add original_filename field to Pic model`.
-  One TDD cycle.
-  Test: construct a Pic with `original_filename` set, with it
-  absent, and verify that `None` and the empty string are rejected
-  at construction time (per the contract's optional and
-  non-nullable semantics).
-  Implementation: add the field with an absent-sentinel that the
-  serializer can distinguish from explicit `None`.
-- [x] `Ref: align remaining Pic fields with v0.1 contract`.
-  Nullability and type adjustments for the other fields surfaced
-  by the audit, plus `test_models.py` updates in lockstep.
-  Skip this commit if ref/field-name-reconciliation already
-  cleared everything and only `original_filename` needed adding.
-- [x] `Doc: PR close per discipline preamble`.
-
-Verification at PR close: `uv run pytest test/unit/test_models.py`
-green; Pic round-trips through construction with every field
-configuration in the list above exercised at least once.
 
 #### ref/manifest-model-v01-contract
 
