@@ -73,6 +73,18 @@ See the "Decide before v0.1 ships" section in
 
 Currently one open item: pre-hiatus field-name reconciliation
 (addressed in Phase B below).
+The list shrinks to zero before v0.1.0 is published.
+
+Resolved (not a manifest-contract item): persistence of operation
+parameters and the source-to-copy derivation link belongs to
+marcustack as invocation config, not to normpic and not to either
+manifest.
+Manifests stay contract-pure and describe only their own
+collection.
+For MVP, the symlink-copy operation is specified per run via CLI
+args or env vars.
+A post-MVP normpic config feature is deferred; see the post-v0.1
+roadmap note.
 
 The list shrinks to zero before v0.1.0 is published.
 
@@ -85,8 +97,9 @@ picking this up knows what to do and when.
 
 Triggered by Phase A planning artifacts merged.
 
-Phase B is sequenced as 14 PRs.
-Each PR follows the Working Discipline preamble above.
+Phase B is sequenced as 18 PRs (expanded from 14: the
+manifest-manager work split into a parallel-build-then-cutover
+sequence once the two-manifest model was settled).
 The PRs in order:
 
 - fix/contract-schema-reconciliation **complete**
@@ -99,11 +112,24 @@ The PRs in order:
 - tst/conformance-invalid-misc-rules **complete**
 - fix/schema-not-pattern-typeguard **complete**
 - ft/hash-blake2b-crockford **complete**
-- ref/pic-model-v01-contract
-- ref/manifest-model-v01-contract
+- ref/pic-model-v01-contract **complete**
+- ref/manifest-model-v01-contract **complete**
+- ft/source-manifest-read
+- ft/hash-keyed-reprocessing
+- ref/copy-manifest-contract-fields
+- ref/symlink-reconcile-by-hash
+- ref/drop-source-dest-cutover
 - ref/serializer-v01-contract
-- ref/manifest-manager-v01-contract
 - chr/pyright-clean (end of Phase B; see body below)
+
+Ordering note: ref/serializer-v01-contract now follows the
+manifest-manager sequence, not precedes it.
+The serializer's canonical-schema cutover validates producer
+output against schema/v0.1.0.json; that output cannot validate
+clean until the copy manifest stops emitting source_path/dest_path,
+which ref/drop-source-dest-cutover removes.
+The deferred Pic.errors / source_path / dest_path drops land in
+ref/drop-source-dest-cutover, not in the model PRs.
 
 #### chr/pyright-clean
 
@@ -261,7 +287,13 @@ Pic fields per the v0.1 contract (full semantic detail in
 
 Commits:
 
-Deferred from ref/field-name-reconciliation:
+Deferred from ref/field-name-reconciliation.
+These three now resolve in ref/drop-source-dest-cutover (the
+cutover PR of the manifest-manager sequence), where source_path
+and dest_path leave serialization and Pic.errors is dropped.
+Resolution settled: dest_path is not persisted; it is recomputable
+at runtime from the deterministic rename heuristic, so it is
+neither serialized nor kept as a model field.
 
 - [ ] Drop Pic.errors (per-pic error list; not in v0.1 contract).
   Files: normpic/model/pic.py, normpic/model/schema_v0.py,
@@ -277,15 +309,14 @@ Deferred from ref/field-name-reconciliation:
   test/unit/test_schema.py, test/unit/test_serializer.py,
   test/integration/test_manifest_loading_workflow.py
 - [ ] Resolve Pic.dest_path: operational state, no v0.1 mapping.
-  Decide between removing from serialization or keeping as a
-  non-serialized internal attribute.
+  Removed from serialization and not kept as a model field;
+  recomputed at runtime per the resolution noted above.
   Files: normpic/model/pic.py, normpic/model/schema_v0.py,
   normpic/serializer/manifest.py, test/unit/test_models.py,
   test/unit/test_schema.py, test/unit/test_serializer.py,
   test/integration/test_manifest_loading_workflow.py,
   test/integration/test_exif_filename_workflow.py,
   test/integration/test_photo_organization_workflow.py
-
 
 #### ref/manifest-model-v01-contract
 
@@ -325,7 +356,6 @@ Manifest top-level fields per the v0.1 contract:
 Diagnostics fields from the pre-hiatus contract are removed.
 Diagnostics are runtime logs only and do not appear in the
 manifest.
-
 
 #### ref/serializer-v01-contract
 
@@ -393,60 +423,189 @@ test/unit/test_serializer.py test/integration/` green; the
 determinism test asserts byte-identical output across repeated
 serializations of the same model.
 
-#### ref/manifest-manager-v01-contract
+#### ft/source-manifest-read
 
-Wire the v0.1 contract through
-`normpic/manager/manifest_manager.py`.
-Rewrites the manager's unit tests and the manifest-loading
-integration workflow test, then exercises the wedding-archive
-end-to-end run as the closing acceptance for Phase B.
-This is the first exercise of the wedding-acceptance line from
-Phase D.
+First of the manifest-manager parallel-build sequence.
+normpic reads the source collection's own manifest when present,
+and creates it by scanning source_dir when absent.
+This adds the capability only; nothing consumes the source manifest
+for reprocessing yet, and the existing source_path-keyed
+incremental path continues to run unchanged.
 
-Files touched: `normpic/manager/manifest_manager.py`,
+Files touched: `normpic/manager/photo_manager.py`,
+`normpic/manager/manifest_manager.py`,
 `test/unit/test_manifest_manager.py`,
-`test/integration/test_manifest_loading_workflow.py`,
-any call sites in `normpic/cli/` if their manager API contract
-changed.
+`test/integration/test_manifest_loading_workflow.py`.
 
-What the manager must do by this PR's end:
+What must be true by this PR's end:
 
-- Construct Manifest and Pic models per the v0.1 contract.
-- Compute pic hashes via the `b2b120_hash` function from
-  ft/hash-blake2b-crockford.
-- Emit manifests via the serializer from
-  ref/serializer-v01-contract, which honors all contract producer
-  rules.
-- Apply the implementation-layer validators from
-  tst/conformance-invalid-impl-layer at the write boundary so
-  invalid manifests cannot be persisted.
-- Read existing manifests, validating with both schema-layer and
-  implementation-layer checks before operating on their contents.
+- normpic locates the source manifest at the source collection
+  (manifest beside the source photos, contract default
+  collection_root ".").
+- If present, it is read and validated through schema-layer and
+  implementation-layer checks before use.
+- If absent, normpic scans source_dir and writes a contract-shaped
+  source manifest.
+- The existing dest-side single-manifest reprocessing path is
+  untouched and green.
 
 Commits:
 
-- `Ref: align manifest manager with v0.1 contract`.
-  Update the manager's construction, write, and read paths to use
-  the new model, serializer, and hash function.
-  Update `test_manifest_manager.py` in lockstep.
-- `Ref: rewrite manifest-loading integration workflow for v0.1`.
-  Rewrite `test_manifest_loading_workflow.py` against the new
-  contract: new field names, new hash format, new emit rules.
-  Round-trip integration: load a v0.1 manifest fixture, validate
-  through both layers, modify a field, write back, re-read, and
-  verify the manifest matches the expected v0.1-shaped output.
-  Fold into the previous commit if changes are minor and the
-  lockstep update is not bloated.
+- `Ft: read or create source collection manifest`.
+  Add the source-manifest read/create path; unit-test present and
+  absent cases.
 - `Doc: PR close per discipline preamble`.
-  Includes the wedding-archive end-to-end dogfood result in the
-  PR-summary block: manifest emitted successfully, schema-valid,
-  implementation-valid, expected pic count and shape.
+
+Verification at PR close: `uv run pytest test/` green; source
+manifest is read when present and created when absent, old path
+unchanged.
+
+#### ft/hash-keyed-reprocessing
+
+Add change detection keyed by the b2b120 hash, matching source
+photos against the source manifest by content identity rather than
+by source path.
+Runs alongside the existing source_path-keyed match; the new path
+is asserted equivalent to the old over the same inputs.
+No removal in this PR.
+
+Files touched: `normpic/manager/photo_manager.py`,
+`normpic/manager/manifest_manager.py`,
+`test/unit/test_manifest_manager.py`.
+
+What must be true by this PR's end:
+
+- A hash-keyed lookup matches each source photo to its source
+  manifest entry by b2b120 hash.
+- Change detection (new, changed, unchanged) is computed from the
+  hash-keyed match.
+- A test asserts the hash-keyed result agrees with the existing
+  source_path-keyed result on a shared fixture, proving
+  equivalence before cutover.
+
+Commits:
+
+- `Ft: add hash-keyed reprocessing match`.
+  Implement the hash-keyed lookup and change detection alongside
+  the existing path; add the equivalence test.
+- `Doc: PR close per discipline preamble`.
+
+Verification at PR close: `uv run pytest test/` green; hash-keyed
+and source_path-keyed change detection agree on the fixture.
+
+#### ref/copy-manifest-contract-fields
+
+Bring the copy (organized output) manifest to the v0.1 contract
+field shape in parallel: populate relative_path and the organized
+filename per contract.
+source_path and dest_path are still emitted in this PR so the old
+reprocessing and symlink paths keep working; their removal is the
+cutover PR.
+
+Files touched: `normpic/manager/photo_manager.py`,
+`normpic/serializer/manifest.py` if emit shape changes,
+`test/unit/test_manifest_manager.py`,
+`test/integration/test_photo_organization_workflow.py`,
+`test/integration/test_exif_filename_workflow.py`.
+
+What must be true by this PR's end:
+
+- Each copy-manifest pic carries relative_path (organized file
+  location relative to collection_root, default ".") and the
+  organized filename per the rename heuristic.
+- The rename heuristic is the existing baked-in one (deterministic
+  temporal sort with burst counters); not reimplemented here.
+- source_path/dest_path remain emitted for now; old paths green.
+
+Commits:
+
+- `Ref: populate copy manifest contract fields`.
+  Set relative_path and organized filename at Pic construction;
+  update tests in lockstep.
+- `Doc: PR close per discipline preamble`.
+
+Verification at PR close: `uv run pytest test/` green; copy
+manifest carries contract fields while legacy fields still present.
+
+#### ref/symlink-reconcile-by-hash
+
+Switch symlink creation to reconcile the source and copy manifests
+by hash at runtime, computing the transient source and dest paths
+from the two manifests instead of reading stored source_path and
+dest_path off pics.
+The dest filename is recomputable from the deterministic heuristic;
+the source location resolves from the source manifest via the
+contract resolution algorithm (manifest dir + collection_root +
+relative_path).
+
+Files touched: `normpic/manager/photo_manager.py`,
+`test/unit/test_manifest_manager.py`,
+`test/integration/test_photo_organization_workflow.py`.
+
+What must be true by this PR's end:
+
+- Symlink creation derives each (source, dest) pair by matching the
+  two manifests on b2b120 hash, at runtime.
+- No symlink path is read from a stored source_path or dest_path
+  field.
+- The duplicated burst-counter filename loop in _create_ordered_pics
+  is collapsed to a single computation while here.
+
+Commits:
+
+- `Ref: reconcile symlink paths by hash at runtime`.
+  Replace stored-field path use with hash reconciliation; collapse
+  the duplicate counter loop; update tests.
+- `Doc: PR close per discipline preamble`.
+
+Verification at PR close: `uv run pytest test/` green; symlinks are
+created from runtime hash reconciliation, not stored paths.
+
+#### ref/drop-source-dest-cutover
+
+The cutover.
+Remove source_path and dest_path from the Pic model and from
+serialization, delete the old source_path-keyed reprocessing path,
+and drop the deferred Pic.errors field.
+After this PR the copy manifest is fully contract-pure and the old
+single-manifest behavior is gone.
+The wedding-archive end-to-end run is the Phase B acceptance gate
+and lands here.
+
+Files touched: `normpic/model/pic.py`,
+`normpic/model/schema_v0.py`,
+`normpic/serializer/manifest.py`,
+`normpic/manager/photo_manager.py`,
+`test/unit/test_models.py`, `test/unit/test_serializer.py`,
+`test/integration/test_manifest_loading_workflow.py`,
+`test/integration/test_photo_organization_workflow.py`,
+`test/integration/test_exif_filename_workflow.py`.
+
+What must be true by this PR's end:
+
+- Pic no longer defines or serializes source_path, dest_path, or
+  errors.
+- schema_v0.py PIC_SCHEMA no longer lists the dropped fields.
+- The source_path-keyed reprocessing path is deleted; hash-keyed
+  reprocessing is the only path.
+- The deferred TODO boxes (Pic.errors, Pic.source_path,
+  Pic.dest_path under ref/pic-model) are resolved and removed here.
+
+Commits:
+
+- `Ref: drop source_path, dest_path, errors from Pic and cut over`.
+  Remove the fields and the legacy reprocessing path; update all
+  tests.
+- `Doc: PR close per discipline preamble`.
+  Include the wedding-archive end-to-end result in the summary:
+  manifest emitted, schema-valid, implementation-valid, expected
+  pic count and shape.
 
 Verification at PR close: `uv run pytest test/` green; the wedding
-archive produces a valid v0.1.0 manifest end-to-end, exercising
-the wedding-acceptance line for the first time.
-Phase D may rerun this as part of broader verification (Galleria
-consumption etc.).
+archive produces a valid v0.1.0 copy manifest end-to-end via
+hash-reconciled symlinks, with no source_path/dest_path/errors in
+the output.
+This is the Phase B acceptance gate.
 
 ### Phase C: Documentation Downstream of Contract
 
@@ -549,6 +708,21 @@ If it rolls to v0.2, the placeholder entry already exists in
 See [ROADMAP.md](ROADMAP.md) for v0.x extensions, implementation-side
 enhancements, Rust rewrite plans, remote adapters, and long-term
 speculation.
+
+Deferred feature, needs a planning pass before it is scheduled:
+normpic operation config.
+A persisted config describing a symlink-copy operation (source and
+copy manifest locations, the rename heuristic, the derivation link
+between source and copy) so the operation need not be fully
+re-specified via CLI or env each run.
+Open question for that pass: the boundary between this config and
+marcustack's invocation config, since marcustack owns operation
+composition for the ecosystem.
+Resolved for now: the relationship lives in marcustack and normpic
+takes CLI/env per run; this item only revisits whether normpic
+should also own a local config later.
+Decide where this belongs (normpic vs marcustack) and at what
+version before adding it to the roadmap proper.
 
 ## Integration Points
 
