@@ -141,6 +141,40 @@ class ManifestManager:
         # No changes detected
         return False
     
+    def needs_reprocessing_by_hash(
+        self,
+        current_hash: str,
+        hash_index: Dict[str, "Pic"],
+        current_mtime: float,
+        dest_dir: Optional[Union[Path, str]] = None,
+    ) -> bool:
+        """Check if a photo needs reprocessing using a hash-keyed manifest index.
+
+        Args:
+            current_hash: b2b120 hash of the source file (caller-computed)
+            hash_index: {hash: Pic} built from a prior manifest
+            current_mtime: source file mtime as float timestamp (caller-computed)
+            dest_dir: base directory for resolving matched_pic.dest_path; if
+                None the dest-existence check is skipped
+
+        Returns:
+            True if file needs reprocessing (new or changed), False if unchanged
+        """
+        matched = hash_index.get(current_hash)
+        if matched is None:
+            return True
+
+        if dest_dir is not None:
+            dest_path = Path(dest_dir) / matched.dest_path
+            if not dest_path.exists():
+                return True
+
+        prev_mtime = datetime.fromisoformat(matched.mtime).timestamp()
+        if abs(current_mtime - prev_mtime) > 0.001:
+            return True
+
+        return False
+
     def config_affects_reprocessing(self, old_config: Dict[str, Any], new_config: Dict[str, Any]) -> bool:
         """Check if config changes affect photo processing results.
         
@@ -269,3 +303,19 @@ def build_source_manifest(source_dir: Path, collection_name: str) -> Manifest:
         pic=pics,
         collection_root=".",
     )
+
+
+def build_hash_keyed_source_index(manifest: Manifest) -> Dict[str, Pic]:
+    """Build a hash-to-Pic index from a manifest's pic list.
+
+    Args:
+        manifest: Any Manifest whose pic list should be indexed by content hash
+
+    Returns:
+        {pic.hash: pic} mapping; on duplicate hash the first entry wins
+    """
+    index: Dict[str, Pic] = {}
+    for pic in manifest.pic:
+        if pic.hash not in index:
+            index[pic.hash] = pic
+    return index
