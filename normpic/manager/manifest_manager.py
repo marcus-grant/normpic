@@ -1,6 +1,7 @@
 """Manifest management functionality."""
 
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional, Dict, Any, Union
 
@@ -9,7 +10,9 @@ from jsonschema import ValidationError
 from normpic.util.hash import b2b120_hash
 
 from ..model.manifest import Manifest
+from ..model.pic import Pic
 from ..serializer.manifest import ManifestSerializer
+from ..util.manifest_validate import impl_validate
 
 
 class ManifestManager:
@@ -119,10 +122,16 @@ class ManifestManager:
             if not dest_path.exists():
                 return True
         
-        # Check mtime change (faster than hash computation)
+        # Check mtime change (faster than hash computation).
+        # Normalize both sides to the manifest ISO format so the comparison is
+        # at microsecond precision and not subject to sub-microsecond float drift.
         if previous_mtime is not None:
             current_mtime = source_path.stat().st_mtime
-            if abs(current_mtime - previous_mtime) > 0.001:  # Allow for small float precision differences
+            _fmt = "%Y-%m-%dT%H:%M:%S.%fZ"
+            if (
+                datetime.fromtimestamp(current_mtime, tz=timezone.utc).strftime(_fmt)
+                != datetime.fromtimestamp(previous_mtime, tz=timezone.utc).strftime(_fmt)
+            ):
                 return True
         
         # Check hash change (more thorough but slower)
@@ -138,6 +147,43 @@ class ManifestManager:
         # No changes detected
         return False
     
+    def needs_reprocessing_by_hash(
+        self,
+        current_hash: str,
+        hash_index: Dict[str, "Pic"],
+        current_mtime: float,
+        dest_dir: Optional[Union[Path, str]] = None,
+    ) -> bool:
+        """Check if a photo needs reprocessing using a hash-keyed manifest index.
+
+        Args:
+            current_hash: b2b120 hash of the source file (caller-computed)
+            hash_index: {hash: Pic} built from a prior manifest
+            current_mtime: source file mtime as float timestamp (caller-computed)
+            dest_dir: base directory for resolving matched_pic.dest_path; if
+                None the dest-existence check is skipped
+
+        Returns:
+            True if file needs reprocessing (new or changed), False if unchanged
+        """
+        matched = hash_index.get(current_hash)
+        if matched is None:
+            return True
+
+        if dest_dir is not None:
+            dest_path = Path(dest_dir) / matched.dest_path
+            if not dest_path.exists():
+                return True
+
+        _fmt = "%Y-%m-%dT%H:%M:%S.%fZ"
+        prev_mtime_float = datetime.fromisoformat(matched.mtime).timestamp()
+        current_iso = datetime.fromtimestamp(current_mtime, tz=timezone.utc).strftime(_fmt)
+        prev_iso = datetime.fromtimestamp(prev_mtime_float, tz=timezone.utc).strftime(_fmt)
+        if current_iso != prev_iso:
+            return True
+
+        return False
+
     def config_affects_reprocessing(self, old_config: Dict[str, Any], new_config: Dict[str, Any]) -> bool:
         """Check if config changes affect photo processing results.
         
@@ -189,14 +235,96 @@ class ManifestManager:
 
 def load_existing_manifest(manifest_path: Path) -> Optional[Manifest]:
     """Load existing manifest from specified path.
-    
+
     Standalone function for loading manifests from any path.
-    
+
     Args:
         manifest_path: Path to manifest.json file
-        
+
     Returns:
         Manifest object if file exists and is valid, None otherwise
     """
     manager = ManifestManager(manifest_path)
     return manager.load_manifest()
+
+
+def load_source_manifest(source_dir: Path) -> Optional[Manifest]:
+    """Load and validate the source collection manifest, if present.
+
+    Reads source_dir/manifest.json through both validation layers: schema
+    (via ManifestManager.load_manifest) and impl (via impl_validate on the
+    already-deserialized manifest dict). Returns None on any validation
+    failure or if the file is absent.
+
+    Args:
+        source_dir: Source photo directory that may contain manifest.json
+
+    Returns:
+        Manifest object if present and valid at both layers, None otherwise
+    """
+    manifest_path = source_dir / "manifest.json"
+    if not manifest_path.exists():
+        return None
+
+    manifest = ManifestManager(manifest_path).load_manifest()
+    if manifest is None:
+        return None
+
+    errors = impl_validate(manifest.to_dict())
+    if errors:
+        return None
+
+    return manifest
+
+
+def build_source_manifest(source_dir: Path, collection_name: str) -> Manifest:
+    """Scan source_dir and build a contract-shaped source Manifest.
+
+    Args:
+        source_dir: Source photo directory to scan
+        collection_name: Name for the manifest's collection_name field
+
+    Returns:
+        Manifest covering all supported photos found in source_dir
+    """
+    photo_extensions = {".jpg", ".jpeg", ".png", ".heic", ".webp"}
+    manager = ManifestManager()
+    pics = []
+    for f in sorted(source_dir.iterdir()):
+        if not f.is_file() or f.suffix.lower() not in photo_extensions:
+            continue
+        stat = f.stat()
+        file_hash = manager.compute_file_hash(f)
+        mtime_str = datetime.fromtimestamp(
+            stat.st_mtime, tz=timezone.utc
+        ).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        pics.append(Pic(
+            source_path=str(f),
+            dest_path=str(f),
+            hash=file_hash,
+            size_bytes=stat.st_size,
+            mtime=mtime_str,
+        ))
+    return Manifest(
+        version="0.1.0",
+        collection_name=collection_name,
+        generated_at=datetime.now(tz=timezone.utc),
+        pic=pics,
+        collection_root=".",
+    )
+
+
+def build_hash_keyed_source_index(manifest: Manifest) -> Dict[str, Pic]:
+    """Build a hash-to-Pic index from a manifest's pic list.
+
+    Args:
+        manifest: Any Manifest whose pic list should be indexed by content hash
+
+    Returns:
+        {pic.hash: pic} mapping; on duplicate hash the first entry wins
+    """
+    index: Dict[str, Pic] = {}
+    for pic in manifest.pic:
+        if pic.hash not in index:
+            index[pic.hash] = pic
+    return index

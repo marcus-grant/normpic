@@ -1,9 +1,20 @@
 """Tests for manifest manager functionality."""
 
 import json
+from datetime import datetime, timezone
 
 
-from normpic.manager.manifest_manager import ManifestManager, load_existing_manifest
+from unittest.mock import patch
+
+from normpic.manager.manifest_manager import (
+    ManifestManager,
+    load_existing_manifest,
+    load_source_manifest,
+    build_source_manifest,
+    build_hash_keyed_source_index,
+)
+from normpic.model.manifest import Manifest
+from normpic.model.pic import Pic
 
 
 class TestManifestManager:
@@ -307,3 +318,320 @@ class TestChangeDetection:
         
         # Assert: File with no previous data should need processing
         assert needs_reprocessing_no_data, "File with no previous data should need processing"
+
+
+_VALID_MANIFEST = {
+    "version": "0.1.0",
+    "collection_name": "test",
+    "generated_at": "2024-01-01T00:00:00Z",
+    "collection_root": ".",
+    "pic": [
+        {
+            "source_path": "/src/a.jpg",
+            "dest_path": "/src/a.jpg",
+            "hash": "b2b120:PZDRE6BC90T0BS0FGG0ZM7Y9",
+            "size_bytes": 1024,
+            "mtime": "2024-01-01T00:00:00Z",
+            "timestamp": None,
+            "timestamp_source": None,
+            "camera": None,
+            "gps": None,
+            "errors": [],
+        }
+    ],
+}
+
+
+class TestSourceManifestLoading:
+    """Tests for load_source_manifest and build_source_manifest."""
+
+    def test_source_manifest_absent(self, tmp_path):
+        source_dir = tmp_path / "source"
+        source_dir.mkdir()
+        assert load_source_manifest(source_dir) is None
+
+    def test_source_manifest_present_and_valid(self, tmp_path):
+        source_dir = tmp_path / "source"
+        source_dir.mkdir()
+        (source_dir / "manifest.json").write_text(
+            json.dumps(_VALID_MANIFEST), encoding="utf-8"
+        )
+
+        with patch(
+            "normpic.manager.manifest_manager.impl_validate",
+            wraps=__import__(
+                "normpic.util.manifest_validate", fromlist=["impl_validate"]
+            ).impl_validate,
+        ) as mock_iv:
+            result = load_source_manifest(source_dir)
+
+        assert result is not None
+        assert result.collection_name == "test"
+        mock_iv.assert_called_once()
+
+    def test_source_manifest_present_schema_invalid(self, tmp_path):
+        source_dir = tmp_path / "source"
+        source_dir.mkdir()
+        bad = {"version": "0.1.0", "pic": []}  # missing collection_name, generated_at
+        (source_dir / "manifest.json").write_text(
+            json.dumps(bad), encoding="utf-8"
+        )
+        assert load_source_manifest(source_dir) is None
+
+    def test_source_manifest_present_impl_invalid(self, tmp_path):
+        source_dir = tmp_path / "source"
+        source_dir.mkdir()
+        bad = dict(_VALID_MANIFEST)
+        bad["collection_root"] = "foo/../../../bar"  # non-leading dotdot
+        (source_dir / "manifest.json").write_text(
+            json.dumps(bad), encoding="utf-8"
+        )
+        assert load_source_manifest(source_dir) is None
+
+    def test_build_source_manifest_empty_dir(self, tmp_path):
+        source_dir = tmp_path / "source"
+        source_dir.mkdir()
+        manifest = build_source_manifest(source_dir, "test-col")
+        assert manifest.collection_name == "test-col"
+        assert manifest.collection_root == "."
+        assert manifest.pic == []
+
+    def test_build_source_manifest_scans_photos(self, tmp_path, create_photo_with_exif):
+        source_dir = tmp_path / "source"
+        source_dir.mkdir()
+        create_photo_with_exif(source_dir / "a.jpg", DateTimeOriginal="2024:01:01 00:00:00")
+        create_photo_with_exif(source_dir / "b.jpg", DateTimeOriginal="2024:01:01 00:00:01")
+
+        manifest = build_source_manifest(source_dir, "col")
+
+        assert len(manifest.pic) == 2
+        paths = {p.source_path for p in manifest.pic}
+        assert str(source_dir / "a.jpg") in paths
+        assert str(source_dir / "b.jpg") in paths
+        for pic in manifest.pic:
+            assert pic.mtime.endswith("Z")
+
+
+def _make_manifest(pics):
+    return Manifest(
+        version="0.1.0",
+        collection_name="test",
+        generated_at=datetime.now(tz=timezone.utc),
+        collection_root=".",
+        pic=pics,
+    )
+
+
+def _make_pic(source_path, dest_path, hash_val, size_bytes, mtime_str):
+    return Pic(
+        source_path=source_path,
+        dest_path=dest_path,
+        hash=hash_val,
+        size_bytes=size_bytes,
+        mtime=mtime_str,
+    )
+
+
+class TestHashKeyedChangeDetection:
+    """Tests for build_hash_keyed_source_index and needs_reprocessing_by_hash."""
+
+    # --- Cycle 1: index building ---
+
+    def test_index_basic(self):
+        pic_a = _make_pic("/src/a.jpg", "a.jpg", "b2b120:AAAA", 100, "2024-01-01T00:00:00.000000Z")
+        pic_b = _make_pic("/src/b.jpg", "b.jpg", "b2b120:BBBB", 200, "2024-01-01T00:00:00.000000Z")
+        manifest = _make_manifest([pic_a, pic_b])
+        index = build_hash_keyed_source_index(manifest)
+        assert index["b2b120:AAAA"] is pic_a
+        assert index["b2b120:BBBB"] is pic_b
+
+    def test_index_empty_manifest(self):
+        index = build_hash_keyed_source_index(_make_manifest([]))
+        assert index == {}
+
+    def test_index_duplicate_hash(self):
+        pic_first = _make_pic("/src/a.jpg", "a.jpg", "b2b120:AAAA", 100, "2024-01-01T00:00:00.000000Z")
+        pic_second = _make_pic("/src/b.jpg", "b.jpg", "b2b120:AAAA", 100, "2024-01-01T00:00:00.000000Z")
+        manifest = _make_manifest([pic_first, pic_second])
+        index = build_hash_keyed_source_index(manifest)
+        assert index["b2b120:AAAA"] is pic_first
+
+    # --- Cycle 2: per-photo detection ---
+
+    def test_not_in_index(self):
+        manager = ManifestManager()
+        index = {}
+        assert manager.needs_reprocessing_by_hash("b2b120:ZZZZ", index, 1000.0) is True
+
+    def test_unchanged(self, tmp_path):
+        dest_dir = tmp_path / "dest"
+        dest_dir.mkdir()
+        dest_file = dest_dir / "a.jpg"
+        dest_file.touch()
+
+        mtime_str = "2024-01-01T00:00:00.000000Z"
+        prev_mtime = datetime.fromisoformat(mtime_str).timestamp()
+        pic = _make_pic("/src/a.jpg", "a.jpg", "b2b120:AAAA", 100, mtime_str)
+        index = {"b2b120:AAAA": pic}
+
+        manager = ManifestManager()
+        assert manager.needs_reprocessing_by_hash(
+            "b2b120:AAAA", index, prev_mtime, dest_dir=dest_dir
+        ) is False
+
+    def test_mtime_changed(self):
+        mtime_str = "2020-01-01T00:00:00.000000Z"
+        prev_mtime = datetime.fromisoformat(mtime_str).timestamp()
+        pic = _make_pic("/src/a.jpg", "a.jpg", "b2b120:AAAA", 100, mtime_str)
+        index = {"b2b120:AAAA": pic}
+
+        manager = ManifestManager()
+        current_mtime = prev_mtime + 1.0
+        assert manager.needs_reprocessing_by_hash("b2b120:AAAA", index, current_mtime) is True
+
+    def test_mtime_roundtrip_no_false_changed(self, tmp_path):
+        """st_mtime through ISO round-trip must not produce a false CHANGED."""
+        photo = tmp_path / "photo.jpg"
+        photo.write_bytes(b"roundtrip test content")
+
+        manager = ManifestManager()
+        _fmt = "%Y-%m-%dT%H:%M:%S.%fZ"
+
+        # Reproduce what the manifest-writing path does
+        st_mtime = photo.stat().st_mtime
+        mtime_iso = datetime.fromtimestamp(st_mtime, tz=timezone.utc).strftime(_fmt)
+
+        # needs_reprocessing: previous_mtime arrives as ISO-parsed float
+        previous_mtime = datetime.fromisoformat(mtime_iso).timestamp()
+        assert manager.needs_reprocessing(
+            photo,
+            previous_hash=manager.compute_file_hash(photo),
+            previous_mtime=previous_mtime,
+        ) is False
+
+        # needs_reprocessing_by_hash: current_mtime is the raw st_mtime float;
+        # matched.mtime is the strftime ISO string (same float, same origin)
+        hash_val = manager.compute_file_hash(photo)
+        pic = _make_pic(str(photo), "dest.jpg", hash_val, photo.stat().st_size, mtime_iso)
+        assert manager.needs_reprocessing_by_hash(hash_val, {hash_val: pic}, st_mtime) is False
+
+        # Stored-string path: save the manifest to disk and reload it so that
+        # matched.mtime arrives as a string from JSON, not from a float in this
+        # test scope -- exercises fromisoformat().timestamp()->fromtimestamp() path
+        manifest_path = tmp_path / "test_manifest.json"
+        ManifestManager(manifest_path).save_manifest(_make_manifest([pic]))
+        loaded = ManifestManager(manifest_path).load_manifest()
+        assert loaded is not None
+        loaded_pic = loaded.pic[0]
+        assert manager.needs_reprocessing_by_hash(
+            hash_val, {hash_val: loaded_pic}, st_mtime
+        ) is False
+
+    def test_dest_missing(self, tmp_path):
+        dest_dir = tmp_path / "dest"
+        dest_dir.mkdir()
+        # dest_dir / "a.jpg" is NOT created
+
+        mtime_str = "2024-01-01T00:00:00.000000Z"
+        prev_mtime = datetime.fromisoformat(mtime_str).timestamp()
+        pic = _make_pic("/src/a.jpg", "a.jpg", "b2b120:AAAA", 100, mtime_str)
+        index = {"b2b120:AAAA": pic}
+
+        manager = ManifestManager()
+        assert manager.needs_reprocessing_by_hash(
+            "b2b120:AAAA", index, prev_mtime, dest_dir=dest_dir
+        ) is True
+
+    # --- Cycle 4: equivalence test ---
+
+    def test_hash_keyed_agrees_with_path_keyed(self, tmp_path):
+        """Hash-keyed and path-keyed detections partition the same fixture identically.
+
+        Both paths read the SAME prior_manifest and on-disk files; they differ
+        only in lookup key. Equivalence emerges from logic, not fixture
+        hand-tuning.
+        """
+        source_dir = tmp_path / "source"
+        dest_dir = tmp_path / "dest"
+        source_dir.mkdir()
+        dest_dir.mkdir()
+
+        manager = ManifestManager()
+
+        # Create four source files with distinct content
+        path_a = source_dir / "a.jpg"
+        path_b = source_dir / "b.jpg"
+        path_c = source_dir / "c.jpg"
+        path_d = source_dir / "d.jpg"
+        path_a.write_bytes(b"content-alpha")
+        path_b.write_bytes(b"content-beta")
+        path_c.write_bytes(b"content-gamma")
+        path_d.write_bytes(b"content-delta")
+
+        hash_a = manager.compute_file_hash(path_a)
+        hash_b = manager.compute_file_hash(path_b)
+        hash_d = manager.compute_file_hash(path_d)
+
+        mtime_a = path_a.stat().st_mtime
+        mtime_d = path_d.stat().st_mtime
+
+        mtime_a_str = datetime.fromtimestamp(mtime_a, tz=timezone.utc).strftime(
+            "%Y-%m-%dT%H:%M:%S.%fZ"
+        )
+        mtime_d_str = datetime.fromtimestamp(mtime_d, tz=timezone.utc).strftime(
+            "%Y-%m-%dT%H:%M:%S.%fZ"
+        )
+
+        stale_mtime = "2020-01-01T00:00:00.000000Z"
+
+        # One shared prior manifest: A (unchanged), B (stale mtime), D (dest missing).
+        # C is absent -- it is NEW to both paths.
+        prior_manifest = _make_manifest([
+            _make_pic(str(path_a), "dest_a.jpg", hash_a, path_a.stat().st_size, mtime_a_str),
+            _make_pic(str(path_b), "dest_b.jpg", hash_b, path_b.stat().st_size, stale_mtime),
+            _make_pic(str(path_d), "dest_d.jpg", hash_d, path_d.stat().st_size, mtime_d_str),
+        ])
+
+        # Dest files: A and B exist, D is missing
+        (dest_dir / "dest_a.jpg").touch()
+        (dest_dir / "dest_b.jpg").touch()
+        # dest_dir / "dest_d.jpg" intentionally absent
+
+        source_photos = [path_a, path_b, path_c, path_d]
+
+        # Path-keyed partition (mirrors organize_photos logic)
+        existing_by_path = {pic.source_path: pic for pic in prior_manifest.pic}
+        path_needs, path_unchanged = [], []
+        for photo_path in source_photos:
+            existing_pic = existing_by_path.get(str(photo_path))
+            if existing_pic:
+                prev_mtime = datetime.fromisoformat(existing_pic.mtime).timestamp()
+                if not manager.needs_reprocessing(
+                    photo_path,
+                    previous_hash=existing_pic.hash,
+                    previous_mtime=prev_mtime,
+                    dest_path=dest_dir / existing_pic.dest_path,
+                ):
+                    path_unchanged.append(photo_path.name)
+                    continue
+            path_needs.append(photo_path.name)
+
+        # Hash-keyed partition
+        hash_index = build_hash_keyed_source_index(prior_manifest)
+        hash_needs, hash_unchanged = [], []
+        for photo_path in source_photos:
+            current_hash = manager.compute_file_hash(photo_path)
+            current_mtime = photo_path.stat().st_mtime
+            if not manager.needs_reprocessing_by_hash(
+                current_hash, hash_index, current_mtime, dest_dir=dest_dir
+            ):
+                hash_unchanged.append(photo_path.name)
+            else:
+                hash_needs.append(photo_path.name)
+
+        assert set(path_needs) == set(hash_needs), (
+            f"path_needs={set(path_needs)} hash_needs={set(hash_needs)}"
+        )
+        assert set(path_unchanged) == set(hash_unchanged), (
+            f"path_unchanged={set(path_unchanged)} hash_unchanged={set(hash_unchanged)}"
+        )

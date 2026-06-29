@@ -244,6 +244,26 @@ red on its own instead of costing a review pass.
 For example, asserting that a fixture count equals its inventory count
 means a skipped member can never again pass silently.
 
+### The reviewer's own analysis is not exempt
+
+The same standard the reviewer applies to the author's claims
+applies to the reviewer's own reasoning.
+A hazard the reviewer infers (a determinism risk, a missing
+dependency, a contract collision) is a claim, not a finding, until
+it is checked against the code or the contract document.
+Do not escalate an inferred hazard to the maintainer as a decision
+before reading the source that would confirm or dismiss it.
+If the spec or the code already answers a question, read it; do not
+ask the maintainer.
+The maintainer's time is spent only on genuine direction calls, not
+on questions the repository already answers.
+
+When the reviewer is wrong, the correction is stated plainly once
+("that was wrong; it is X") and the analysis moves on.
+A corrected position is not restated as though it were the original
+position, and the same fact is not re-explained in varying forms;
+both make a session impossible to track.
+
 ### Sign-off
 
 A change is signed off when its commits match the plan, its scope is

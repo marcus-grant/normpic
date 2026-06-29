@@ -24,7 +24,7 @@ class TestManifestSerializer:
                 dest_path="/path/to/dest.jpg",
                 hash="abc123",
                 size_bytes=1024,
-                mtime=1699123456.789,
+                mtime="2023-11-04T22:04:16Z",
             )
         ]
 
@@ -57,7 +57,7 @@ class TestManifestSerializer:
                     "dest_path": "/path/to/dest.jpg",
                     "hash": "abc123",
                     "size_bytes": 1024,
-                    "mtime": 1699123456.789,
+                    "mtime": "2023-11-04T22:04:16Z",
                     "timestamp": None,
                     "timestamp_source": None,
                     "camera": None,
@@ -92,7 +92,7 @@ class TestManifestSerializer:
                     dest_path="/path/to/dest.jpg",
                     hash="abc123",
                     size_bytes=1024,
-                    mtime=1699123456.789,
+                    mtime="2023-11-04T22:04:16Z",
                     timestamp=generated_at,
                     timestamp_source="exif",
                 )
@@ -128,7 +128,7 @@ class TestManifestSerializer:
                     dest_path="/path/to/dest.jpg",
                     hash="abc123",
                     size_bytes=1024,
-                    mtime=1699123456.789,
+                    mtime="2023-11-04T22:04:16Z",
                 )
             ],
         )
@@ -145,7 +145,7 @@ class TestManifestSerializer:
             dest_path="/path/to/dest.jpg",
             hash="abc123",
             size_bytes=-1,
-            mtime=1699123456.789,
+            mtime="2023-11-04T22:04:16Z",
         )
 
         invalid_manifest = Manifest(
@@ -171,7 +171,7 @@ class TestManifestSerializer:
                     dest_path="/path/to/dest.jpg",
                     hash="abc123",
                     size_bytes=1024,
-                    mtime=1699123456.789,
+                    mtime="2023-11-04T22:04:16Z",
                 )
             ],
         )

@@ -18,7 +18,7 @@ class Pic:
     dest_path: str
     hash: str
     size_bytes: int
-    mtime: float
+    mtime: str
 
     # Optional fields
     timestamp: Optional[datetime] = None

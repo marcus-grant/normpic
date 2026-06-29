@@ -4,7 +4,7 @@ import json
 
 # These imports will fail initially - that's the point of TDD
 from normpic.manager.photo_manager import organize_photos
-from normpic.manager.manifest_manager import load_existing_manifest
+from normpic.manager.manifest_manager import load_existing_manifest, load_source_manifest
 
 
 class TestManifestLoadingWorkflow:
@@ -161,3 +161,78 @@ class TestManifestLoadingWorkflow:
 
         # Manifest should still contain both photos
         assert len(updated_manifest.pic) == 2
+
+
+class TestSourceManifestWorkflow:
+    """Integration tests for source collection manifest read/create."""
+
+    def test_source_manifest_created_when_absent(
+        self, create_photo_with_exif, tmp_path
+    ):
+        source_dir = tmp_path / "source"
+        dest_dir = tmp_path / "dest"
+        source_dir.mkdir()
+        dest_dir.mkdir()
+
+        create_photo_with_exif(
+            source_dir / "IMG_001.jpg",
+            DateTimeOriginal="2024:01:01 10:00:00",
+            Make="Canon",
+            Model="EOS R5",
+        )
+
+        assert not (source_dir / "manifest.json").exists()
+
+        organize_photos(source_dir=source_dir, dest_dir=dest_dir, collection_name="test")
+
+        assert (source_dir / "manifest.json").exists()
+        loaded = load_source_manifest(source_dir)
+        assert loaded is not None
+        assert loaded.collection_name == "test"
+        assert len(loaded.pic) == 1
+        assert loaded.pic[0].mtime.endswith("Z")
+
+    def test_source_manifest_read_when_present(
+        self, create_photo_with_exif, tmp_path
+    ):
+        source_dir = tmp_path / "source"
+        dest_dir = tmp_path / "dest"
+        source_dir.mkdir()
+        dest_dir.mkdir()
+
+        create_photo_with_exif(
+            source_dir / "IMG_001.jpg",
+            DateTimeOriginal="2024:01:01 10:00:00",
+            Make="Canon",
+            Model="EOS R5",
+        )
+
+        # Write a valid manifest up front
+        existing = {
+            "version": "0.1.0",
+            "collection_name": "test",
+            "generated_at": "2024-01-01T00:00:00Z",
+            "collection_root": ".",
+            "pic": [
+                {
+                    "source_path": str(source_dir / "IMG_001.jpg"),
+                    "dest_path": str(source_dir / "IMG_001.jpg"),
+                    "hash": "b2b120:PZDRE6BC90T0BS0FGG0ZM7Y9",
+                    "size_bytes": 1024,
+                    "mtime": "2024-01-01T00:00:00Z",
+                    "timestamp": None,
+                    "timestamp_source": None,
+                    "camera": None,
+                    "gps": None,
+                    "errors": [],
+                }
+            ],
+        }
+        manifest_path = source_dir / "manifest.json"
+        manifest_path.write_text(json.dumps(existing), encoding="utf-8")
+        mtime_before = manifest_path.stat().st_mtime
+
+        organize_photos(source_dir=source_dir, dest_dir=dest_dir, collection_name="test")
+
+        mtime_after = manifest_path.stat().st_mtime
+        assert mtime_after == mtime_before, "source manifest.json must not be rewritten"

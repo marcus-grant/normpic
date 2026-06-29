@@ -1,6 +1,6 @@
 """Photo collection management and organization."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional, List
 
@@ -9,7 +9,12 @@ from ..model.pic import Pic
 from ..util.exif import extract_exif_data, extract_camera_info
 from ..template.filename import generate_filename
 from ..serializer.manifest import ManifestSerializer
-from .manifest_manager import ManifestManager
+from .manifest_manager import (
+    ManifestManager,
+    load_source_manifest,
+    build_source_manifest,
+    build_hash_keyed_source_index,
+)
 from ..util.error_handling import ErrorHandler
 from ..util.hash import b2b120_hash
 
@@ -35,7 +40,13 @@ def organize_photos(
     """
     # Initialize error handler
     error_handler = ErrorHandler()
-    
+
+    # Read or create the source collection manifest
+    source_manifest = load_source_manifest(source_dir)
+    if source_manifest is None:
+        source_manifest = build_source_manifest(source_dir, collection_name)
+        ManifestManager(source_dir / "manifest.json").save_manifest(source_manifest)
+
     # Load existing manifest for incremental processing
     manifest_filename = "manifest.dryrun.json" if dry_run else "manifest.json"
     manifest_path = dest_dir / manifest_filename
@@ -47,6 +58,12 @@ def organize_photos(
     if existing_manifest:
         for pic in existing_manifest.pic:
             existing_pics_by_path[pic.source_path] = pic
+
+    # Build hash-keyed index from same manifest for parallel change detection
+    hash_keyed_index = (
+        build_hash_keyed_source_index(existing_manifest)
+        if existing_manifest else {}
+    )
     
     # Find all files in source directory and handle supported/unsupported formats
     photo_extensions = {'.jpg', '.jpeg', '.png', '.heic', '.webp'}
@@ -69,10 +86,11 @@ def organize_photos(
         
         if existing_pic:
             # Check if photo needs reprocessing
+            prev_mtime = datetime.fromisoformat(existing_pic.mtime).timestamp()
             needs_processing = manifest_manager.needs_reprocessing(
                 photo_path,
                 previous_hash=existing_pic.hash,
-                previous_mtime=existing_pic.mtime,
+                previous_mtime=prev_mtime,
                 dest_path=dest_dir / existing_pic.dest_path
             )
             
@@ -315,9 +333,12 @@ def _create_ordered_pics(pics_data, collection_name: str, dest_dir: Path) -> Lis
             
             # Calculate file metadata
             timestamp_source = "exif" if exif_data.timestamp else "filename"
-            file_size = photo_path.stat().st_size
+            stat = photo_path.stat()
+            file_size = stat.st_size
             file_hash = b2b120_hash(photo_path.read_bytes())
-            file_mtime = photo_path.stat().st_mtime
+            file_mtime = datetime.fromtimestamp(
+                stat.st_mtime, tz=timezone.utc
+            ).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
             
             # Create Pic object
             pic = Pic(
