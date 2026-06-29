@@ -3,7 +3,14 @@
 import json
 
 
-from normpic.manager.manifest_manager import ManifestManager, load_existing_manifest
+from unittest.mock import patch
+
+from normpic.manager.manifest_manager import (
+    ManifestManager,
+    load_existing_manifest,
+    load_source_manifest,
+    build_source_manifest,
+)
 
 
 class TestManifestManager:
@@ -307,3 +314,95 @@ class TestChangeDetection:
         
         # Assert: File with no previous data should need processing
         assert needs_reprocessing_no_data, "File with no previous data should need processing"
+
+
+_VALID_MANIFEST = {
+    "version": "0.1.0",
+    "collection_name": "test",
+    "generated_at": "2024-01-01T00:00:00Z",
+    "collection_root": ".",
+    "pic": [
+        {
+            "source_path": "/src/a.jpg",
+            "dest_path": "/src/a.jpg",
+            "hash": "b2b120:PZDRE6BC90T0BS0FGG0ZM7Y9",
+            "size_bytes": 1024,
+            "mtime": "2024-01-01T00:00:00Z",
+            "timestamp": None,
+            "timestamp_source": None,
+            "camera": None,
+            "gps": None,
+            "errors": [],
+        }
+    ],
+}
+
+
+class TestSourceManifestLoading:
+    """Tests for load_source_manifest and build_source_manifest."""
+
+    def test_source_manifest_absent(self, tmp_path):
+        source_dir = tmp_path / "source"
+        source_dir.mkdir()
+        assert load_source_manifest(source_dir) is None
+
+    def test_source_manifest_present_and_valid(self, tmp_path):
+        source_dir = tmp_path / "source"
+        source_dir.mkdir()
+        (source_dir / "manifest.json").write_text(
+            json.dumps(_VALID_MANIFEST), encoding="utf-8"
+        )
+
+        with patch(
+            "normpic.manager.manifest_manager.impl_validate",
+            wraps=__import__(
+                "normpic.util.manifest_validate", fromlist=["impl_validate"]
+            ).impl_validate,
+        ) as mock_iv:
+            result = load_source_manifest(source_dir)
+
+        assert result is not None
+        assert result.collection_name == "test"
+        mock_iv.assert_called_once()
+
+    def test_source_manifest_present_schema_invalid(self, tmp_path):
+        source_dir = tmp_path / "source"
+        source_dir.mkdir()
+        bad = {"version": "0.1.0", "pic": []}  # missing collection_name, generated_at
+        (source_dir / "manifest.json").write_text(
+            json.dumps(bad), encoding="utf-8"
+        )
+        assert load_source_manifest(source_dir) is None
+
+    def test_source_manifest_present_impl_invalid(self, tmp_path):
+        source_dir = tmp_path / "source"
+        source_dir.mkdir()
+        bad = dict(_VALID_MANIFEST)
+        bad["collection_root"] = "foo/../../../bar"  # non-leading dotdot
+        (source_dir / "manifest.json").write_text(
+            json.dumps(bad), encoding="utf-8"
+        )
+        assert load_source_manifest(source_dir) is None
+
+    def test_build_source_manifest_empty_dir(self, tmp_path):
+        source_dir = tmp_path / "source"
+        source_dir.mkdir()
+        manifest = build_source_manifest(source_dir, "test-col")
+        assert manifest.collection_name == "test-col"
+        assert manifest.collection_root == "."
+        assert manifest.pic == []
+
+    def test_build_source_manifest_scans_photos(self, tmp_path, create_photo_with_exif):
+        source_dir = tmp_path / "source"
+        source_dir.mkdir()
+        create_photo_with_exif(source_dir / "a.jpg", DateTimeOriginal="2024:01:01 00:00:00")
+        create_photo_with_exif(source_dir / "b.jpg", DateTimeOriginal="2024:01:01 00:00:01")
+
+        manifest = build_source_manifest(source_dir, "col")
+
+        assert len(manifest.pic) == 2
+        paths = {p.source_path for p in manifest.pic}
+        assert str(source_dir / "a.jpg") in paths
+        assert str(source_dir / "b.jpg") in paths
+        for pic in manifest.pic:
+            assert pic.mtime.endswith("Z")

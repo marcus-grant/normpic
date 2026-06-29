@@ -1,6 +1,7 @@
 """Manifest management functionality."""
 
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional, Dict, Any, Union
 
@@ -9,7 +10,9 @@ from jsonschema import ValidationError
 from normpic.util.hash import b2b120_hash
 
 from ..model.manifest import Manifest
+from ..model.pic import Pic
 from ..serializer.manifest import ManifestSerializer
+from ..util.manifest_validate import impl_validate
 
 
 class ManifestManager:
@@ -189,14 +192,80 @@ class ManifestManager:
 
 def load_existing_manifest(manifest_path: Path) -> Optional[Manifest]:
     """Load existing manifest from specified path.
-    
+
     Standalone function for loading manifests from any path.
-    
+
     Args:
         manifest_path: Path to manifest.json file
-        
+
     Returns:
         Manifest object if file exists and is valid, None otherwise
     """
     manager = ManifestManager(manifest_path)
     return manager.load_manifest()
+
+
+def load_source_manifest(source_dir: Path) -> Optional[Manifest]:
+    """Load and validate the source collection manifest, if present.
+
+    Reads source_dir/manifest.json through both validation layers: schema
+    (via ManifestManager.load_manifest) and impl (via impl_validate on the
+    already-deserialized manifest dict). Returns None on any validation
+    failure or if the file is absent.
+
+    Args:
+        source_dir: Source photo directory that may contain manifest.json
+
+    Returns:
+        Manifest object if present and valid at both layers, None otherwise
+    """
+    manifest_path = source_dir / "manifest.json"
+    if not manifest_path.exists():
+        return None
+
+    manifest = ManifestManager(manifest_path).load_manifest()
+    if manifest is None:
+        return None
+
+    errors = impl_validate(manifest.to_dict())
+    if errors:
+        return None
+
+    return manifest
+
+
+def build_source_manifest(source_dir: Path, collection_name: str) -> Manifest:
+    """Scan source_dir and build a contract-shaped source Manifest.
+
+    Args:
+        source_dir: Source photo directory to scan
+        collection_name: Name for the manifest's collection_name field
+
+    Returns:
+        Manifest covering all supported photos found in source_dir
+    """
+    photo_extensions = {".jpg", ".jpeg", ".png", ".heic", ".webp"}
+    manager = ManifestManager()
+    pics = []
+    for f in sorted(source_dir.iterdir()):
+        if not f.is_file() or f.suffix.lower() not in photo_extensions:
+            continue
+        stat = f.stat()
+        file_hash = manager.compute_file_hash(f)
+        mtime_str = datetime.fromtimestamp(
+            stat.st_mtime, tz=timezone.utc
+        ).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        pics.append(Pic(
+            source_path=str(f),
+            dest_path=str(f),
+            hash=file_hash,
+            size_bytes=stat.st_size,
+            mtime=mtime_str,
+        ))
+    return Manifest(
+        version="0.1.0",
+        collection_name=collection_name,
+        generated_at=datetime.now(tz=timezone.utc),
+        pic=pics,
+        collection_root=".",
+    )

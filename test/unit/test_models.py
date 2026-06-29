@@ -19,7 +19,7 @@ class TestPic:
             dest_path="/path/to/dest.jpg",
             hash="abc123def456",
             size_bytes=1024,
-            mtime=1699123456.789,
+            mtime="2023-11-04T22:04:16Z",
         )
 
         assert pic.source_path == "/path/to/source.jpg"
@@ -41,7 +41,7 @@ class TestPic:
             dest_path="/path/to/dest.jpg",
             hash="abc123def456",
             size_bytes=1024,
-            mtime=1699123456.789,
+            mtime="2023-11-04T22:04:16Z",
             timestamp=timestamp,
             timestamp_source="exif",
             camera="Canon EOS R5",
@@ -64,7 +64,7 @@ class TestPic:
             dest_path="/path/to/dest.jpg",
             hash="abc123def456",
             size_bytes=1024,
-            mtime=1699123456.789,
+            mtime="2023-11-04T22:04:16Z",
             original_filename="photo.jpg",
         )
 
@@ -77,7 +77,7 @@ class TestPic:
             dest_path="/path/to/dest.jpg",
             hash="abc123def456",
             size_bytes=1024,
-            mtime=1699123456.789,
+            mtime="2023-11-04T22:04:16Z",
         )
 
         assert pic.original_filename is MISSING
@@ -91,7 +91,7 @@ class TestPic:
                 dest_path="/path/to/dest.jpg",
                 hash="abc123def456",
                 size_bytes=1024,
-                mtime=1699123456.789,
+                mtime="2023-11-04T22:04:16Z",
                 original_filename=None,
             )
 
@@ -103,7 +103,7 @@ class TestPic:
                 dest_path="/path/to/dest.jpg",
                 hash="abc123def456",
                 size_bytes=1024,
-                mtime=1699123456.789,
+                mtime="2023-11-04T22:04:16Z",
                 original_filename="",
             )
 
@@ -115,7 +115,7 @@ class TestPic:
                 dest_path="/path/to/dest.jpg",
                 hash="abc123def456",
                 size_bytes=1024,
-                mtime=1699123456.789,
+                mtime="2023-11-04T22:04:16Z",
                 original_filename="a/b.jpg",
             )
         with pytest.raises(ValueError):
@@ -124,7 +124,7 @@ class TestPic:
                 dest_path="/path/to/dest.jpg",
                 hash="abc123def456",
                 size_bytes=1024,
-                mtime=1699123456.789,
+                mtime="2023-11-04T22:04:16Z",
                 original_filename="a\\b.jpg",
             )
 
@@ -135,7 +135,7 @@ class TestPic:
             dest_path="/path/to/dest.jpg",
             hash="abc123def456",
             size_bytes=1024,
-            mtime=1699123456.789,
+            mtime="2023-11-04T22:04:16Z",
         )
 
         expected = {
@@ -143,7 +143,7 @@ class TestPic:
             "dest_path": "/path/to/dest.jpg",
             "hash": "abc123def456",
             "size_bytes": 1024,
-            "mtime": 1699123456.789,
+            "mtime": "2023-11-04T22:04:16Z",
             "timestamp": None,
             "timestamp_source": None,
             "camera": None,
@@ -162,7 +162,7 @@ class TestPic:
             dest_path="/path/to/dest.jpg",
             hash="abc123def456",
             size_bytes=1024,
-            mtime=1699123456.789,
+            mtime="2023-11-04T22:04:16Z",
         )
 
         assert pic.tag is None
@@ -174,7 +174,7 @@ class TestPic:
             dest_path="/path/to/dest.jpg",
             hash="abc123def456",
             size_bytes=1024,
-            mtime=1699123456.789,
+            mtime="2023-11-04T22:04:16Z",
             tag=["vacation", "2025"],
         )
 
@@ -187,7 +187,7 @@ class TestPic:
             dest_path="/path/to/dest.jpg",
             hash="abc123def456",
             size_bytes=1024,
-            mtime=1699123456.789,
+            mtime="2023-11-04T22:04:16Z",
             tag=[],
         )
 
@@ -201,7 +201,7 @@ class TestPic:
                 dest_path="/path/to/dest.jpg",
                 hash="abc123def456",
                 size_bytes=1024,
-                mtime=1699123456.789,
+                mtime="2023-11-04T22:04:16Z",
                 timestamp_source=value,
             )
 
@@ -213,7 +213,7 @@ class TestPic:
                 dest_path="/path/to/dest.jpg",
                 hash="abc123def456",
                 size_bytes=1024,
-                mtime=1699123456.789,
+                mtime="2023-11-04T22:04:16Z",
                 timestamp_source="bad",
             )
 
@@ -224,7 +224,7 @@ class TestPic:
             dest_path="/path/to/dest.jpg",
             hash="abc123def456",
             size_bytes=1024,
-            mtime=1699123456.789,
+            mtime="2023-11-04T22:04:16Z",
             timestamp_source=None,
         )
 
@@ -244,14 +244,14 @@ class TestManifest:
                 dest_path="/path/to/dest1.jpg",
                 hash="abc123",
                 size_bytes=1024,
-                mtime=1699123456.789,
+                mtime="2023-11-04T22:04:16Z",
             ),
             Pic(
                 source_path="/path/to/source2.jpg",
                 dest_path="/path/to/dest2.jpg",
                 hash="def456",
                 size_bytes=2048,
-                mtime=1699123456.789,
+                mtime="2023-11-04T22:04:16Z",
             ),
         ]
 
@@ -303,7 +303,7 @@ class TestManifest:
                 dest_path="/path/to/dest.jpg",
                 hash="abc123",
                 size_bytes=1024,
-                mtime=1699123456.789,
+                mtime="2023-11-04T22:04:16Z",
             )
         ]
 

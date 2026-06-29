@@ -57,8 +57,9 @@ PIC_SCHEMA = {
             "description": "File size in bytes"
         },
         "mtime": {
-            "type": "number",
-            "description": "File modification time (Unix timestamp) for change detection"
+            "type": "string",
+            "pattern": r"^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]+)?Z$",
+            "description": "File modification time (ISO-8601 UTC with Z suffix)"
         },
         "timestamp": {
             "type": ["string", "null"],
