@@ -1,5 +1,31 @@
 # NormPic Development Changelog
 
+## 2026-06-29
+
+### ft/hash-keyed-reprocessing
+
+Add hash-keyed change detection and fix mtime precision. Test
+count 230 -> 270.
+
+- manifest_manager: add build_hash_keyed_source_index; returns
+  {hash: Pic} from any Manifest pic list; first entry wins on
+  duplicate hash.
+- ManifestManager: add needs_reprocessing_by_hash; mirrors
+  needs_reprocessing but keyed on content hash; checks dest
+  existence via matched_pic.dest_path resolved against dest_dir.
+- photo_manager: import build_hash_keyed_source_index and build
+  hash_keyed_index from existing_manifest; no production consumer
+  yet, index available for the next PR.
+- TestHashKeyedChangeDetection: 9 tests; unit coverage for index
+  building and per-photo detection; equivalence test asserts
+  hash-keyed and path-keyed partition a shared 4-photo fixture
+  identically (NEW, CHANGED-mtime, CHANGED-dest-missing,
+  UNCHANGED).
+- needs_reprocessing and needs_reprocessing_by_hash: replace
+  abs(delta)>0.001 tolerance with ISO strftime comparison on both
+  sides; sub-microsecond float drift no longer causes false-CHANGED.
+- Remove test_mtime_tolerance; add test_mtime_roundtrip_no_false_changed.
+
 ## 2026-06-24
 
 ### ref/manifest-model-v01-contract

@@ -115,7 +115,7 @@ The PRs in order:
 - ref/pic-model-v01-contract **complete**
 - ref/manifest-model-v01-contract **complete**
 - ft/source-manifest-read
-- ft/hash-keyed-reprocessing
+- ft/hash-keyed-reprocessing **complete**
 - ref/copy-manifest-contract-fields
 - ref/symlink-reconcile-by-hash
 - ref/drop-source-dest-cutover
@@ -483,15 +483,7 @@ What must be true by this PR's end:
   source_path-keyed result on a shared fixture, proving
   equivalence before cutover.
 
-Commits:
-
-- `Ft: add hash-keyed reprocessing match`.
-  Implement the hash-keyed lookup and change detection alongside
-  the existing path; add the equivalence test.
-- `Doc: PR close per discipline preamble`.
-
-Verification at PR close: `uv run pytest test/` green; hash-keyed
-and source_path-keyed change detection agree on the fixture.
+Status: complete (2026-06-29).
 
 #### ref/copy-manifest-contract-fields
 
