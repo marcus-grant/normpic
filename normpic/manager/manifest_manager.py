@@ -122,10 +122,16 @@ class ManifestManager:
             if not dest_path.exists():
                 return True
         
-        # Check mtime change (faster than hash computation)
+        # Check mtime change (faster than hash computation).
+        # Normalize both sides to the manifest ISO format so the comparison is
+        # at microsecond precision and not subject to sub-microsecond float drift.
         if previous_mtime is not None:
             current_mtime = source_path.stat().st_mtime
-            if abs(current_mtime - previous_mtime) > 0.001:  # Allow for small float precision differences
+            _fmt = "%Y-%m-%dT%H:%M:%S.%fZ"
+            if (
+                datetime.fromtimestamp(current_mtime, tz=timezone.utc).strftime(_fmt)
+                != datetime.fromtimestamp(previous_mtime, tz=timezone.utc).strftime(_fmt)
+            ):
                 return True
         
         # Check hash change (more thorough but slower)
@@ -169,8 +175,11 @@ class ManifestManager:
             if not dest_path.exists():
                 return True
 
-        prev_mtime = datetime.fromisoformat(matched.mtime).timestamp()
-        if abs(current_mtime - prev_mtime) > 0.001:
+        _fmt = "%Y-%m-%dT%H:%M:%S.%fZ"
+        prev_mtime_float = datetime.fromisoformat(matched.mtime).timestamp()
+        current_iso = datetime.fromtimestamp(current_mtime, tz=timezone.utc).strftime(_fmt)
+        prev_iso = datetime.fromtimestamp(prev_mtime_float, tz=timezone.utc).strftime(_fmt)
+        if current_iso != prev_iso:
             return True
 
         return False

@@ -489,15 +489,43 @@ class TestHashKeyedChangeDetection:
         current_mtime = prev_mtime + 1.0
         assert manager.needs_reprocessing_by_hash("b2b120:AAAA", index, current_mtime) is True
 
-    def test_mtime_tolerance(self):
-        mtime_str = "2024-01-01T00:00:00.000000Z"
-        prev_mtime = datetime.fromisoformat(mtime_str).timestamp()
-        pic = _make_pic("/src/a.jpg", "a.jpg", "b2b120:AAAA", 100, mtime_str)
-        index = {"b2b120:AAAA": pic}
+    def test_mtime_roundtrip_no_false_changed(self, tmp_path):
+        """st_mtime through ISO round-trip must not produce a false CHANGED."""
+        photo = tmp_path / "photo.jpg"
+        photo.write_bytes(b"roundtrip test content")
 
         manager = ManifestManager()
-        current_mtime = prev_mtime + 0.0005
-        assert manager.needs_reprocessing_by_hash("b2b120:AAAA", index, current_mtime) is False
+        _fmt = "%Y-%m-%dT%H:%M:%S.%fZ"
+
+        # Reproduce what the manifest-writing path does
+        st_mtime = photo.stat().st_mtime
+        mtime_iso = datetime.fromtimestamp(st_mtime, tz=timezone.utc).strftime(_fmt)
+
+        # needs_reprocessing: previous_mtime arrives as ISO-parsed float
+        previous_mtime = datetime.fromisoformat(mtime_iso).timestamp()
+        assert manager.needs_reprocessing(
+            photo,
+            previous_hash=manager.compute_file_hash(photo),
+            previous_mtime=previous_mtime,
+        ) is False
+
+        # needs_reprocessing_by_hash: current_mtime is the raw st_mtime float;
+        # matched.mtime is the strftime ISO string (same float, same origin)
+        hash_val = manager.compute_file_hash(photo)
+        pic = _make_pic(str(photo), "dest.jpg", hash_val, photo.stat().st_size, mtime_iso)
+        assert manager.needs_reprocessing_by_hash(hash_val, {hash_val: pic}, st_mtime) is False
+
+        # Stored-string path: save the manifest to disk and reload it so that
+        # matched.mtime arrives as a string from JSON, not from a float in this
+        # test scope -- exercises fromisoformat().timestamp()->fromtimestamp() path
+        manifest_path = tmp_path / "test_manifest.json"
+        ManifestManager(manifest_path).save_manifest(_make_manifest([pic]))
+        loaded = ManifestManager(manifest_path).load_manifest()
+        assert loaded is not None
+        loaded_pic = loaded.pic[0]
+        assert manager.needs_reprocessing_by_hash(
+            hash_val, {hash_val: loaded_pic}, st_mtime
+        ) is False
 
     def test_dest_missing(self, tmp_path):
         dest_dir = tmp_path / "dest"
