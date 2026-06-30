@@ -224,3 +224,51 @@ class TestPhotoOrganizationWorkflow:
         for pic in manifest.pic:
             assert pic.timestamp_source == "filename"
             assert pic.camera is None  # No EXIF camera data
+
+    def test_copy_manifest_pics_carry_relative_path(
+        self, create_photo_with_exif, tmp_path
+    ):
+        """Each organized pic carries relative_path equal to its bare dest filename."""
+        source_dir = tmp_path / "source"
+        dest_dir = tmp_path / "dest"
+        source_dir.mkdir()
+        dest_dir.mkdir()
+
+        create_photo_with_exif(
+            source_dir / "IMG_001.jpg",
+            DateTimeOriginal="2024:06:01 10:00:00",
+            Make="Canon",
+            Model="EOS R5",
+        )
+        create_photo_with_exif(
+            source_dir / "IMG_002.jpg",
+            DateTimeOriginal="2024:06:01 10:00:01",
+            Make="Canon",
+            Model="EOS R5",
+        )
+
+        manifest = organize_photos(
+            source_dir=source_dir,
+            dest_dir=dest_dir,
+            collection_name="summer",
+        )
+
+        assert len(manifest.pic) == 2
+        for pic in manifest.pic:
+            assert pic.relative_path is not None, f"relative_path missing on {pic.dest_path}"
+            assert pic.relative_path == pic.dest_path, (
+                f"relative_path {pic.relative_path!r} != dest_path {pic.dest_path!r}"
+            )
+            # Canonical-form guard: bare filename must satisfy contract rules
+            rp = pic.relative_path
+            assert not rp.startswith("/")
+            assert not rp.startswith("./")
+            assert "\\" not in rp
+            assert ".." not in rp.split("/")
+
+        # Round-trip: relative_path must survive JSON serialization
+        serializer = ManifestSerializer()
+        manifest_json = (dest_dir / "manifest.json").read_text()
+        loaded = serializer.deserialize(manifest_json)
+        for orig, loaded_pic in zip(manifest.pic, loaded.pic):
+            assert loaded_pic.relative_path == orig.relative_path

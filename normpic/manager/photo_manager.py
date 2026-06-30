@@ -13,7 +13,6 @@ from .manifest_manager import (
     ManifestManager,
     load_source_manifest,
     build_source_manifest,
-    build_hash_keyed_source_index,
 )
 from ..util.error_handling import ErrorHandler
 from ..util.hash import b2b120_hash
@@ -59,12 +58,6 @@ def organize_photos(
         for pic in existing_manifest.pic:
             existing_pics_by_path[pic.source_path] = pic
 
-    # Build hash-keyed index from same manifest for parallel change detection
-    hash_keyed_index = (
-        build_hash_keyed_source_index(existing_manifest)
-        if existing_manifest else {}
-    )
-    
     # Find all files in source directory and handle supported/unsupported formats
     photo_extensions = {'.jpg', '.jpeg', '.png', '.heic', '.webp'}
     source_photos = []
@@ -344,6 +337,7 @@ def _create_ordered_pics(pics_data, collection_name: str, dest_dir: Path) -> Lis
             pic = Pic(
                 source_path=str(photo_path),
                 dest_path=dest_filename,
+                relative_path=dest_filename,
                 hash=file_hash,
                 size_bytes=file_size,
                 mtime=file_mtime,

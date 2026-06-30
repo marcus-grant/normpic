@@ -68,7 +68,8 @@ class ManifestSerializer:
                 timestamp_source=pic_data["timestamp_source"],
                 camera=pic_data["camera"],
                 gps=pic_data["gps"],
-                errors=pic_data["errors"] or []
+                errors=pic_data["errors"] or [],
+                relative_path=pic_data.get("relative_path"),
             )
             pics.append(pic)
         
