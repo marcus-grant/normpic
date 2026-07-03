@@ -116,7 +116,7 @@ The PRs in order:
 - ref/manifest-model-v01-contract **complete**
 - ft/source-manifest-read
 - ft/hash-keyed-reprocessing
-- ref/copy-manifest-contract-fields
+- ref/copy-manifest-contract-fields **complete**
 - ref/symlink-reconcile-by-hash
 - ref/drop-source-dest-cutover
 - ref/serializer-v01-contract
@@ -487,37 +487,10 @@ and source_path-keyed change detection agree on the fixture.
 
 #### ref/copy-manifest-contract-fields
 
-Bring the copy (organized output) manifest to the v0.1 contract
-field shape in parallel: populate relative_path and the organized
-filename per contract.
-source_path and dest_path are still emitted in this PR so the old
-reprocessing and symlink paths keep working; their removal is the
-cutover PR.
-
-Files touched: `normpic/manager/photo_manager.py`,
-`normpic/serializer/manifest.py` if emit shape changes,
-`test/unit/test_manifest_manager.py`,
-`test/integration/test_photo_organization_workflow.py`,
-`test/integration/test_exif_filename_workflow.py`.
-
-What must be true by this PR's end:
-
-- Each copy-manifest pic carries relative_path (organized file
-  location relative to collection_root, default ".") and the
-  organized filename per the rename heuristic.
-- The rename heuristic is the existing baked-in one (deterministic
-  temporal sort with burst counters); not reimplemented here.
-- source_path/dest_path remain emitted for now; old paths green.
-
-Commits:
-
-- `Ref: populate copy manifest contract fields`.
-  Set relative_path and organized filename at Pic construction;
-  update tests in lockstep.
-- `Doc: PR close per discipline preamble`.
-
-Verification at PR close: `uv run pytest test/` green; copy
-manifest carries contract fields while legacy fields still present.
+Status: complete (2026-06-30).
+Copy manifest populated with relative_path in canonical form;
+source_path/dest_path still emitted; parked hash index relocated.
+See CHANGELOG entry under 2026-06-30 for the full summary.
 
 #### ref/symlink-reconcile-by-hash
 

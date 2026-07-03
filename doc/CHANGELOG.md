@@ -1,5 +1,32 @@
 # NormPic Development Changelog
 
+## 2026-06-30
+
+### ref/copy-manifest-contract-fields
+
+Copy manifest now carries relative_path in canonical form;
+source_path and dest_path still emitted; parked hash index
+relocated. Test count 270 -> 275.
+
+- pic.py: add relative_path: Optional[str] = None; to_dict()
+  emits it when not None (absent on old records).
+- schema_v0 PIC_SCHEMA: add relative_path property with
+  type-guarded if/then structure copied verbatim from
+  schema/v0.1.0.json; save-time validation catches non-canonical
+  values before the cutover PR.
+- _create_ordered_pics: assign relative_path=dest_filename at Pic
+  construction; same bare organized name as dest_path.
+- ManifestSerializer.deserialize: pass relative_path through from
+  JSON so the field survives round-trips.
+- Remove premature hash_keyed_index build from photo_manager
+  (import and call site); definition stays in manifest_manager;
+  call site lands in ref/symlink-reconcile-by-hash where consumed.
+- TestCopyManifestRelativePath: 4 unit tests (emitted when set,
+  absent when None, canonical form, schema rejects non-canonical).
+- test_copy_manifest_pics_carry_relative_path: integration test
+  asserts relative_path equals dest_path on all pics and survives
+  JSON round-trip.
+
 ## 2026-06-29
 
 ### ft/hash-keyed-reprocessing
