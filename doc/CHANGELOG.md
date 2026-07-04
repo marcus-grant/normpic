@@ -4,24 +4,35 @@
 
 ### ref/symlink-reconcile-by-hash
 
-Source manifest pics carry relative_path; symlinks created from
-runtime hash reconciliation of both manifests via the contract
-algorithm. Burst-counter dead loop removed. Test count 275 -> 278.
+Symlinks created from runtime hash reconciliation of both manifests;
+source manifest pics carry relative_path; burst-counter dead loop
+removed; producer now emits generated_at and timestamp in canonical
+UTC-Z form. Manual wedding-archive run: 645 symlinks, zero dangling,
+manifest validates canonical. Test count 275 -> 280.
 
 - build_source_manifest: sets relative_path=f.name on each Pic;
   bare filename is the path relative to collection_root ".".
 - resolve_symlink_pairs_by_hash: new helper in photo_manager;
-  resolves (source, dest) pairs via contract algorithm on both
-  manifests; no-match raises RuntimeError.
+  resolves (source, dest) pairs via the contract algorithm on both
+  manifests; no source-hash match raises RuntimeError explicitly.
 - organize_photos symlink loop replaced with helper call; no
   stored source_path or dest_path consumed for linking.
 - Equivalence tests: hand-built fixture and producer-generated
-  (build_source_manifest + organize_photos real paths) both confirm
-  hash-reconciled pairs equal stored-field pairs.
-- test_source_manifest_read_when_present: real file hash replaces
-  fake so hash-keyed reconciliation resolves correctly.
+  both confirm hash-reconciled pairs equal stored-field pairs.
+- test_source_manifest_read_when_present: real file hash used so
+  hash-keyed reconciliation resolves correctly.
 - _create_ordered_pics: dead inner burst-counter loop deleted;
   Pic-creation loop already recomputed dest_filename identically.
+- Fix (surfaced by manual archive run, not in original plan):
+  photo_manager emitted naive generated_at; Manifest.to_dict and
+  Pic.to_dict used isoformat() which produces +00:00 for UTC-aware
+  datetimes -- the canonical schema explicitly rejects +00:00.
+  Fixed to datetime.now(tz=timezone.utc) and strftime Z suffix.
+  Two producer-conformance tests added: generated_at Z suffix and
+  full schema/v0.1.0.json validation via organize_photos output.
+- manifest-contract.md: added co-location precondition section
+  documenting the v0.1 limitation that collection_root resolution
+  is positional and depends on the manifest's physical location.
 
 ## 2026-06-30
 

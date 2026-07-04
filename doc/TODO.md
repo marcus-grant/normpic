@@ -494,37 +494,10 @@ See CHANGELOG entry under 2026-06-30 for the full summary.
 
 #### ref/symlink-reconcile-by-hash
 
-Switch symlink creation to reconcile the source and copy manifests
-by hash at runtime, computing the transient source and dest paths
-from the two manifests instead of reading stored source_path and
-dest_path off pics.
-The dest filename is recomputable from the deterministic heuristic;
-the source location resolves from the source manifest via the
-contract resolution algorithm (manifest dir + collection_root +
-relative_path).
-
-Files touched: `normpic/manager/photo_manager.py`,
-`test/unit/test_manifest_manager.py`,
-`test/integration/test_photo_organization_workflow.py`.
-
-What must be true by this PR's end:
-
-- Symlink creation derives each (source, dest) pair by matching the
-  two manifests on b2b120 hash, at runtime.
-- No symlink path is read from a stored source_path or dest_path
-  field.
-- The duplicated burst-counter filename loop in _create_ordered_pics
-  is collapsed to a single computation while here.
-
-Commits:
-
-- `Ref: reconcile symlink paths by hash at runtime`.
-  Replace stored-field path use with hash reconciliation; collapse
-  the duplicate counter loop; update tests.
-- `Doc: PR close per discipline preamble`.
-
-Verification at PR close: `uv run pytest test/` green; symlinks are
-created from runtime hash reconciliation, not stored paths.
+Status: complete (2026-07-04).
+Symlinks by hash reconciliation, source relative_path populated,
+burst-counter collapse, canonical UTC-Z fix, producer-conformance
+tests. See CHANGELOG entry under 2026-07-04 for full summary.
 
 #### ref/drop-source-dest-cutover
 
