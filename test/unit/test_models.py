@@ -1,7 +1,7 @@
 """Tests for data models."""
 
 import pytest
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 from normpic.model.pic import Pic, MISSING
@@ -295,7 +295,7 @@ class TestManifest:
 
     def test_manifest_to_dict(self):
         """Test Manifest conversion to dictionary."""
-        generated_at = datetime(2025, 11, 6, 19, 30, 0)
+        generated_at = datetime(2025, 11, 6, 19, 30, 0, tzinfo=timezone.utc)
 
         pics = [
             Pic(
@@ -318,7 +318,7 @@ class TestManifest:
 
         assert result["version"] == "0.1.0"
         assert result["collection_name"] == "test-collection"
-        assert result["generated_at"] == generated_at.isoformat()
+        assert result["generated_at"] == "2025-11-06T19:30:00.000000Z"
         assert result["collection_root"] == "."
         assert len(result["pic"]) == 1
         assert result["pic"][0]["source_path"] == "/path/to/source.jpg"

@@ -1,7 +1,7 @@
 """Tests for manifest serializer."""
 
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pytest
 from jsonschema import ValidationError
@@ -16,7 +16,7 @@ class TestManifestSerializer:
 
     def test_serialize_manifest_to_json(self):
         """Test serializing manifest to JSON string."""
-        generated_at = datetime(2025, 11, 6, 19, 30, 0)
+        generated_at = datetime(2025, 11, 6, 19, 30, 0, tzinfo=timezone.utc)
 
         pics = [
             Pic(
@@ -42,7 +42,7 @@ class TestManifestSerializer:
         parsed = json.loads(json_str)
         assert parsed["version"] == "0.1.0"
         assert parsed["collection_name"] == "test-collection"
-        assert parsed["generated_at"] == "2025-11-06T19:30:00"
+        assert parsed["generated_at"] == "2025-11-06T19:30:00.000000Z"
         assert len(parsed["pic"]) == 1
 
     def test_deserialize_json_to_manifest(self):
@@ -80,7 +80,7 @@ class TestManifestSerializer:
 
     def test_round_trip_serialization(self):
         """Test that serialize -> deserialize preserves data."""
-        generated_at = datetime(2025, 11, 6, 19, 30, 0)
+        generated_at = datetime(2025, 11, 6, 19, 30, 0, tzinfo=timezone.utc)
 
         original_manifest = Manifest(
             version="0.1.0",

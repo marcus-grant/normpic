@@ -60,7 +60,10 @@ class Pic:
             "hash": self.hash,
             "size_bytes": self.size_bytes,
             "mtime": self.mtime,
-            "timestamp": self.timestamp.isoformat() if self.timestamp else None,
+            "timestamp": (
+                self.timestamp.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                if self.timestamp else None
+            ),
             "timestamp_source": self.timestamp_source,
             "camera": self.camera,
             "gps": self.gps,

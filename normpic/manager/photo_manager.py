@@ -148,7 +148,7 @@ def organize_photos(
     manifest = Manifest(
         version="0.1.0",
         collection_name=collection_name,
-        generated_at=datetime.now(),
+        generated_at=datetime.now(tz=timezone.utc),
         pic=all_pics,
         collection_description=collection_description,
         config={"collection_name": collection_name},
