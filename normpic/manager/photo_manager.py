@@ -381,7 +381,10 @@ def resolve_symlink_pairs_by_hash(
         source_pic = index.get(pic.hash)
         if source_pic is None:
             raise RuntimeError(f"no source match for hash: {pic.hash}")
-        assert source_pic.relative_path is not None
+        if source_pic.relative_path is None:
+            raise RuntimeError(
+                f"source pic has no relative_path: {source_pic.hash}"
+            )
         source_resolved = (
             source_dir / source_manifest.collection_root / source_pic.relative_path
         ).resolve()
