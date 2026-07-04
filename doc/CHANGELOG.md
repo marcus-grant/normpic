@@ -1,5 +1,28 @@
 # NormPic Development Changelog
 
+## 2026-07-04
+
+### ref/symlink-reconcile-by-hash
+
+Source manifest pics carry relative_path; symlinks created from
+runtime hash reconciliation of both manifests via the contract
+algorithm. Burst-counter dead loop removed. Test count 275 -> 278.
+
+- build_source_manifest: sets relative_path=f.name on each Pic;
+  bare filename is the path relative to collection_root ".".
+- resolve_symlink_pairs_by_hash: new helper in photo_manager;
+  resolves (source, dest) pairs via contract algorithm on both
+  manifests; no-match raises RuntimeError.
+- organize_photos symlink loop replaced with helper call; no
+  stored source_path or dest_path consumed for linking.
+- Equivalence tests: hand-built fixture and producer-generated
+  (build_source_manifest + organize_photos real paths) both confirm
+  hash-reconciled pairs equal stored-field pairs.
+- test_source_manifest_read_when_present: real file hash replaces
+  fake so hash-keyed reconciliation resolves correctly.
+- _create_ordered_pics: dead inner burst-counter loop deleted;
+  Pic-creation loop already recomputed dest_filename identically.
+
 ## 2026-06-30
 
 ### ref/copy-manifest-contract-fields

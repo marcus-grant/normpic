@@ -117,7 +117,7 @@ The PRs in order:
 - ft/source-manifest-read
 - ft/hash-keyed-reprocessing
 - ref/copy-manifest-contract-fields **complete**
-- ref/symlink-reconcile-by-hash
+- ref/symlink-reconcile-by-hash **complete**
 - ref/drop-source-dest-cutover
 - ref/serializer-v01-contract
 - chr/pyright-clean (end of Phase B; see body below)
