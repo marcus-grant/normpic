@@ -310,12 +310,7 @@ def _create_ordered_pics(pics_data, collection_name: str, dest_dir: Path) -> Lis
             parts.append(get_camera_code(first_camera_info))
             
             base_filename = "-".join(parts)
-            
-            for counter, (i, photo_path, exif_data, camera_info) in enumerate(group_photos):
-                file_extension = photo_path.suffix
-                counter_char = BASE32_ALPHABET[counter]
-                dest_filename = f"{base_filename}-{counter_char}{file_extension}"
-        
+
         # Create Pic objects for this group
         for j, (i, photo_path, exif_data, camera_info) in enumerate(group_photos):
             if len(group_photos) > 1:
