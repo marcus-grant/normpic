@@ -304,6 +304,7 @@ def build_source_manifest(source_dir: Path, collection_name: str) -> Manifest:
             hash=file_hash,
             size_bytes=stat.st_size,
             mtime=mtime_str,
+            relative_path=f.name,
         ))
     return Manifest(
         version="0.1.0",

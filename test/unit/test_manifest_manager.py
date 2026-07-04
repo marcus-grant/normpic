@@ -410,6 +410,12 @@ class TestSourceManifestLoading:
         assert str(source_dir / "b.jpg") in paths
         for pic in manifest.pic:
             assert pic.mtime.endswith("Z")
+            assert pic.relative_path is not None
+            assert pic.relative_path == pic.source_path.split("/")[-1]
+            assert not pic.relative_path.startswith("/")
+            assert not pic.relative_path.startswith("./")
+            assert "\\" not in pic.relative_path
+            assert ".." not in pic.relative_path.split("/")
 
 
 def _make_manifest(pics):
