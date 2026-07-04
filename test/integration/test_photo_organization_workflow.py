@@ -1,10 +1,13 @@
 """Integration tests for complete photo organization workflow with manifest generation."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 # These imports will fail initially - that's the point of TDD
-from normpic.manager.photo_manager import organize_photos
+from normpic.manager.photo_manager import organize_photos, resolve_symlink_pairs_by_hash
+from normpic.manager.manifest_manager import ManifestManager
+from normpic.model.manifest import Manifest
+from normpic.model.pic import Pic
 from normpic.serializer.manifest import ManifestSerializer
 
 
@@ -272,3 +275,155 @@ class TestPhotoOrganizationWorkflow:
         loaded = serializer.deserialize(manifest_json)
         for orig, loaded_pic in zip(manifest.pic, loaded.pic):
             assert loaded_pic.relative_path == orig.relative_path
+
+
+class TestSymlinkReconciliationByHash:
+    """Equivalence tests for resolve_symlink_pairs_by_hash."""
+
+    def _make_mtime_str(self, f: Path) -> str:
+        """Format a file's mtime as the manifest ISO string."""
+        return datetime.fromtimestamp(
+            f.stat().st_mtime, tz=timezone.utc
+        ).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
+    def test_hash_reconciliation_agrees_with_stored_paths(self, tmp_path):
+        """Hand-built fixture: hash-reconciled pairs equal stored-field pairs."""
+        source_dir = tmp_path / "source"
+        dest_dir = tmp_path / "dest"
+        source_dir.mkdir()
+        dest_dir.mkdir()
+
+        src_a = source_dir / "IMG_001.jpg"
+        src_b = source_dir / "IMG_002.jpg"
+        src_a.write_bytes(b"content-alpha")
+        src_b.write_bytes(b"content-beta")
+
+        manager = ManifestManager()
+        hash_a = manager.compute_file_hash(src_a)
+        hash_b = manager.compute_file_hash(src_b)
+
+        source_manifest = Manifest(
+            version="0.1.0",
+            collection_name="test",
+            generated_at=datetime.now(tz=timezone.utc),
+            collection_root=".",
+            pic=[
+                Pic(
+                    source_path=str(src_a),
+                    dest_path=str(src_a),
+                    hash=hash_a,
+                    size_bytes=src_a.stat().st_size,
+                    mtime=self._make_mtime_str(src_a),
+                    relative_path=src_a.name,
+                ),
+                Pic(
+                    source_path=str(src_b),
+                    dest_path=str(src_b),
+                    hash=hash_b,
+                    size_bytes=src_b.stat().st_size,
+                    mtime=self._make_mtime_str(src_b),
+                    relative_path=src_b.name,
+                ),
+            ],
+        )
+
+        copy_pics = [
+            Pic(
+                source_path=str(src_a),
+                dest_path="col-001.jpg",
+                hash=hash_a,
+                size_bytes=src_a.stat().st_size,
+                mtime=self._make_mtime_str(src_a),
+                relative_path="col-001.jpg",
+            ),
+            Pic(
+                source_path=str(src_b),
+                dest_path="col-002.jpg",
+                hash=hash_b,
+                size_bytes=src_b.stat().st_size,
+                mtime=self._make_mtime_str(src_b),
+                relative_path="col-002.jpg",
+            ),
+        ]
+
+        old_pairs = [
+            (Path(p.source_path).resolve(), dest_dir / p.dest_path)
+            for p in copy_pics
+        ]
+        new_pairs = resolve_symlink_pairs_by_hash(
+            source_manifest, source_dir, copy_pics, dest_dir
+        )
+
+        assert new_pairs == old_pairs
+
+    def test_hash_reconciliation_agrees_with_producer_generated(
+        self, create_photo_with_exif, tmp_path
+    ):
+        """Producer-generated manifests: hash-reconciled pairs equal stored-field pairs."""
+        source_dir = tmp_path / "source"
+        dest_dir = tmp_path / "dest"
+        source_dir.mkdir()
+        dest_dir.mkdir()
+
+        create_photo_with_exif(
+            source_dir / "IMG_001.jpg",
+            DateTimeOriginal="2024:06:01 10:00:00",
+            Make="Canon",
+            Model="EOS R5",
+        )
+        create_photo_with_exif(
+            source_dir / "IMG_002.jpg",
+            DateTimeOriginal="2024:06:01 10:00:01",
+            Make="Canon",
+            Model="EOS R5",
+        )
+
+        copy_manifest = organize_photos(
+            source_dir=source_dir,
+            dest_dir=dest_dir,
+            collection_name="wedding",
+        )
+
+        source_manifest = ManifestSerializer().deserialize(
+            (source_dir / "manifest.json").read_text()
+        )
+
+        old_pairs = [
+            (Path(p.source_path).resolve(), dest_dir / p.dest_path)
+            for p in copy_manifest.pic
+        ]
+        new_pairs = resolve_symlink_pairs_by_hash(
+            source_manifest, source_dir, copy_manifest.pic, dest_dir
+        )
+
+        assert new_pairs == old_pairs
+
+    def test_no_source_match_raises(self, tmp_path):
+        """Copy pic whose hash is absent from source index raises RuntimeError."""
+        source_dir = tmp_path / "source"
+        dest_dir = tmp_path / "dest"
+        source_dir.mkdir()
+        dest_dir.mkdir()
+
+        source_manifest = Manifest(
+            version="0.1.0",
+            collection_name="test",
+            generated_at=datetime.now(tz=timezone.utc),
+            collection_root=".",
+            pic=[],
+        )
+
+        orphan = Pic(
+            source_path="/src/orphan.jpg",
+            dest_path="orphan-copy.jpg",
+            hash="b2b120:ZZZZZZZZZZZZZZZZZZZZZZZZ",
+            size_bytes=1,
+            mtime="2024-01-01T00:00:00.000000Z",
+            relative_path="orphan-copy.jpg",
+        )
+
+        import pytest
+        with pytest.raises(RuntimeError, match="no source match for hash"):
+            resolve_symlink_pairs_by_hash(
+                source_manifest, source_dir, [orphan], dest_dir
+            )

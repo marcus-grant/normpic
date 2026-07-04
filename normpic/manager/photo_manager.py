@@ -2,7 +2,7 @@
 
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional, List
+from typing import List, Optional, Tuple
 
 from ..model.manifest import Manifest
 from ..model.pic import Pic
@@ -13,6 +13,7 @@ from .manifest_manager import (
     ManifestManager,
     load_source_manifest,
     build_source_manifest,
+    build_hash_keyed_source_index,
 )
 from ..util.error_handling import ErrorHandler
 from ..util.hash import b2b120_hash
@@ -135,13 +136,13 @@ def organize_photos(
     
     # Create symlinks for newly processed photos (unless dry-run)
     if not dry_run:
-        for pic in newly_processed_pics:
-            dest_path = dest_dir / pic.dest_path
+        pairs = resolve_symlink_pairs_by_hash(
+            source_manifest, source_dir, newly_processed_pics, dest_dir
+        )
+        for source_resolved, dest_path in pairs:
             dest_path.parent.mkdir(parents=True, exist_ok=True)
-            
             if not dest_path.exists():
-                source_path = Path(pic.source_path)
-                dest_path.symlink_to(source_path.resolve())
+                dest_path.symlink_to(source_resolved)
     
     # Create and save manifest
     manifest = Manifest(
@@ -354,3 +355,41 @@ def _create_ordered_pics(pics_data, collection_name: str, dest_dir: Path) -> Lis
             pics[i] = pic  # Maintain original order
     
     return [pic for pic in pics if pic is not None]
+
+
+def resolve_symlink_pairs_by_hash(
+    source_manifest: Manifest,
+    source_dir: Path,
+    copy_pics: List[Pic],
+    dest_dir: Path,
+) -> List[Tuple[Path, Path]]:
+    """Resolve (source, dest) path pairs for symlink creation via hash reconciliation.
+
+    Implements the contract resolution algorithm for both manifests:
+    full location = directory_of(manifest) / collection_root / relative_path.
+
+    Args:
+        source_manifest: Source collection manifest with hash-indexed pics.
+        source_dir: Directory containing the source manifest file.
+        copy_pics: Pics from the copy manifest to resolve.
+        dest_dir: Directory containing the copy manifest file.
+
+    Returns:
+        List of (source_resolved, dest_path) tuples, one per copy pic.
+
+    Raises:
+        RuntimeError: If any copy pic's hash is absent from the source manifest.
+    """
+    index = build_hash_keyed_source_index(source_manifest)
+    pairs: List[Tuple[Path, Path]] = []
+    for pic in copy_pics:
+        source_pic = index.get(pic.hash)
+        if source_pic is None:
+            raise RuntimeError(f"no source match for hash: {pic.hash}")
+        assert source_pic.relative_path is not None
+        source_resolved = (
+            source_dir / source_manifest.collection_root / source_pic.relative_path
+        ).resolve()
+        dest = dest_dir / (pic.relative_path or pic.dest_path)
+        pairs.append((source_resolved, dest))
+    return pairs

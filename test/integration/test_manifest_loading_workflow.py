@@ -5,6 +5,7 @@ import json
 # These imports will fail initially - that's the point of TDD
 from normpic.manager.photo_manager import organize_photos
 from normpic.manager.manifest_manager import load_existing_manifest, load_source_manifest
+from normpic.util.hash import b2b120_hash
 
 
 class TestManifestLoadingWorkflow:
@@ -207,7 +208,9 @@ class TestSourceManifestWorkflow:
             Model="EOS R5",
         )
 
-        # Write a valid manifest up front
+        # Write a valid manifest up front with the real hash so hash-keyed
+        # reconciliation in organize_photos can resolve the source pic.
+        real_hash = b2b120_hash((source_dir / "IMG_001.jpg").read_bytes())
         existing = {
             "version": "0.1.0",
             "collection_name": "test",
@@ -217,14 +220,15 @@ class TestSourceManifestWorkflow:
                 {
                     "source_path": str(source_dir / "IMG_001.jpg"),
                     "dest_path": str(source_dir / "IMG_001.jpg"),
-                    "hash": "b2b120:PZDRE6BC90T0BS0FGG0ZM7Y9",
-                    "size_bytes": 1024,
+                    "hash": real_hash,
+                    "size_bytes": (source_dir / "IMG_001.jpg").stat().st_size,
                     "mtime": "2024-01-01T00:00:00Z",
                     "timestamp": None,
                     "timestamp_source": None,
                     "camera": None,
                     "gps": None,
                     "errors": [],
+                    "relative_path": "IMG_001.jpg",
                 }
             ],
         }
