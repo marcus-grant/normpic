@@ -277,6 +277,128 @@ class TestPhotoOrganizationWorkflow:
         for orig, loaded_pic in zip(manifest.pic, loaded.pic):
             assert loaded_pic.relative_path == orig.relative_path
 
+    def test_hash_keyed_reprocessing_recognizes_content_at_new_path(
+        self, create_photo_with_exif, tmp_path
+    ):
+        """Content-identical file at a different source path is recognized as unchanged.
+
+        Discriminating observable: source_path in the returned manifest.
+        Under source_path-keying the phantom key misses, the file is reprocessed,
+        and source_path becomes str(actual source path).
+        Under hash-keying the hash hits, the old pic is reused, and source_path
+        stays as the phantom value.
+        """
+        import json as _json
+
+        source_dir = tmp_path / "source"
+        dest_dir = tmp_path / "dest"
+        source_dir.mkdir()
+        dest_dir.mkdir()
+
+        create_photo_with_exif(
+            source_dir / "IMG_001.jpg",
+            DateTimeOriginal="2024:10:05 14:30:45",
+            Make="Canon",
+            Model="EOS R5",
+        )
+
+        real_hash = ManifestManager().compute_file_hash(source_dir / "IMG_001.jpg")
+        stat = (source_dir / "IMG_001.jpg").stat()
+        mtime_str = datetime.fromtimestamp(
+            stat.st_mtime, tz=timezone.utc
+        ).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
+        phantom_source_path = "/phantom/original/path.jpg"
+        dest_filename = "existing-dest.jpg"
+        fake_manifest = {
+            "version": "0.1.0",
+            "collection_name": "test",
+            "generated_at": "2024-10-05T14:30:45.000000Z",
+            "collection_root": ".",
+            "pic": [{
+                "source_path": phantom_source_path,
+                "dest_path": dest_filename,
+                "relative_path": dest_filename,
+                "hash": real_hash,
+                "size_bytes": stat.st_size,
+                "mtime": mtime_str,
+                "timestamp": None,
+                "timestamp_source": None,
+                "camera": None,
+                "gps": None,
+                "errors": [],
+            }],
+        }
+        (dest_dir / "manifest.json").write_text(_json.dumps(fake_manifest))
+        (dest_dir / dest_filename).symlink_to((source_dir / "IMG_001.jpg").resolve())
+
+        manifest = organize_photos(
+            source_dir=source_dir,
+            dest_dir=dest_dir,
+            collection_name="test",
+        )
+
+        assert len(manifest.pic) == 1
+        assert manifest.pic[0].source_path == phantom_source_path, (
+            f"Expected source_path={phantom_source_path!r}, "
+            f"got={manifest.pic[0].source_path!r}. "
+            "Source_path-keying misses the phantom key and reprocesses the file; "
+            "hash-keying finds the hash and reuses the old pic."
+        )
+
+    def test_stat_skip_prevents_rehash_for_unchanged_file(
+        self, create_photo_with_exif, tmp_path
+    ):
+        """An unchanged file (same path, mtime, size) is not rehashed on a second run.
+
+        Discriminating observable: total b2b120_hash calls across photo_manager
+        and manifest_manager on the second run.
+        Current code: 1 (manifest_manager.needs_reprocessing hash-verifies).
+        Hash-keyed without stat-skip: 1 (detection loop computes hash).
+        Hash-keyed with stat-skip: 0 (stored hash reused; no file read).
+        """
+        import normpic.manager.photo_manager as _pm
+        import normpic.manager.manifest_manager as _mm
+        from unittest.mock import patch
+
+        source_dir = tmp_path / "source"
+        dest_dir = tmp_path / "dest"
+        source_dir.mkdir()
+        dest_dir.mkdir()
+
+        create_photo_with_exif(
+            source_dir / "IMG_001.jpg",
+            DateTimeOriginal="2024:10:05 14:30:45",
+            Make="Canon",
+            Model="EOS R5",
+        )
+
+        organize_photos(
+            source_dir=source_dir,
+            dest_dir=dest_dir,
+            collection_name="test",
+        )
+
+        real_pm_hash = _pm.b2b120_hash
+        real_mm_hash = _mm.b2b120_hash
+
+        with (
+            patch.object(_pm, "b2b120_hash", wraps=real_pm_hash) as mock_pm,
+            patch.object(_mm, "b2b120_hash", wraps=real_mm_hash) as mock_mm,
+        ):
+            organize_photos(
+                source_dir=source_dir,
+                dest_dir=dest_dir,
+                collection_name="test",
+            )
+
+        total = mock_pm.call_count + mock_mm.call_count
+        assert total == 0, (
+            f"Stat-skip should prevent all rehashing for an unchanged file; "
+            f"got {mock_pm.call_count} photo_manager + "
+            f"{mock_mm.call_count} manifest_manager = {total} calls"
+        )
+
 
 class TestSymlinkReconciliationByHash:
     """Equivalence tests for resolve_symlink_pairs_by_hash."""

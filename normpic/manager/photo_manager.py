@@ -20,21 +20,23 @@ from ..util.hash import b2b120_hash
 
 
 def organize_photos(
-    source_dir: Path, 
+    source_dir: Path,
     dest_dir: Path,
     collection_name: str,
     collection_description: Optional[str] = None,
-    dry_run: bool = False
+    dry_run: bool = False,
+    force: bool = False,
 ) -> Manifest:
     """Organize photos from source to destination with proper ordering and manifest generation.
-    
+
     Args:
         source_dir: Source directory containing photos
         dest_dir: Destination directory for organized photos
         collection_name: Name of the photo collection
         collection_description: Optional description of the collection
         dry_run: If True, generate manifest without creating symlinks
-        
+        force: If True, bypass stat-skip and rehash every file
+
     Returns:
         Manifest object with organized photo information
     """
@@ -52,48 +54,55 @@ def organize_photos(
     manifest_path = dest_dir / manifest_filename
     manifest_manager = ManifestManager(manifest_path)
     existing_manifest = manifest_manager.load_manifest()
-    
-    # Build lookup of existing photos by source path
-    existing_pics_by_path = {}
-    if existing_manifest:
-        for pic in existing_manifest.pic:
-            existing_pics_by_path[pic.source_path] = pic
+
+    # Hash-keyed index from dest manifest for reconciliation (content identity).
+    hash_index = build_hash_keyed_source_index(existing_manifest) if existing_manifest else {}
+
+    # Path-keyed index from source manifest for stat-based hash reuse only.
+    # Keyed by relative_path (= f.name per build_source_manifest). No source_path
+    # used here; stable through commit 5 field deletions.
+    path_index = {pic.relative_path: pic for pic in source_manifest.pic}
 
     # Find all files in source directory and handle supported/unsupported formats
     photo_extensions = {'.jpg', '.jpeg', '.png', '.heic', '.webp'}
     source_photos = []
-    
+
     for file_path in source_dir.iterdir():
         if file_path.is_file():
             if file_path.suffix.lower() in photo_extensions:
                 source_photos.append(file_path)
             else:
-                # Handle unsupported file formats
                 error_handler.handle_unsupported_format(file_path)
-    
-    # Filter photos that need processing using change detection
+
+    # Hash-keyed change detection with stat-skip for unchanged files.
+    # When force=True the stat-skip is bypassed and every file is rehashed.
+    _fmt = "%Y-%m-%dT%H:%M:%S.%fZ"
     photos_to_process = []
     unchanged_pics = []
-    
+
     for photo_path in source_photos:
-        existing_pic = existing_pics_by_path.get(str(photo_path))
-        
-        if existing_pic:
-            # Check if photo needs reprocessing
-            prev_mtime = datetime.fromisoformat(existing_pic.mtime).timestamp()
-            needs_processing = manifest_manager.needs_reprocessing(
-                photo_path,
-                previous_hash=existing_pic.hash,
-                previous_mtime=prev_mtime,
-                dest_path=dest_dir / existing_pic.dest_path
-            )
-            
-            if not needs_processing:
-                # Photo unchanged - reuse existing pic data
-                unchanged_pics.append(existing_pic)
-                continue
-        
-        # Photo is new or changed - needs processing
+        stat = photo_path.stat()
+        current_mtime = stat.st_mtime
+        current_mtime_str = datetime.fromtimestamp(
+            current_mtime, tz=timezone.utc
+        ).strftime(_fmt)
+
+        prior_pic = path_index.get(photo_path.name)
+        if (
+            not force
+            and prior_pic is not None
+            and current_mtime_str == prior_pic.mtime
+            and stat.st_size == prior_pic.size_bytes
+        ):
+            current_hash = prior_pic.hash
+        else:
+            current_hash = b2b120_hash(photo_path.read_bytes())
+
+        if not manifest_manager.needs_reprocessing_by_hash(
+            current_hash, hash_index, current_mtime, dest_dir
+        ):
+            unchanged_pics.append(hash_index[current_hash])
+            continue
         photos_to_process.append(photo_path)
     
     # Extract EXIF and camera info for photos that need processing
