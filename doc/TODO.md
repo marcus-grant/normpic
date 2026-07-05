@@ -503,17 +503,24 @@ tests. See CHANGELOG entry under 2026-07-04 for full summary.
 
 The cutover.
 Remove source_path and dest_path from the Pic model and from
-serialization, delete the old source_path-keyed reprocessing path,
-and drop the deferred Pic.errors field.
+serialization, wire hash-keyed reprocessing as the only path in
+organize_photos, and drop the deferred Pic.errors field.
 After this PR the copy manifest is fully contract-pure and the old
 single-manifest behavior is gone.
 The wedding-archive end-to-end run is the Phase B acceptance gate
 and lands here.
 
+Commits must be applied in the order listed; each earlier commit is
+a precondition for the next.
+An intermediate commit that deleted fields while code still read
+them by subscript would break on any manifest load, and the
+hash-keyed reprocessing path itself reads dest_path until step 3.
+
 Files touched: `normpic/model/pic.py`,
 `normpic/model/schema_v0.py`,
 `normpic/serializer/manifest.py`,
 `normpic/manager/photo_manager.py`,
+`normpic/manager/manifest_manager.py`,
 `test/unit/test_models.py`, `test/unit/test_serializer.py`,
 `test/unit/test_schema.py`,
 `test/integration/test_manifest_loading_workflow.py`,
@@ -525,8 +532,12 @@ What must be true by this PR's end:
 - Pic no longer defines or serializes source_path, dest_path, or
   errors.
 - schema_v0.py PIC_SCHEMA no longer lists the dropped fields.
-- The source_path-keyed reprocessing path is deleted; hash-keyed
-  reprocessing is the only path.
+- deserialize no longer requires source_path, dest_path, or errors;
+  reads them with .get() or omits them so any manifest lacking those
+  fields loads without error.
+- hash-keyed reprocessing is wired into organize_photos (the
+  source_path-keyed path was built alongside in ft/hash-keyed-
+  reprocessing but never swapped in); source_path-keyed is deleted.
 - The deferred TODO boxes (Pic.errors, Pic.source_path,
   Pic.dest_path under ref/pic-model) are resolved and removed here.
 - serializer.validate/deserialize run against schema/v0.1.0.json
@@ -536,22 +547,74 @@ What must be true by this PR's end:
 
 Commits:
 
-- `Ref: drop source_path, dest_path, errors from Pic and cut over`.
-  Remove the fields and the legacy reprocessing path; update all
-  tests.
-- `Ref: cut serializer validation to canonical schema`.
-  Load schema/v0.1.0.json and validate against it on serialize
-  and deserialize; remove the schema_v0.MANIFEST_SCHEMA import;
-  delete schema_v0.py; retarget test_schema.py at the canonical
-  schema.  Add a producer-conformance test: build a
-  contract-shaped Manifest, serialize, assert the output
-  validates against schema/v0.1.0.json.  This is the only point
-  producer output validates clean against canonical, because
-  source_path/dest_path are gone as of the prior commit.
+- `Tst: Add skipped cutover acceptance gate`.
+  Add test_cutover_complete_relative_path_only to
+  test/integration/test_photo_organization_workflow.py, marked
+  @pytest.mark.skip(reason="unskip at cutover completion").
+  The test asserts the end state: no source_path, dest_path, or
+  errors in any pic in the serialized manifest; symlinks correct;
+  a second run recognizes unchanged pics via hash-keyed reprocessing
+  with those fields absent (proving reprocessing needs no
+  source_path); output validates against schema/v0.1.0.json;
+  deserialize over the field-stripped manifest raises no error.
+  Added in pln/cutover-spec-correction; skip this commit if that
+  branch is already merged.
+
+- `Ref: Wire hash-keyed reprocessing into organize_photos`.
+  RED: test that production reprocessing is hash-keyed: a
+  content-identical file at a different source path is recognized as
+  unchanged (source_path-keying misses it; hash-keying catches it).
+  GREEN: replace existing_pics_by_path (source_path-keyed) and the
+  old needs_reprocessing call in photo_manager.py:57-88 with
+  build_hash_keyed_source_index + needs_reprocessing_by_hash.
+  Fields are still present and read at this step; no deletion yet.
+  Licensed by the equivalence test from ft/hash-keyed-reprocessing.
+
+- `Ref: Resolve reprocessing dest via relative_path`.
+  RED: test needs_reprocessing_by_hash resolves dest-existence via
+  matched.relative_path, not matched.dest_path
+  (manifest_manager.py:174).
+  GREEN: change matched.dest_path to matched.relative_path at that
+  line.
+  After this commit nothing in the reprocessing path reads dest_path.
+
+- `Ref: Stop deserialize requiring source_path/dest_path/errors`.
+  RED: test deserialize over a manifest lacking those three keys
+  completes without error.
+  GREEN: serializer.py deserialize uses .get() for those keys or
+  omits them entirely; Pic construction no longer passes them.
+
+- `Ref: Drop source_path, dest_path, errors from Pic`.
+  RED: model and serializer tests assert the three keys are absent
+  from to_dict output (fails while the fields are still emitted).
+  GREEN: remove the fields from pic.py (field definitions and
+  to_dict), from build_source_manifest (manifest_manager.py:302-303),
+  and from _create_ordered_pics construction
+  (photo_manager.py:334-335, 347).
+
+- `Ref: Cut serializer validation to canonical schema`.
+  RED: serializer validates against schema/v0.1.0.json (already have
+  producer-conformance from prior PR; now schema_v0 is removed as
+  validator).
+  GREEN: serializer.py imports and validates against
+  schema/v0.1.0.json from disk; delete schema_v0.py; retarget
+  test_schema.py at the canonical schema; remove PIC_SCHEMA import
+  in test_manifest_manager.py:686.
+  This is the first point producer output validates clean against the
+  canonical schema, because source_path/dest_path are gone as of the
+  prior commit.
+
+- `Tst: Unskip cutover acceptance gate`.
+  Remove the skip decorator from
+  test_cutover_complete_relative_path_only.
+  The gate must pass green.
+  This is the mechanical "cutover complete" signal.
+
 - `Doc: PR close per discipline preamble`.
-  Include the wedding-archive end-to-end result in the summary:
-  manifest emitted, schema-valid, implementation-valid, expected
-  pic count and shape.
+  Wedding-archive end-to-end result in the summary: manifest
+  emitted, schema-valid, expected pic count, no source_path,
+  dest_path, or errors in the output.
+  This is the Phase B acceptance gate.
 
 Verification at PR close: `uv run pytest test/` green; the wedding
 archive produces a valid v0.1.0 copy manifest end-to-end via

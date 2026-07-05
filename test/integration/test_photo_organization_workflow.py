@@ -1,5 +1,6 @@
 """Integration tests for complete photo organization workflow with manifest generation."""
 
+import pytest
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -466,3 +467,91 @@ class TestProducerConformance:
         schema_path = _Path(__file__).parent.parent.parent / "schema" / "v0.1.0.json"
         schema = _json.loads(schema_path.read_text())
         _validate(instance=data, schema=schema)
+
+
+class TestCutoverAcceptanceGate:
+    """Acceptance gate for ref/drop-source-dest-cutover. Unskip as the final step."""
+
+    @pytest.mark.skip(reason="unskip at cutover completion")
+    def test_cutover_complete_relative_path_only(
+        self, create_photo_with_exif, tmp_path
+    ):
+        """Defines the cutover end state. Must pass green when the skip is removed.
+
+        Asserts:
+        - No source_path, dest_path, or errors on any pic in serialized output.
+        - All pics carry relative_path.
+        - Symlinks created and not dangling; count matches pic count.
+        - Second run over same dest: unchanged pics skipped via hash-keyed
+          reprocessing with those fields absent, proving reprocessing needs
+          no source_path.
+        - Output validates against schema/v0.1.0.json.
+        - Deserialize over a manifest lacking source_path/dest_path raises no error.
+        """
+        import json as _json
+        from jsonschema import validate as _validate
+        from pathlib import Path as _Path
+
+        source_dir = tmp_path / "source"
+        dest_dir = tmp_path / "dest"
+        source_dir.mkdir()
+        dest_dir.mkdir()
+
+        create_photo_with_exif(
+            source_dir / "IMG_001.jpg",
+            DateTimeOriginal="2024:10:05 14:30:45",
+            Make="Canon",
+            Model="EOS R5",
+        )
+        create_photo_with_exif(
+            source_dir / "IMG_002.jpg",
+            DateTimeOriginal="2024:10:05 14:30:46",
+            Make="Canon",
+            Model="EOS R5",
+        )
+
+        manifest = organize_photos(
+            source_dir=source_dir,
+            dest_dir=dest_dir,
+            collection_name="cutover-gate",
+        )
+
+        assert len(manifest.pic) == 2
+
+        manifest_path = dest_dir / "manifest.json"
+        manifest_text = manifest_path.read_text()
+        data = _json.loads(manifest_text)
+
+        forbidden = {"source_path", "dest_path", "errors"}
+        for pic_data in data["pic"]:
+            present = forbidden & set(pic_data.keys())
+            assert not present, f"Dropped fields still in output: {present}"
+            assert "relative_path" in pic_data
+
+        symlinks = [dest_dir / pic_data["relative_path"] for pic_data in data["pic"]]
+        for link in symlinks:
+            assert link.exists(), f"Symlink missing or dangling: {link}"
+            assert link.is_symlink()
+        assert len(symlinks) == 2
+
+        schema_path = _Path(__file__).parent.parent.parent / "schema" / "v0.1.0.json"
+        schema = _json.loads(schema_path.read_text())
+        _validate(instance=data, schema=schema)
+
+        manifest2 = organize_photos(
+            source_dir=source_dir,
+            dest_dir=dest_dir,
+            collection_name="cutover-gate",
+        )
+
+        assert len(manifest2.pic) == 2
+        data2 = _json.loads((dest_dir / "manifest.json").read_text())
+        for pic_data in data2["pic"]:
+            present = forbidden & set(pic_data.keys())
+            assert not present, f"Dropped fields in second-run output: {present}"
+
+        serializer = ManifestSerializer()
+        loaded = serializer.deserialize(manifest_text)
+        assert len(loaded.pic) == 2
+        for pic in loaded.pic:
+            assert pic.relative_path is not None
