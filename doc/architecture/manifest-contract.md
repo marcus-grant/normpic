@@ -300,6 +300,23 @@ Consumers MUST follow this algorithm to locate pic files:
 4. For each pic, full file location = collection root directory
    joined with `pic.relative_path`.
 
+### Collection root resolution: co-location precondition (v0.1)
+
+Collection root resolution is positional: a pic's full location is
+`directory_of(manifest)` joined with `collection_root` joined with
+`relative_path`.
+The resolved base depends on the manifest's physical location at read
+time.
+For v0.1 this relies on an invariant: the manifest ships with its
+collection, and `collection_root` defaults to `"."`.
+Consumers MUST NOT rely on `collection_root` resolution when the
+manifest has been relocated away from its collection.
+`relative_path` is stable; the base it resolves against is not, if the
+manifest moves.
+This is a known v0.1 limitation, not a defect.
+Declared or URI-based roots that remove the location dependency are
+deferred to v0.2, tracked with remote-source support in the roadmap.
+
 ### Forward extension
 
 Future v0.x versions are anticipated to support remote and

@@ -28,6 +28,7 @@ class Pic:
     errors: List[str] = field(default_factory=list)
     original_filename: Any = MISSING
     tag: Optional[List[str]] = None
+    relative_path: Optional[str] = None
 
     def __post_init__(self) -> None:
         """Validate fields at construction."""
@@ -59,7 +60,10 @@ class Pic:
             "hash": self.hash,
             "size_bytes": self.size_bytes,
             "mtime": self.mtime,
-            "timestamp": self.timestamp.isoformat() if self.timestamp else None,
+            "timestamp": (
+                self.timestamp.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                if self.timestamp else None
+            ),
             "timestamp_source": self.timestamp_source,
             "camera": self.camera,
             "gps": self.gps,
@@ -69,4 +73,6 @@ class Pic:
             d["original_filename"] = self.original_filename
         if self.tag is not None:
             d["tag"] = self.tag
+        if self.relative_path is not None:
+            d["relative_path"] = self.relative_path
         return d

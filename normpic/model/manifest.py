@@ -27,7 +27,7 @@ class Manifest:
         result = {
             "version": self.version,
             "collection_name": self.collection_name,
-            "generated_at": self.generated_at.isoformat(),
+            "generated_at": self.generated_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
             "collection_root": self.collection_root,
             "pic": [p.to_dict() for p in self.pic],
         }

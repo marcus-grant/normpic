@@ -2,7 +2,7 @@
 
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional, List
+from typing import List, Optional, Tuple
 
 from ..model.manifest import Manifest
 from ..model.pic import Pic
@@ -59,12 +59,6 @@ def organize_photos(
         for pic in existing_manifest.pic:
             existing_pics_by_path[pic.source_path] = pic
 
-    # Build hash-keyed index from same manifest for parallel change detection
-    hash_keyed_index = (
-        build_hash_keyed_source_index(existing_manifest)
-        if existing_manifest else {}
-    )
-    
     # Find all files in source directory and handle supported/unsupported formats
     photo_extensions = {'.jpg', '.jpeg', '.png', '.heic', '.webp'}
     source_photos = []
@@ -142,19 +136,19 @@ def organize_photos(
     
     # Create symlinks for newly processed photos (unless dry-run)
     if not dry_run:
-        for pic in newly_processed_pics:
-            dest_path = dest_dir / pic.dest_path
+        pairs = resolve_symlink_pairs_by_hash(
+            source_manifest, source_dir, newly_processed_pics, dest_dir
+        )
+        for source_resolved, dest_path in pairs:
             dest_path.parent.mkdir(parents=True, exist_ok=True)
-            
             if not dest_path.exists():
-                source_path = Path(pic.source_path)
-                dest_path.symlink_to(source_path.resolve())
+                dest_path.symlink_to(source_resolved)
     
     # Create and save manifest
     manifest = Manifest(
         version="0.1.0",
         collection_name=collection_name,
-        generated_at=datetime.now(),
+        generated_at=datetime.now(tz=timezone.utc),
         pic=all_pics,
         collection_description=collection_description,
         config={"collection_name": collection_name},
@@ -316,12 +310,7 @@ def _create_ordered_pics(pics_data, collection_name: str, dest_dir: Path) -> Lis
             parts.append(get_camera_code(first_camera_info))
             
             base_filename = "-".join(parts)
-            
-            for counter, (i, photo_path, exif_data, camera_info) in enumerate(group_photos):
-                file_extension = photo_path.suffix
-                counter_char = BASE32_ALPHABET[counter]
-                dest_filename = f"{base_filename}-{counter_char}{file_extension}"
-        
+
         # Create Pic objects for this group
         for j, (i, photo_path, exif_data, camera_info) in enumerate(group_photos):
             if len(group_photos) > 1:
@@ -344,6 +333,7 @@ def _create_ordered_pics(pics_data, collection_name: str, dest_dir: Path) -> Lis
             pic = Pic(
                 source_path=str(photo_path),
                 dest_path=dest_filename,
+                relative_path=dest_filename,
                 hash=file_hash,
                 size_bytes=file_size,
                 mtime=file_mtime,
@@ -360,3 +350,46 @@ def _create_ordered_pics(pics_data, collection_name: str, dest_dir: Path) -> Lis
             pics[i] = pic  # Maintain original order
     
     return [pic for pic in pics if pic is not None]
+
+
+def resolve_symlink_pairs_by_hash(
+    source_manifest: Manifest,
+    source_dir: Path,
+    copy_pics: List[Pic],
+    dest_dir: Path,
+) -> List[Tuple[Path, Path]]:
+    """Resolve (source, dest) path pairs for symlink creation via hash reconciliation.
+
+    Implements the contract resolution algorithm for both manifests:
+    full location = directory_of(manifest) / collection_root / relative_path.
+
+    Args:
+        source_manifest: Source collection manifest with hash-indexed pics.
+        source_dir: Directory containing the source manifest file.
+        copy_pics: Pics from the copy manifest to resolve.
+        dest_dir: Directory containing the copy manifest file.
+
+    Returns:
+        List of (source_resolved, dest_path) tuples, one per copy pic.
+
+    Raises:
+        RuntimeError: If any copy pic's hash is absent from the source manifest.
+    """
+    index = build_hash_keyed_source_index(source_manifest)
+    pairs: List[Tuple[Path, Path]] = []
+    for pic in copy_pics:
+        source_pic = index.get(pic.hash)
+        if source_pic is None:
+            raise RuntimeError(f"no source match for hash: {pic.hash}")
+        if source_pic.relative_path is None:
+            raise RuntimeError(
+                f"source pic has no relative_path: {source_pic.hash}"
+            )
+        source_resolved = (
+            source_dir / source_manifest.collection_root / source_pic.relative_path
+        ).resolve()
+        if pic.relative_path is None:
+            raise RuntimeError(f"copy pic has no relative_path: {pic.dest_path}")
+        dest = dest_dir / pic.relative_path
+        pairs.append((source_resolved, dest))
+    return pairs

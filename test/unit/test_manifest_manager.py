@@ -410,6 +410,12 @@ class TestSourceManifestLoading:
         assert str(source_dir / "b.jpg") in paths
         for pic in manifest.pic:
             assert pic.mtime.endswith("Z")
+            assert pic.relative_path is not None
+            assert pic.relative_path == pic.source_path.split("/")[-1]
+            assert not pic.relative_path.startswith("/")
+            assert not pic.relative_path.startswith("./")
+            assert "\\" not in pic.relative_path
+            assert ".." not in pic.relative_path.split("/")
 
 
 def _make_manifest(pics):
@@ -635,3 +641,65 @@ class TestHashKeyedChangeDetection:
         assert set(path_unchanged) == set(hash_unchanged), (
             f"path_unchanged={set(path_unchanged)} hash_unchanged={set(hash_unchanged)}"
         )
+
+
+class TestCopyManifestRelativePath:
+    """Tests for relative_path field on copy-manifest Pic objects."""
+
+    def _base_pic(self, **kwargs):
+        return Pic(
+            source_path=kwargs.get("source_path", "/src/a.jpg"),
+            dest_path=kwargs.get("dest_path", "col-20240101T000000-r5a.jpg"),
+            hash=kwargs.get("hash", "b2b120:AAAAAAAAAAAAAAAAAAAAAAAA"),
+            size_bytes=kwargs.get("size_bytes", 1024),
+            mtime=kwargs.get("mtime", "2024-01-01T00:00:00.000000Z"),
+            relative_path=kwargs.get("relative_path"),
+        )
+
+    def test_relative_path_emitted_when_set(self):
+        organized = "wedding-20241005T143045-r5a.jpg"
+        pic = self._base_pic(dest_path=organized, relative_path=organized)
+        d = pic.to_dict()
+        assert "relative_path" in d
+        assert d["relative_path"] == organized
+
+    def test_relative_path_absent_when_none(self):
+        pic = self._base_pic()
+        d = pic.to_dict()
+        assert "relative_path" not in d
+
+    def test_relative_path_canonical_form(self):
+        # A normal organized filename must satisfy all canonical-path rules:
+        # no leading ./, no .., no backslash, no absolute prefix.
+        organized = "wedding-20241005T143045-r5a.jpg"
+        pic = self._base_pic(dest_path=organized, relative_path=organized)
+        d = pic.to_dict()
+        rp = d["relative_path"]
+        assert not rp.startswith("/"), "must not be absolute"
+        assert not rp.startswith("./"), "must not have leading ./"
+        assert "\\" not in rp, "must not contain backslash"
+        assert ".." not in rp.split("/"), "must not contain .. segment"
+        assert "//" not in rp, "must not have empty segments"
+
+    def test_schema_rejects_non_canonical_relative_path(self):
+        from jsonschema import validate, ValidationError
+        from normpic.model.schema_v0 import PIC_SCHEMA
+        import pytest
+
+        bad_values = [
+            "./wedding-20241005T143045-r5a.jpg",   # leading ./
+            "/abs/path.jpg",                        # absolute
+            "foo/../bar.jpg",                       # .. segment
+            "foo//bar.jpg",                         # empty segment
+            "foo\\bar.jpg",                         # backslash
+        ]
+        base = {
+            "source_path": "/src/a.jpg",
+            "dest_path": "a.jpg",
+            "hash": "b2b120:AAAAAAAAAAAAAAAAAAAAAAAA",
+            "size_bytes": 1,
+            "mtime": "2024-01-01T00:00:00Z",
+        }
+        for bad in bad_values:
+            with pytest.raises(ValidationError):
+                validate(instance={**base, "relative_path": bad}, schema=PIC_SCHEMA)

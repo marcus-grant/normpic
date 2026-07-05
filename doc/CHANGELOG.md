@@ -1,5 +1,66 @@
 # NormPic Development Changelog
 
+## 2026-07-04
+
+### ref/symlink-reconcile-by-hash
+
+Symlinks created from runtime hash reconciliation of both manifests;
+source manifest pics carry relative_path; burst-counter dead loop
+removed; producer now emits generated_at and timestamp in canonical
+UTC-Z form. Manual wedding-archive run: 645 symlinks, zero dangling,
+manifest validates canonical. Test count 275 -> 280.
+
+- build_source_manifest: sets relative_path=f.name on each Pic;
+  bare filename is the path relative to collection_root ".".
+- resolve_symlink_pairs_by_hash: new helper in photo_manager;
+  resolves (source, dest) pairs via the contract algorithm on both
+  manifests; no source-hash match raises RuntimeError explicitly.
+- organize_photos symlink loop replaced with helper call; no
+  stored source_path or dest_path consumed for linking.
+- Equivalence tests: hand-built fixture and producer-generated
+  both confirm hash-reconciled pairs equal stored-field pairs.
+- test_source_manifest_read_when_present: real file hash used so
+  hash-keyed reconciliation resolves correctly.
+- _create_ordered_pics: dead inner burst-counter loop deleted;
+  Pic-creation loop already recomputed dest_filename identically.
+- Fix (surfaced by manual archive run, not in original plan):
+  photo_manager emitted naive generated_at; Manifest.to_dict and
+  Pic.to_dict used isoformat() which produces +00:00 for UTC-aware
+  datetimes -- the canonical schema explicitly rejects +00:00.
+  Fixed to datetime.now(tz=timezone.utc) and strftime Z suffix.
+  Two producer-conformance tests added: generated_at Z suffix and
+  full schema/v0.1.0.json validation via organize_photos output.
+- manifest-contract.md: added co-location precondition section
+  documenting the v0.1 limitation that collection_root resolution
+  is positional and depends on the manifest's physical location.
+
+## 2026-06-30
+
+### ref/copy-manifest-contract-fields
+
+Copy manifest now carries relative_path in canonical form;
+source_path and dest_path still emitted; parked hash index
+relocated. Test count 270 -> 275.
+
+- pic.py: add relative_path: Optional[str] = None; to_dict()
+  emits it when not None (absent on old records).
+- schema_v0 PIC_SCHEMA: add relative_path property with
+  type-guarded if/then structure copied verbatim from
+  schema/v0.1.0.json; save-time validation catches non-canonical
+  values before the cutover PR.
+- _create_ordered_pics: assign relative_path=dest_filename at Pic
+  construction; same bare organized name as dest_path.
+- ManifestSerializer.deserialize: pass relative_path through from
+  JSON so the field survives round-trips.
+- Remove premature hash_keyed_index build from photo_manager
+  (import and call site); definition stays in manifest_manager;
+  call site lands in ref/symlink-reconcile-by-hash where consumed.
+- TestCopyManifestRelativePath: 4 unit tests (emitted when set,
+  absent when None, canonical form, schema rejects non-canonical).
+- test_copy_manifest_pics_carry_relative_path: integration test
+  asserts relative_path equals dest_path on all pics and survives
+  JSON round-trip.
+
 ## 2026-06-29
 
 ### ft/hash-keyed-reprocessing

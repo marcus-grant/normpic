@@ -92,6 +92,22 @@ PIC_SCHEMA = {
             "required": ["lat", "lon"],
             "description": "GPS coordinates if available"
         },
+        "relative_path": {
+            "type": "string",
+            "minLength": 1,
+            "if": {"type": "string"},
+            "then": {
+                "allOf": [
+                    {"not": {"pattern": "^/"}},
+                    {"not": {"pattern": "^[A-Za-z]:"}},
+                    {"not": {"pattern": "/$"}},
+                    {"not": {"pattern": "//"}},
+                    {"not": {"pattern": "(?:^|/)\\.{1,2}(?:/|$)"}},
+                    {"not": {"pattern": "\\\\"}},
+                ]
+            },
+            "description": "Path relative to the collection root. No leading slash or Windows drive (no absolute paths). No trailing slash. No empty segments. No '.' or '..' segments anywhere. No backslashes. UTF-8, NFC normalized (NFC enforced by implementations, not the schema).",
+        },
         "tag": {
             "type": "array",
             "items": {"type": "string"},

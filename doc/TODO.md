@@ -115,19 +115,20 @@ The PRs in order:
 - ref/pic-model-v01-contract **complete**
 - ref/manifest-model-v01-contract **complete**
 - ft/source-manifest-read
-- ft/hash-keyed-reprocessing **complete**
-- ref/copy-manifest-contract-fields
-- ref/symlink-reconcile-by-hash
+- ft/hash-keyed-reprocessing
+- ref/copy-manifest-contract-fields **complete**
+- ref/symlink-reconcile-by-hash **complete**
 - ref/drop-source-dest-cutover
 - ref/serializer-v01-contract
 - chr/pyright-clean (end of Phase B; see body below)
 
-Ordering note: ref/serializer-v01-contract now follows the
-manifest-manager sequence, not precedes it.
-The serializer's canonical-schema cutover validates producer
-output against schema/v0.1.0.json; that output cannot validate
-clean until the copy manifest stops emitting source_path/dest_path,
-which ref/drop-source-dest-cutover removes.
+Ordering note: the canonical-schema cutover (point serializer
+validation at schema/v0.1.0.json, delete schema_v0.py) lands in
+ref/drop-source-dest-cutover, the PR that removes
+source_path/dest_path -- the first point producer output
+validates clean against the canonical schema.
+ref/serializer-v01-contract no longer carries a schema-source
+dependency and may sit anywhere after the model PRs.
 The deferred Pic.errors / source_path / dest_path drops land in
 ref/drop-source-dest-cutover, not in the model PRs.
 
@@ -240,17 +241,18 @@ Commits:
 - Fix: type-guard string-content constraints in v0.1.0 schema.
   One TDD cycle.
   Rewrite the three defs so string-content rules apply only to
-  strings: a positive pattern where simple (original_filename), an
-  if:{type:string} guard around the existing not-pattern set where
-  complex (relative_path, collection_root).
+  strings: a positive pattern where simple (original_filename),
+  an if:{type:string} guard around the existing not-pattern set
+  where complex (relative_path, collection_root).
   RED: null-for-non-nullable-optional.json yields three errors
   including path-separator misattribution.
   GREEN: one error attributed to type.
   Full suite stays green; no accept/reject verdict changes.
 - Doc: PR close per discipline preamble.
   Note in manifest-contract.md that string-content constraints
-  must be type-guarded so they never vacuously reject non-strings,
-  so the model refactors do not reintroduce a bare not:{pattern}.
+  must be type-guarded so they never vacuously reject
+  non-strings, so the model refactors do not reintroduce a bare
+  not:{pattern}.
 
 Verification: uv run pytest test/ green; the null fixture rejects
 with a single type-attributed error.
@@ -406,16 +408,6 @@ Commits:
   no trailing whitespace differences across runs.
   A determinism test that serializes the same model twice and
   asserts byte-identical output anchors the cycle.
-- Ref: cut serializer validation over to the canonical schema.
-  Load schema/v0.1.0.json and validate against it on both
-  serialize and deserialize; remove the schema_v0.MANIFEST_SCHEMA
-  import and use; delete the schema_v0.py dicts (whole module if
-  nothing else imports it).
-  Add a producer-conformance test: build a contract-shaped
-  Manifest, serialize, and assert the output validates against
-  schema/v0.1.0.json.
-  Depends on ref/pic-model and ref/manifest-model landing first so
-  the emitted manifest validates clean.
 - `Doc: PR close per discipline preamble`.
 
 Verification at PR close: `uv run pytest
@@ -483,75 +475,29 @@ What must be true by this PR's end:
   source_path-keyed result on a shared fixture, proving
   equivalence before cutover.
 
-Status: complete (2026-06-29).
+Commits:
+
+- `Ft: add hash-keyed reprocessing match`.
+  Implement the hash-keyed lookup and change detection alongside
+  the existing path; add the equivalence test.
+- `Doc: PR close per discipline preamble`.
+
+Verification at PR close: `uv run pytest test/` green; hash-keyed
+and source_path-keyed change detection agree on the fixture.
 
 #### ref/copy-manifest-contract-fields
 
-Bring the copy (organized output) manifest to the v0.1 contract
-field shape in parallel: populate relative_path and the organized
-filename per contract.
-source_path and dest_path are still emitted in this PR so the old
-reprocessing and symlink paths keep working; their removal is the
-cutover PR.
-
-Files touched: `normpic/manager/photo_manager.py`,
-`normpic/serializer/manifest.py` if emit shape changes,
-`test/unit/test_manifest_manager.py`,
-`test/integration/test_photo_organization_workflow.py`,
-`test/integration/test_exif_filename_workflow.py`.
-
-What must be true by this PR's end:
-
-- Each copy-manifest pic carries relative_path (organized file
-  location relative to collection_root, default ".") and the
-  organized filename per the rename heuristic.
-- The rename heuristic is the existing baked-in one (deterministic
-  temporal sort with burst counters); not reimplemented here.
-- source_path/dest_path remain emitted for now; old paths green.
-
-Commits:
-
-- `Ref: populate copy manifest contract fields`.
-  Set relative_path and organized filename at Pic construction;
-  update tests in lockstep.
-- `Doc: PR close per discipline preamble`.
-
-Verification at PR close: `uv run pytest test/` green; copy
-manifest carries contract fields while legacy fields still present.
+Status: complete (2026-06-30).
+Copy manifest populated with relative_path in canonical form;
+source_path/dest_path still emitted; parked hash index relocated.
+See CHANGELOG entry under 2026-06-30 for the full summary.
 
 #### ref/symlink-reconcile-by-hash
 
-Switch symlink creation to reconcile the source and copy manifests
-by hash at runtime, computing the transient source and dest paths
-from the two manifests instead of reading stored source_path and
-dest_path off pics.
-The dest filename is recomputable from the deterministic heuristic;
-the source location resolves from the source manifest via the
-contract resolution algorithm (manifest dir + collection_root +
-relative_path).
-
-Files touched: `normpic/manager/photo_manager.py`,
-`test/unit/test_manifest_manager.py`,
-`test/integration/test_photo_organization_workflow.py`.
-
-What must be true by this PR's end:
-
-- Symlink creation derives each (source, dest) pair by matching the
-  two manifests on b2b120 hash, at runtime.
-- No symlink path is read from a stored source_path or dest_path
-  field.
-- The duplicated burst-counter filename loop in _create_ordered_pics
-  is collapsed to a single computation while here.
-
-Commits:
-
-- `Ref: reconcile symlink paths by hash at runtime`.
-  Replace stored-field path use with hash reconciliation; collapse
-  the duplicate counter loop; update tests.
-- `Doc: PR close per discipline preamble`.
-
-Verification at PR close: `uv run pytest test/` green; symlinks are
-created from runtime hash reconciliation, not stored paths.
+Status: complete (2026-07-04).
+Symlinks by hash reconciliation, source relative_path populated,
+burst-counter collapse, canonical UTC-Z fix, producer-conformance
+tests. See CHANGELOG entry under 2026-07-04 for full summary.
 
 #### ref/drop-source-dest-cutover
 
@@ -569,6 +515,7 @@ Files touched: `normpic/model/pic.py`,
 `normpic/serializer/manifest.py`,
 `normpic/manager/photo_manager.py`,
 `test/unit/test_models.py`, `test/unit/test_serializer.py`,
+`test/unit/test_schema.py`,
 `test/integration/test_manifest_loading_workflow.py`,
 `test/integration/test_photo_organization_workflow.py`,
 `test/integration/test_exif_filename_workflow.py`.
@@ -582,12 +529,25 @@ What must be true by this PR's end:
   reprocessing is the only path.
 - The deferred TODO boxes (Pic.errors, Pic.source_path,
   Pic.dest_path under ref/pic-model) are resolved and removed here.
+- serializer.validate/deserialize run against schema/v0.1.0.json
+  loaded from disk, not against schema_v0.MANIFEST_SCHEMA.
+- schema_v0.py is deleted entirely (no remaining importers;
+  test_schema.py retargeted at the canonical schema).
 
 Commits:
 
 - `Ref: drop source_path, dest_path, errors from Pic and cut over`.
   Remove the fields and the legacy reprocessing path; update all
   tests.
+- `Ref: cut serializer validation to canonical schema`.
+  Load schema/v0.1.0.json and validate against it on serialize
+  and deserialize; remove the schema_v0.MANIFEST_SCHEMA import;
+  delete schema_v0.py; retarget test_schema.py at the canonical
+  schema.  Add a producer-conformance test: build a
+  contract-shaped Manifest, serialize, assert the output
+  validates against schema/v0.1.0.json.  This is the only point
+  producer output validates clean against canonical, because
+  source_path/dest_path are gone as of the prior commit.
 - `Doc: PR close per discipline preamble`.
   Include the wedding-archive end-to-end result in the summary:
   manifest emitted, schema-valid, implementation-valid, expected
