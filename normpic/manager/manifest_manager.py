@@ -160,7 +160,7 @@ class ManifestManager:
             current_hash: b2b120 hash of the source file (caller-computed)
             hash_index: {hash: Pic} built from a prior manifest
             current_mtime: source file mtime as float timestamp (caller-computed)
-            dest_dir: base directory for resolving matched_pic.dest_path; if
+            dest_dir: base directory for resolving matched_pic.relative_path; if
                 None the dest-existence check is skipped
 
         Returns:
@@ -171,7 +171,7 @@ class ManifestManager:
             return True
 
         if dest_dir is not None:
-            dest_path = Path(dest_dir) / matched.dest_path
+            dest_path = Path(dest_dir) / matched.relative_path
             if not dest_path.exists():
                 return True
 

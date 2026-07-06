@@ -398,7 +398,7 @@ def resolve_symlink_pairs_by_hash(
             source_dir / source_manifest.collection_root / source_pic.relative_path
         ).resolve()
         if pic.relative_path is None:
-            raise RuntimeError(f"copy pic has no relative_path: {pic.dest_path}")
+            raise RuntimeError(f"copy pic has no relative_path: {pic.hash}")
         dest = dest_dir / pic.relative_path
         pairs.append((source_resolved, dest))
     return pairs

@@ -432,6 +432,7 @@ def _make_pic(source_path, dest_path, hash_val, size_bytes, mtime_str):
     return Pic(
         source_path=source_path,
         dest_path=dest_path,
+        relative_path=dest_path,
         hash=hash_val,
         size_bytes=size_bytes,
         mtime=mtime_str,
@@ -547,6 +548,33 @@ class TestHashKeyedChangeDetection:
         assert manager.needs_reprocessing_by_hash(
             "b2b120:AAAA", index, prev_mtime, dest_dir=dest_dir
         ) is True
+
+    def test_dest_check_uses_relative_path(self, tmp_path):
+        """dest-existence check resolves via relative_path, not dest_path."""
+        dest_dir = tmp_path / "dest"
+        dest_dir.mkdir()
+        # Only the relative_path target exists; dest_path target does not.
+        (dest_dir / "b.jpg").touch()
+
+        mtime_str = "2024-01-01T00:00:00.000000Z"
+        prev_mtime = datetime.fromisoformat(mtime_str).timestamp()
+        pic = Pic(
+            source_path="/src/a.jpg",
+            dest_path="a.jpg",
+            relative_path="b.jpg",
+            hash="b2b120:AAAA",
+            size_bytes=100,
+            mtime=mtime_str,
+        )
+        index = {"b2b120:AAAA": pic}
+
+        manager = ManifestManager()
+        # dest_path target ("a.jpg") is absent; relative_path target ("b.jpg")
+        # is present. If the check uses dest_path the file is missing and the
+        # method returns True (reprocess). Correct behavior returns False.
+        assert manager.needs_reprocessing_by_hash(
+            "b2b120:AAAA", index, prev_mtime, dest_dir=dest_dir
+        ) is False
 
     # --- Cycle 4: equivalence test ---
 
