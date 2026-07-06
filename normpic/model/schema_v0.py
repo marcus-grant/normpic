@@ -31,7 +31,7 @@ ERROR_SCHEMA = {
 
 PIC_SCHEMA = {
     "type": "object",
-    "required": ["source_path", "dest_path", "hash", "size_bytes", "mtime"],
+    "required": ["hash", "size_bytes", "mtime"],
     "properties": {
         "source_path": {
             "type": "string",

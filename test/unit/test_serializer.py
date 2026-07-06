@@ -183,3 +183,27 @@ class TestManifestSerializer:
         assert json_str is not None
         parsed = json.loads(json_str)
         assert parsed["version"] == "0.1.0"
+
+    def test_deserialize_tolerates_missing_legacy_fields(self):
+        """deserialize must not KeyError when source_path/dest_path/errors are absent."""
+        json_data = {
+            "version": "0.1.0",
+            "collection_name": "test-collection",
+            "generated_at": "2025-11-06T19:30:00",
+            "pic": [
+                {
+                    "hash": "b2b120:AAAA",
+                    "size_bytes": 100,
+                    "mtime": "2024-01-01T00:00:00.000000Z",
+                    "timestamp": None,
+                    "timestamp_source": None,
+                    "camera": None,
+                    "gps": None,
+                    "relative_path": "photo.jpg",
+                }
+            ],
+        }
+
+        manifest = ManifestSerializer().deserialize(json.dumps(json_data))
+        assert len(manifest.pic) == 1
+        assert manifest.pic[0].hash == "b2b120:AAAA"

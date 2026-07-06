@@ -59,8 +59,8 @@ class ManifestSerializer:
                 timestamp = datetime.fromisoformat(pic_data["timestamp"])
                 
             pic = Pic(
-                source_path=pic_data["source_path"],
-                dest_path=pic_data["dest_path"],
+                source_path=pic_data.get("source_path", ""),
+                dest_path=pic_data.get("dest_path", ""),
                 hash=pic_data["hash"],
                 size_bytes=pic_data["size_bytes"],
                 mtime=pic_data["mtime"],
@@ -68,7 +68,7 @@ class ManifestSerializer:
                 timestamp_source=pic_data["timestamp_source"],
                 camera=pic_data["camera"],
                 gps=pic_data["gps"],
-                errors=pic_data["errors"] or [],
+                errors=pic_data.get("errors") or [],
                 relative_path=pic_data.get("relative_path"),
             )
             pics.append(pic)
