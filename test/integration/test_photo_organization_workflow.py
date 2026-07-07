@@ -534,7 +534,6 @@ class TestSymlinkReconciliationByHash:
             relative_path="orphan-copy.jpg",
         )
 
-        import pytest
         with pytest.raises(RuntimeError, match="no source match for hash"):
             resolve_symlink_pairs_by_hash(
                 source_manifest, source_dir, [orphan], dest_dir
@@ -583,7 +582,6 @@ class TestProducerConformance:
 class TestCutoverAcceptanceGate:
     """Acceptance gate for ref/drop-source-dest-cutover. Unskip as the final step."""
 
-    @pytest.mark.skip(reason="unskip at cutover completion")
     def test_cutover_complete_relative_path_only(
         self, create_photo_with_exif, tmp_path
     ):
