@@ -87,10 +87,9 @@ class TestPhotoOrganizationWorkflow:
             ),  # 14:30:47.456 (same timestamp but different camera from nikon)
         ]
 
-        for i, (expected_filename, source_photo) in enumerate(expected_order):
+        for i, (expected_filename, _source_photo) in enumerate(expected_order):
             pic = manifest.pic[i]
-            assert pic.dest_path == expected_filename
-            assert pic.source_path == str(source_photo)
+            assert pic.relative_path == expected_filename
             assert pic.timestamp_source == "exif"
 
         # Assert: Verify manifest metadata
@@ -99,12 +98,12 @@ class TestPhotoOrganizationWorkflow:
         assert manifest.version.startswith("0.")
         assert isinstance(manifest.generated_at, datetime)
 
-        # Assert: Verify symlinks created
+        # Assert: Verify symlinks created and not dangling
         for pic in manifest.pic:
-            dest_file = dest_dir / pic.dest_path
+            dest_file = dest_dir / pic.relative_path
             assert dest_file.exists()
             assert dest_file.is_symlink()
-            assert dest_file.readlink() == Path(pic.source_path)
+            assert dest_file.readlink().exists()
 
         # Assert: Verify manifest.json written
         manifest_file = dest_dir / "manifest.json"
@@ -168,7 +167,7 @@ class TestPhotoOrganizationWorkflow:
 
         # Assert: Canon burst photos are adjacent (burst preservation)
         # iPhone should not interrupt the Canon sequence
-        canon_pics = [pic for pic in manifest.pic if "r5a" in pic.dest_path]
+        canon_pics = [pic for pic in manifest.pic if "r5a" in pic.relative_path]
         assert len(canon_pics) == 3
 
         # Canon pics should be consecutive in manifest.pic
@@ -178,7 +177,7 @@ class TestPhotoOrganizationWorkflow:
         # Verify burst counter progression
         for i, pic in enumerate(canon_pics):
             expected_counter = str(i)  # Base32: 0, 1, 2
-            assert f"-{expected_counter}.jpg" in pic.dest_path
+            assert f"-{expected_counter}.jpg" in pic.relative_path
 
     def test_fallback_ordering_without_exif(self, tmp_path):
         """Test: Photos without EXIF use filename → mtime ordering."""
@@ -217,8 +216,13 @@ class TestPhotoOrganizationWorkflow:
         # Expected order: photo_a_first → photo_m_middle → photo_z_last
         assert len(manifest.pic) == 3
 
-        filenames = [Path(pic.source_path).name for pic in manifest.pic]
-        assert filenames == [
+        # Verify source filename ordering via symlink resolution:
+        # each symlink target is the original source file
+        source_names = [
+            (dest_dir / pic.relative_path).readlink().name
+            for pic in manifest.pic
+        ]
+        assert source_names == [
             "photo_a_first.jpg",
             "photo_m_middle.jpg",
             "photo_z_last.jpg",
@@ -259,10 +263,7 @@ class TestPhotoOrganizationWorkflow:
 
         assert len(manifest.pic) == 2
         for pic in manifest.pic:
-            assert pic.relative_path is not None, f"relative_path missing on {pic.dest_path}"
-            assert pic.relative_path == pic.dest_path, (
-                f"relative_path {pic.relative_path!r} != dest_path {pic.dest_path!r}"
-            )
+            assert pic.relative_path is not None, "relative_path missing on pic"
             # Canonical-form guard: bare filename must satisfy contract rules
             rp = pic.relative_path
             assert not rp.startswith("/")
@@ -282,11 +283,11 @@ class TestPhotoOrganizationWorkflow:
     ):
         """Content-identical file at a different source path is recognized as unchanged.
 
-        Discriminating observable: source_path in the returned manifest.
+        Discriminating observable: relative_path in the returned manifest.
         Under source_path-keying the phantom key misses, the file is reprocessed,
-        and source_path becomes str(actual source path).
-        Under hash-keying the hash hits, the old pic is reused, and source_path
-        stays as the phantom value.
+        and relative_path becomes a newly generated filename.
+        Under hash-keying the hash hits, the old pic is reused, and relative_path
+        stays as the phantom dest_filename.
         """
         import json as _json
 
@@ -308,7 +309,6 @@ class TestPhotoOrganizationWorkflow:
             stat.st_mtime, tz=timezone.utc
         ).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
-        phantom_source_path = "/phantom/original/path.jpg"
         dest_filename = "existing-dest.jpg"
         fake_manifest = {
             "version": "0.1.0",
@@ -316,8 +316,6 @@ class TestPhotoOrganizationWorkflow:
             "generated_at": "2024-10-05T14:30:45.000000Z",
             "collection_root": ".",
             "pic": [{
-                "source_path": phantom_source_path,
-                "dest_path": dest_filename,
                 "relative_path": dest_filename,
                 "hash": real_hash,
                 "size_bytes": stat.st_size,
@@ -326,7 +324,6 @@ class TestPhotoOrganizationWorkflow:
                 "timestamp_source": None,
                 "camera": None,
                 "gps": None,
-                "errors": [],
             }],
         }
         (dest_dir / "manifest.json").write_text(_json.dumps(fake_manifest))
@@ -339,11 +336,11 @@ class TestPhotoOrganizationWorkflow:
         )
 
         assert len(manifest.pic) == 1
-        assert manifest.pic[0].source_path == phantom_source_path, (
-            f"Expected source_path={phantom_source_path!r}, "
-            f"got={manifest.pic[0].source_path!r}. "
-            "Source_path-keying misses the phantom key and reprocesses the file; "
-            "hash-keying finds the hash and reuses the old pic."
+        assert manifest.pic[0].relative_path == dest_filename, (
+            f"Expected relative_path={dest_filename!r}, "
+            f"got={manifest.pic[0].relative_path!r}. "
+            "Source_path-keying misses the phantom key and reprocesses to a new filename; "
+            "hash-keying finds the hash and reuses the old pic with the original relative_path."
         )
 
     def test_stat_skip_prevents_rehash_for_unchanged_file(
@@ -432,16 +429,12 @@ class TestSymlinkReconciliationByHash:
             collection_root=".",
             pic=[
                 Pic(
-                    source_path=str(src_a),
-                    dest_path=str(src_a),
                     hash=hash_a,
                     size_bytes=src_a.stat().st_size,
                     mtime=self._make_mtime_str(src_a),
                     relative_path=src_a.name,
                 ),
                 Pic(
-                    source_path=str(src_b),
-                    dest_path=str(src_b),
                     hash=hash_b,
                     size_bytes=src_b.stat().st_size,
                     mtime=self._make_mtime_str(src_b),
@@ -452,16 +445,12 @@ class TestSymlinkReconciliationByHash:
 
         copy_pics = [
             Pic(
-                source_path=str(src_a),
-                dest_path="col-001.jpg",
                 hash=hash_a,
                 size_bytes=src_a.stat().st_size,
                 mtime=self._make_mtime_str(src_a),
                 relative_path="col-001.jpg",
             ),
             Pic(
-                source_path=str(src_b),
-                dest_path="col-002.jpg",
                 hash=hash_b,
                 size_bytes=src_b.stat().st_size,
                 mtime=self._make_mtime_str(src_b),
@@ -469,15 +458,16 @@ class TestSymlinkReconciliationByHash:
             ),
         ]
 
-        old_pairs = [
-            (Path(p.source_path).resolve(), dest_dir / p.dest_path)
-            for p in copy_pics
+        # Expected: source resolved via hash index, dest via relative_path
+        expected_pairs = [
+            ((source_dir / src_a.name).resolve(), dest_dir / "col-001.jpg"),
+            ((source_dir / src_b.name).resolve(), dest_dir / "col-002.jpg"),
         ]
         new_pairs = resolve_symlink_pairs_by_hash(
             source_manifest, source_dir, copy_pics, dest_dir
         )
 
-        assert new_pairs == old_pairs
+        assert new_pairs == expected_pairs
 
     def test_hash_reconciliation_agrees_with_producer_generated(
         self, create_photo_with_exif, tmp_path
@@ -511,15 +501,16 @@ class TestSymlinkReconciliationByHash:
             (source_dir / "manifest.json").read_text()
         )
 
-        old_pairs = [
-            (Path(p.source_path).resolve(), dest_dir / p.dest_path)
-            for p in copy_manifest.pic
-        ]
         new_pairs = resolve_symlink_pairs_by_hash(
             source_manifest, source_dir, copy_manifest.pic, dest_dir
         )
 
-        assert new_pairs == old_pairs
+        # Verify shape: one pair per pic, dest under dest_dir, source under source_dir
+        assert len(new_pairs) == len(copy_manifest.pic)
+        for resolved_src, dest_path in new_pairs:
+            assert str(resolved_src).startswith(str(source_dir))
+            assert str(dest_path).startswith(str(dest_dir))
+            assert resolved_src.exists()
 
     def test_no_source_match_raises(self, tmp_path):
         """Copy pic whose hash is absent from source index raises RuntimeError."""
@@ -537,8 +528,6 @@ class TestSymlinkReconciliationByHash:
         )
 
         orphan = Pic(
-            source_path="/src/orphan.jpg",
-            dest_path="orphan-copy.jpg",
             hash="b2b120:ZZZZZZZZZZZZZZZZZZZZZZZZ",
             size_bytes=1,
             mtime="2024-01-01T00:00:00.000000Z",

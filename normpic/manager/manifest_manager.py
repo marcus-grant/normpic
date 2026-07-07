@@ -299,8 +299,6 @@ def build_source_manifest(source_dir: Path, collection_name: str) -> Manifest:
             stat.st_mtime, tz=timezone.utc
         ).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         pics.append(Pic(
-            source_path=str(f),
-            dest_path=str(f),
             hash=file_hash,
             size_bytes=stat.st_size,
             mtime=mtime_str,

@@ -15,30 +15,23 @@ class TestPic:
     def test_pic_creation_with_required_fields(self):
         """Test Pic creation with only required fields."""
         pic = Pic(
-            source_path="/path/to/source.jpg",
-            dest_path="/path/to/dest.jpg",
             hash="abc123def456",
             size_bytes=1024,
             mtime="2023-11-04T22:04:16Z",
         )
 
-        assert pic.source_path == "/path/to/source.jpg"
-        assert pic.dest_path == "/path/to/dest.jpg"
         assert pic.hash == "abc123def456"
         assert pic.size_bytes == 1024
         assert pic.timestamp is None
         assert pic.timestamp_source is None
         assert pic.camera is None
         assert pic.gps is None
-        assert pic.errors == []
 
     def test_pic_creation_with_all_fields(self):
         """Test Pic creation with all fields including optionals."""
         timestamp = datetime(2025, 11, 6, 19, 30, 0)
 
         pic = Pic(
-            source_path="/path/to/source.jpg",
-            dest_path="/path/to/dest.jpg",
             hash="abc123def456",
             size_bytes=1024,
             mtime="2023-11-04T22:04:16Z",
@@ -46,7 +39,6 @@ class TestPic:
             timestamp_source="exif",
             camera="Canon EOS R5",
             gps={"lat": 40.7128, "lon": -74.0060},
-            errors=["no_exif"],
             tag=["holiday"],
         )
 
@@ -54,14 +46,11 @@ class TestPic:
         assert pic.timestamp_source == "exif"
         assert pic.camera == "Canon EOS R5"
         assert pic.gps == {"lat": 40.7128, "lon": -74.0060}
-        assert pic.errors == ["no_exif"]
         assert pic.tag == ["holiday"]
 
     def test_original_filename_valid(self):
         """Test original_filename set to a valid name is accessible."""
         pic = Pic(
-            source_path="/path/to/source.jpg",
-            dest_path="/path/to/dest.jpg",
             hash="abc123def456",
             size_bytes=1024,
             mtime="2023-11-04T22:04:16Z",
@@ -73,8 +62,6 @@ class TestPic:
     def test_original_filename_absent(self):
         """Test absent original_filename is the MISSING sentinel, not None."""
         pic = Pic(
-            source_path="/path/to/source.jpg",
-            dest_path="/path/to/dest.jpg",
             hash="abc123def456",
             size_bytes=1024,
             mtime="2023-11-04T22:04:16Z",
@@ -87,8 +74,6 @@ class TestPic:
         """Test that explicit None is rejected at construction."""
         with pytest.raises(ValueError):
             Pic(
-                source_path="/path/to/source.jpg",
-                dest_path="/path/to/dest.jpg",
                 hash="abc123def456",
                 size_bytes=1024,
                 mtime="2023-11-04T22:04:16Z",
@@ -99,8 +84,6 @@ class TestPic:
         """Test that empty string is rejected at construction."""
         with pytest.raises(ValueError):
             Pic(
-                source_path="/path/to/source.jpg",
-                dest_path="/path/to/dest.jpg",
                 hash="abc123def456",
                 size_bytes=1024,
                 mtime="2023-11-04T22:04:16Z",
@@ -111,8 +94,6 @@ class TestPic:
         """Test that path separators in original_filename are rejected."""
         with pytest.raises(ValueError):
             Pic(
-                source_path="/path/to/source.jpg",
-                dest_path="/path/to/dest.jpg",
                 hash="abc123def456",
                 size_bytes=1024,
                 mtime="2023-11-04T22:04:16Z",
@@ -120,8 +101,6 @@ class TestPic:
             )
         with pytest.raises(ValueError):
             Pic(
-                source_path="/path/to/source.jpg",
-                dest_path="/path/to/dest.jpg",
                 hash="abc123def456",
                 size_bytes=1024,
                 mtime="2023-11-04T22:04:16Z",
@@ -131,16 +110,12 @@ class TestPic:
     def test_pic_to_dict(self):
         """Test Pic conversion to dictionary."""
         pic = Pic(
-            source_path="/path/to/source.jpg",
-            dest_path="/path/to/dest.jpg",
             hash="abc123def456",
             size_bytes=1024,
             mtime="2023-11-04T22:04:16Z",
         )
 
         expected = {
-            "source_path": "/path/to/source.jpg",
-            "dest_path": "/path/to/dest.jpg",
             "hash": "abc123def456",
             "size_bytes": 1024,
             "mtime": "2023-11-04T22:04:16Z",
@@ -148,18 +123,18 @@ class TestPic:
             "timestamp_source": None,
             "camera": None,
             "gps": None,
-            "errors": [],
         }
 
         assert pic.to_dict() == expected
         assert "tag" not in pic.to_dict()
         assert "original_filename" not in pic.to_dict()
+        assert "source_path" not in pic.to_dict()
+        assert "dest_path" not in pic.to_dict()
+        assert "errors" not in pic.to_dict()
 
     def test_tag_absent_by_default(self):
         """Test that tag defaults to None (absent)."""
         pic = Pic(
-            source_path="/path/to/source.jpg",
-            dest_path="/path/to/dest.jpg",
             hash="abc123def456",
             size_bytes=1024,
             mtime="2023-11-04T22:04:16Z",
@@ -170,8 +145,6 @@ class TestPic:
     def test_tag_set(self):
         """Test that tag is accessible when set."""
         pic = Pic(
-            source_path="/path/to/source.jpg",
-            dest_path="/path/to/dest.jpg",
             hash="abc123def456",
             size_bytes=1024,
             mtime="2023-11-04T22:04:16Z",
@@ -183,8 +156,6 @@ class TestPic:
     def test_tag_empty_list(self):
         """Test that empty tag list is allowed (semantically absent)."""
         pic = Pic(
-            source_path="/path/to/source.jpg",
-            dest_path="/path/to/dest.jpg",
             hash="abc123def456",
             size_bytes=1024,
             mtime="2023-11-04T22:04:16Z",
@@ -197,8 +168,6 @@ class TestPic:
         """Test that all valid enum values are accepted."""
         for value in ("exif", "filename", "filesystem", "unknown"):
             Pic(
-                source_path="/path/to/source.jpg",
-                dest_path="/path/to/dest.jpg",
                 hash="abc123def456",
                 size_bytes=1024,
                 mtime="2023-11-04T22:04:16Z",
@@ -209,8 +178,6 @@ class TestPic:
         """Test that an unrecognised timestamp_source is rejected."""
         with pytest.raises(ValueError):
             Pic(
-                source_path="/path/to/source.jpg",
-                dest_path="/path/to/dest.jpg",
                 hash="abc123def456",
                 size_bytes=1024,
                 mtime="2023-11-04T22:04:16Z",
@@ -220,8 +187,6 @@ class TestPic:
     def test_timestamp_source_none_accepted(self):
         """Test that None is accepted (nullable)."""
         pic = Pic(
-            source_path="/path/to/source.jpg",
-            dest_path="/path/to/dest.jpg",
             hash="abc123def456",
             size_bytes=1024,
             mtime="2023-11-04T22:04:16Z",
@@ -240,15 +205,11 @@ class TestManifest:
 
         pics = [
             Pic(
-                source_path="/path/to/source1.jpg",
-                dest_path="/path/to/dest1.jpg",
                 hash="abc123",
                 size_bytes=1024,
                 mtime="2023-11-04T22:04:16Z",
             ),
             Pic(
-                source_path="/path/to/source2.jpg",
-                dest_path="/path/to/dest2.jpg",
                 hash="def456",
                 size_bytes=2048,
                 mtime="2023-11-04T22:04:16Z",
@@ -299,8 +260,6 @@ class TestManifest:
 
         pics = [
             Pic(
-                source_path="/path/to/source.jpg",
-                dest_path="/path/to/dest.jpg",
                 hash="abc123",
                 size_bytes=1024,
                 mtime="2023-11-04T22:04:16Z",
@@ -321,7 +280,9 @@ class TestManifest:
         assert result["generated_at"] == "2025-11-06T19:30:00.000000Z"
         assert result["collection_root"] == "."
         assert len(result["pic"]) == 1
-        assert result["pic"][0]["source_path"] == "/path/to/source.jpg"
+        assert result["pic"][0]["hash"] == "abc123"
+        assert "source_path" not in result["pic"][0]
+        assert "dest_path" not in result["pic"][0]
         assert "errors" not in result
         assert "warnings" not in result
         assert "processing_status" not in result

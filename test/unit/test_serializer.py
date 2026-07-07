@@ -20,8 +20,6 @@ class TestManifestSerializer:
 
         pics = [
             Pic(
-                source_path="/path/to/source.jpg",
-                dest_path="/path/to/dest.jpg",
                 hash="abc123",
                 size_bytes=1024,
                 mtime="2023-11-04T22:04:16Z",
@@ -53,8 +51,6 @@ class TestManifestSerializer:
             "generated_at": "2025-11-06T19:30:00",
             "pic": [
                 {
-                    "source_path": "/path/to/source.jpg",
-                    "dest_path": "/path/to/dest.jpg",
                     "hash": "abc123",
                     "size_bytes": 1024,
                     "mtime": "2023-11-04T22:04:16Z",
@@ -62,7 +58,6 @@ class TestManifestSerializer:
                     "timestamp_source": None,
                     "camera": None,
                     "gps": None,
-                    "errors": [],
                 }
             ],
             "collection_description": None,
@@ -76,7 +71,7 @@ class TestManifestSerializer:
         assert manifest.collection_name == "test-collection"
         assert manifest.generated_at == datetime(2025, 11, 6, 19, 30, 0)
         assert len(manifest.pic) == 1
-        assert manifest.pic[0].source_path == "/path/to/source.jpg"
+        assert manifest.pic[0].hash == "abc123"
 
     def test_round_trip_serialization(self):
         """Test that serialize -> deserialize preserves data."""
@@ -88,8 +83,6 @@ class TestManifestSerializer:
             generated_at=generated_at,
             pic=[
                 Pic(
-                    source_path="/path/to/source.jpg",
-                    dest_path="/path/to/dest.jpg",
                     hash="abc123",
                     size_bytes=1024,
                     mtime="2023-11-04T22:04:16Z",
@@ -112,7 +105,7 @@ class TestManifestSerializer:
 
         original_pic = original_manifest.pic[0]
         deserialized_pic = deserialized_manifest.pic[0]
-        assert deserialized_pic.source_path == original_pic.source_path
+        assert deserialized_pic.hash == original_pic.hash
         assert deserialized_pic.timestamp == original_pic.timestamp
         assert deserialized_pic.timestamp_source == original_pic.timestamp_source
 
@@ -124,8 +117,6 @@ class TestManifestSerializer:
             generated_at=datetime(2025, 11, 6, 19, 30, 0),
             pic=[
                 Pic(
-                    source_path="/path/to/source.jpg",
-                    dest_path="/path/to/dest.jpg",
                     hash="abc123",
                     size_bytes=1024,
                     mtime="2023-11-04T22:04:16Z",
@@ -141,8 +132,6 @@ class TestManifestSerializer:
         """Test schema validation fails for invalid manifest."""
         # size_bytes=-1 passes model construction but fails schema (minimum: 0)
         invalid_pic = Pic(
-            source_path="/path/to/source.jpg",
-            dest_path="/path/to/dest.jpg",
             hash="abc123",
             size_bytes=-1,
             mtime="2023-11-04T22:04:16Z",
@@ -167,8 +156,6 @@ class TestManifestSerializer:
             generated_at=datetime(2025, 11, 6, 19, 30, 0),
             pic=[
                 Pic(
-                    source_path="/path/to/source.jpg",
-                    dest_path="/path/to/dest.jpg",
                     hash="abc123",
                     size_bytes=1024,
                     mtime="2023-11-04T22:04:16Z",
@@ -185,7 +172,7 @@ class TestManifestSerializer:
         assert parsed["version"] == "0.1.0"
 
     def test_deserialize_tolerates_missing_legacy_fields(self):
-        """deserialize must not KeyError when source_path/dest_path/errors are absent."""
+        """deserialize over a manifest lacking source_path/dest_path/errors is clean."""
         json_data = {
             "version": "0.1.0",
             "collection_name": "test-collection",

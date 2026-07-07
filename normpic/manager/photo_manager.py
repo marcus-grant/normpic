@@ -340,8 +340,6 @@ def _create_ordered_pics(pics_data, collection_name: str, dest_dir: Path) -> Lis
             
             # Create Pic object
             pic = Pic(
-                source_path=str(photo_path),
-                dest_path=dest_filename,
                 relative_path=dest_filename,
                 hash=file_hash,
                 size_bytes=file_size,
@@ -353,7 +351,6 @@ def _create_ordered_pics(pics_data, collection_name: str, dest_dir: Path) -> Lis
                     "lat": exif_data.gps_latitude,
                     "lon": exif_data.gps_longitude
                 } if exif_data.gps_latitude and exif_data.gps_longitude else None,
-                errors=[]
             )
             
             pics[i] = pic  # Maintain original order

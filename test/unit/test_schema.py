@@ -17,8 +17,6 @@ class TestManifestSchema:
             "generated_at": "2025-11-06T19:30:00Z",
             "pic": [
                 {
-                    "source_path": "/path/to/source.jpg",
-                    "dest_path": "/path/to/dest.jpg",
                     "hash": "abc123def456",
                     "size_bytes": 1024,
                     "mtime": "2023-11-04T22:04:16Z",
@@ -48,7 +46,7 @@ class TestManifestSchema:
             "pic": [
                 {
                     "source_path": "/path/to/source.jpg",
-                    # Missing dest_path, hash, size_bytes
+                    # Missing hash, size_bytes
                 }
             ],
         }
@@ -63,8 +61,6 @@ class TestPicSchema:
     def test_valid_pic_passes_validation(self):
         """Test that a valid pic entry passes schema validation."""
         valid_pic = {
-            "source_path": "/path/to/source.jpg",
-            "dest_path": "/path/to/dest.jpg",
             "hash": "abc123def456",
             "size_bytes": 1024,
             "mtime": "2023-11-04T22:04:16Z",
@@ -75,8 +71,6 @@ class TestPicSchema:
     def test_pic_with_optional_fields_passes_validation(self):
         """Test that pic with optional fields passes validation."""
         pic_with_optionals = {
-            "source_path": "/path/to/source.jpg",
-            "dest_path": "/path/to/dest.jpg",
             "hash": "abc123def456",
             "size_bytes": 1024,
             "mtime": "2023-11-04T22:04:16Z",
@@ -84,15 +78,6 @@ class TestPicSchema:
             "timestamp_source": "exif",
             "camera": "Canon EOS R5",
             "gps": {"lat": 40.7128, "lon": -74.0060},
-            "errors": [
-                {
-                    "error_type": "exif_error",
-                    "severity": "warning", 
-                    "message": "No EXIF data found",
-                    "timestamp": "2024-10-05T14:30:45.123456",
-                    "source_file": "/path/to/source.jpg"
-                }
-            ],
         }
 
         validate(instance=pic_with_optionals, schema=PIC_SCHEMA)
@@ -100,8 +85,6 @@ class TestPicSchema:
     def test_pic_with_invalid_timestamp_source_fails(self):
         """Test that pic with invalid timestamp_source enum fails."""
         invalid_pic = {
-            "source_path": "/path/to/source.jpg",
-            "dest_path": "/path/to/dest.jpg",
             "hash": "abc123def456",
             "size_bytes": 1024,
             "mtime": "2023-11-04T22:04:16Z",
