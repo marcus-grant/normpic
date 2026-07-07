@@ -1,5 +1,52 @@
 # NormPic Development Changelog
 
+## 2026-07-07
+
+### ref/drop-source-dest-cutover
+
+Copy manifest is now contract-pure: source_path, dest_path, and errors
+removed from Pic model and serialization; hash-keyed reprocessing wired
+as the only path in organize_photos (stat-skip and --force included);
+serializer validation cut to schema/v0.1.0.json loaded from disk;
+schema_v0.py deleted; cutover acceptance gate unskipped and green.
+Manual wedding-archive result: 645 pics, 0 dangling symlinks, manifest
+carries no source_path/dest_path/errors, validates canonical, photos
+open through the symlinks. Phase B complete. Test count 280 -> 285.
+
+- hash-keyed reprocessing: organize_photos replaced source_path-keyed
+  lookup with build_hash_keyed_source_index + needs_reprocessing_by_hash;
+  stat-skip (mtime+size match reuses stored hash) and --force flag wired
+  in the same commit.
+- needs_reprocessing_by_hash dest-existence check: resolved via
+  matched.relative_path, not matched.dest_path.
+- deserialize: .get() used for legacy keys so manifests lacking
+  source_path/dest_path/errors load without error.
+- Pic model: source_path, dest_path, errors field definitions and all
+  to_dict() emission removed; build_source_manifest and
+  _create_ordered_pics construction sites cleaned.
+- schema_v0.py deleted; serializer now loads schema/v0.1.0.json from
+  disk at import time (_MANIFEST_SCHEMA module-level constant);
+  test_schema.py retargeted at canonical schema; inline PIC_SCHEMA
+  import in test_manifest_manager.py removed.
+- Cutover acceptance gate (test_cutover_complete_relative_path_only):
+  skip decorator removed; gate passes green on first run, proving the
+  full end state holds across the commit sequence.
+
+### Phase B: Implementation Alignment -- Summary
+
+18 PRs delivered from 2026-06-10 through 2026-07-07 (see per-PR entries
+in this CHANGELOG). v0.1 contract implemented end-to-end: b2b120 hash,
+relative_path only, hash-keyed reconciliation with stat-skip and --force,
+canonical schema enforced at the serializer boundary, schema_v0.py
+deleted. Manual wedding-archive acceptance: 645 pics, 0 dangling
+symlinks, manifest validates canonical.
+
+Note: ft/source-manifest-read (source manifest read/create path) was
+absorbed into ref/symlink-reconcile-by-hash and has no standalone entry.
+
+Two Phase B items remain open: ref/serializer-v01-contract and
+chr/pyright-clean.
+
 ## 2026-07-04
 
 ### ref/symlink-reconcile-by-hash

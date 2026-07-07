@@ -272,6 +272,58 @@ trap and completeness rungs found nothing.
 Open items go back as specific, surgical requests, not as a direction
 to start over.
 
+## Coordinating work across roles
+
+The reviewer role is often a coordinator: a conduit between an author
+(who may be a separate person or model instance) and the review
+standard in this document.
+The author writes plans and implements; the coordinator grades against
+the plan, runs QA, and relays sign-offs and surgical change requests;
+the maintainer merges.
+
+### Relay mechanics
+
+- The author reports plans and per-commit summaries; the coordinator
+  reviews against the repository, never against the prose alone.
+- Shell output moves by clipboard relay: the maintainer runs commands
+  and pastes results back, so coordinator requests should be targeted
+  (specific greps and line ranges), not "send me the whole file".
+- When a commit is ready, the coordinator provides the shell commands
+  and the commit message as separate blocks, so the message can be
+  pasted without being embedded in a command.
+- The coordinator writes commit messages; the author does not.
+
+### Per-commit sign-off on fragile changes
+
+Most PRs are signed off as a unit.
+A dependency-ordered PR whose commits are preconditions for one
+another (a schema cutover, a field removal that spans model,
+serializer, and tests) is signed off per commit: plan the one commit,
+sign off, implement, summarize, sign off, commit, then the next.
+This prevents an out-of-order change that breaks an intermediate tree.
+Where such an ordering exists, encode it in the TODO section for that
+PR, with the reason each step precedes the next.
+
+### The manual acceptance run
+
+The green suite proves mechanical correctness on fixtures; it does not
+prove the program behaves on real data.
+For changes that touch the end-to-end path, the coordinator runs the
+actual program on a real collection before the final sign-off, and
+checks what fixtures cannot: no dangling symlinks, output validates
+against the canonical schema, no removed fields present, files open
+through the produced links.
+This pattern has caught producer-side drift that every fixture test
+passed.
+
+### Communication norms
+
+- Terse and direct; one topic at a time.
+- A single concrete recommendation, not a menu of options.
+- State a correction once and move on; do not restate a settled call.
+- Recalibrate immediately when the maintainer flags drift, without
+  re-litigating.
+
 ## Style and formatting
 
 These rules apply to all text in the repository: code, comments,

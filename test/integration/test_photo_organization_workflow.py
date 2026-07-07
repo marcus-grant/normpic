@@ -407,7 +407,7 @@ class TestSymlinkReconciliationByHash:
         ).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
     def test_hash_reconciliation_agrees_with_stored_paths(self, tmp_path):
-        """Hand-built fixture: hash-reconciled pairs equal stored-field pairs."""
+        """Hand-built fixture: hash-reconciled pairs match expected source/dest paths."""
         source_dir = tmp_path / "source"
         dest_dir = tmp_path / "dest"
         source_dir.mkdir()
@@ -472,7 +472,7 @@ class TestSymlinkReconciliationByHash:
     def test_hash_reconciliation_agrees_with_producer_generated(
         self, create_photo_with_exif, tmp_path
     ):
-        """Producer-generated manifests: hash-reconciled pairs equal stored-field pairs."""
+        """Producer-generated manifests: hash-reconciled pairs have correct structure."""
         source_dir = tmp_path / "source"
         dest_dir = tmp_path / "dest"
         source_dir.mkdir()

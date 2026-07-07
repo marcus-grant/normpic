@@ -47,6 +47,32 @@ Each is described more fully in the deferred section of
 - Pixel-content hash.
   Alternative or supplementary hash computed over decoded pixel
   data, useful for detecting EXIF-edit cases.
+- Cross-variant collection matching (full vs. web, etc.).
+  A source shot and its compressed mirror are separate collections
+  with separate manifests; their content hashes differ by design, so
+  b2b120 identity cannot link them.
+  - v0.1 stopgap (consumer-side, no contract change): galleria maps a
+    web pic to its full counterpart by timestamp across the two
+    manifests.
+    This holds only while EXIF timestamp and sub-second precision
+    survive the pipeline unchanged into both manifests; verify that
+    invariant when relying on it.
+  - Robust replacement: the pixel-content hash above gives a
+    variant-stable identity that does not depend on timestamp
+    coincidence.
+- normpic operation config (needs a planning pass before scheduling).
+  A persisted config describing a symlink-copy operation (source and
+  copy manifest locations, the rename heuristic, the derivation link
+  between source and copy) so the operation need not be re-specified
+  via CLI or env each run.
+  - Open question: the boundary between this and marcustack's
+    invocation config, since marcustack owns operation composition for
+    the ecosystem.
+  - Resolved for now: the relationship lives in marcustack and normpic
+    takes CLI/env per run; this item only revisits whether normpic
+    should also own a local config later.
+  - Decide where it belongs (normpic vs. marcustack) and at what
+    version before promoting it from this note.
 - Output-bytes integrity hash for the destination tree.
   Distinct from the pic-identity hash; verifies destination integrity
   rather than source identity.
@@ -89,6 +115,22 @@ No contract impact; producer-internal improvements to NormPic.
 - Enhanced sub-second-ordering refinements.
   - Camera sequence tag parsing, automatic burst detection, multi-camera sync
   - Clock-drift correction, and manual reordering of problem sequences.
+- Re-hash heuristic (hash-reuse on stat match).
+  Deterministic stat-skip is implemented in v0.1: when a source
+  file's name, mtime, and size match its prior manifest entry, the
+  stored hash is reused instead of re-reading and re-hashing the
+  file; `--force` bypasses it.
+  - Measured motivation: a full re-hash of the wedding collection is
+    about 22 seconds for the full-size originals and 2.6 seconds for
+    the web-compressed set; the stat-skip removes that cost on
+    unchanged files.
+  - Future refinement: a probabilistic audit that re-hashes a
+    stat-matched file with some probability, catching in-place edits
+    that preserve mtime and size.
+    A flat per-run probability is stateless and contract-free.
+    A bounded variant (guarantee a re-hash within N runs) needs a
+    per-pic last-verified field, which is a v0.x contract extension,
+    not an implementation-only change.
 
 ## Rust Rewrite and Multi-Implementation Distribution
 
@@ -104,6 +146,38 @@ this transition mechanical rather than a redesign.
   implementation.
 - C-ABI library for other integrations.
 - Cross-compilation to `linux/amd64` and `linux/arm64`.
+
+### First Rust module: Pic and Pic collections
+
+The chosen entry point for Rust, ahead of a full port.
+Pic (the deserialized manifest record) and collections of Pic are the
+low-hanging fruit: self-contained, memory-heavy at scale, and the
+natural home for the manifest validators.
+
+Rationale:
+
+- Memory is the primary expected win: Rust structs for large Pic
+  collections instead of Python objects.
+  Compute gains are likely secondary but real.
+- The win compounds if the Rust collection type carries its own CRUD
+  plus map/filter/reduce/sort, so a single Python-to-Rust call
+  operates over many Pics at once rather than crossing the FFI
+  boundary per element.
+  Design the module around bulk operations, not per-Pic calls.
+- This is the best experimental testbed across the active projects for
+  measuring Rust-versus-Python compute and memory, because a full
+  pure-Python baseline already exists to compare against.
+
+Practice for every Rust addition (standing requirement):
+
+- Each Rust module or function that goes into use ships with a
+  compute-and-memory benchmark against the pure-Python baseline it
+  replaces or supplements.
+- Record the methodology and results in `analysis/`, versioned, so the
+  comparison is reproducible and accumulates over time.
+- These measurements are intended for external writeup (blog, social);
+  capture them at the point of each addition rather than
+  reconstructing later.
 
 ### SSG Integrations (post-Rust-port)
 
@@ -154,4 +228,3 @@ Interesting directions without clear scoping yet.
 - Git hooks for automatic processing.
 - Manifest content addressing (treating the manifest itself as a
   content-addressed artifact for reproducible deploys).
-
