@@ -328,6 +328,7 @@ _VALID_MANIFEST = {
     "pic": [
         {
             "hash": "b2b120:PZDRE6BC90T0BS0FGG0ZM7Y9",
+            "relative_path": "photo.jpg",
             "size_bytes": 1024,
             "mtime": "2024-01-01T00:00:00Z",
             "timestamp": None,
@@ -681,9 +682,13 @@ class TestCopyManifestRelativePath:
         assert "//" not in rp, "must not have empty segments"
 
     def test_schema_rejects_non_canonical_relative_path(self):
+        import json
+        from pathlib import Path
         from jsonschema import validate, ValidationError
-        from normpic.model.schema_v0 import PIC_SCHEMA
         import pytest
+
+        _schema_path = Path(__file__).resolve().parent.parent.parent / "schema" / "v0.1.0.json"
+        _manifest_schema = json.loads(_schema_path.read_text())
 
         bad_values = [
             "./wedding-20241005T143045-r5a.jpg",   # leading ./
@@ -697,6 +702,14 @@ class TestCopyManifestRelativePath:
             "size_bytes": 1,
             "mtime": "2024-01-01T00:00:00Z",
         }
+        manifest_wrapper = {
+            "version": "0.1.0",
+            "collection_name": "test",
+            "generated_at": "2024-01-01T00:00:00Z",
+        }
         for bad in bad_values:
             with pytest.raises(ValidationError):
-                validate(instance={**base, "relative_path": bad}, schema=PIC_SCHEMA)
+                validate(
+                    instance={**manifest_wrapper, "pic": [{**base, "relative_path": bad}]},
+                    schema=_manifest_schema,
+                )

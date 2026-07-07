@@ -2,12 +2,16 @@
 
 import json
 from datetime import datetime
+from pathlib import Path
 
 from jsonschema import validate
 
 from ..model.manifest import Manifest
 from ..model.pic import Pic
-from ..model.schema_v0 import MANIFEST_SCHEMA
+
+_MANIFEST_SCHEMA = json.loads(
+    (Path(__file__).resolve().parent.parent.parent / "schema" / "v0.1.0.json").read_text()
+)
 
 
 class ManifestSerializer:
@@ -48,7 +52,7 @@ class ManifestSerializer:
         data = json.loads(json_str)
         
         # Validate against schema
-        validate(instance=data, schema=MANIFEST_SCHEMA)
+        validate(instance=data, schema=_MANIFEST_SCHEMA)
         
         # Convert to objects
         pics = []
@@ -95,4 +99,4 @@ class ManifestSerializer:
             ValidationError: If manifest doesn't match schema
         """
         manifest_dict = manifest.to_dict()
-        validate(instance=manifest_dict, schema=MANIFEST_SCHEMA)
+        validate(instance=manifest_dict, schema=_MANIFEST_SCHEMA)
