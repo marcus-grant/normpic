@@ -23,7 +23,7 @@ class TestManifestLoadingWorkflow:
         dest_dir.mkdir()
 
         # Create test photos
-        photo1 = create_photo_with_exif(
+        create_photo_with_exif(
             source_dir / "IMG_001.jpg",
             DateTimeOriginal="2024:10:05 14:30:45",
             SubSecTimeOriginal="123",
@@ -49,15 +49,14 @@ class TestManifestLoadingWorkflow:
             "config": {"source_dir": str(source_dir), "dest_dir": str(dest_dir)},
             "pic": [
                 {
-                    "source_path": str(photo1),
-                    "dest_path": str(dest_dir / "wedding-20241005T143045-r5a.jpg"),
                     "hash": "abc123def456",
                     "size_bytes": 2048000,
+                    "mtime": "2024-10-05T14:00:00.000000Z",
                     "timestamp": "2024-10-05T14:30:45.123",
                     "timestamp_source": "exif",
                     "camera": "Canon EOS R5",
                     "gps": None,
-                    "errors": [],
+                    "relative_path": "wedding-20241005T143045-r5a.jpg",
                 }
             ],
         }
@@ -115,13 +114,11 @@ class TestManifestLoadingWorkflow:
             source_dir=source_dir, dest_dir=dest_dir, collection_name="test"
         )
 
-        # Store initial file modification times and hashes for comparison
-        initial_pic1_data = next(
-            p for p in initial_manifest.pic if "IMG_001" in p.source_path
-        )
-        initial_pic2_data = next(
-            p for p in initial_manifest.pic if "IMG_002" in p.source_path
-        )
+        # Identify each pic by hash (content identity survives incremental reuse)
+        hash1 = b2b120_hash((source_dir / "IMG_001.jpg").read_bytes())
+        hash2 = b2b120_hash((source_dir / "IMG_002.jpg").read_bytes())
+        initial_pic1_data = next(p for p in initial_manifest.pic if p.hash == hash1)
+        initial_pic2_data = next(p for p in initial_manifest.pic if p.hash == hash2)
 
         # Arrange: Modify only photo1 (change mtime by touching the file)
         import time
@@ -134,33 +131,26 @@ class TestManifestLoadingWorkflow:
         )
 
         # Assert: Only photo1 was reprocessed (different mtime), photo2 unchanged
-        updated_pic1_data = next(
-            p for p in updated_manifest.pic if "IMG_001" in p.source_path
-        )
-        updated_pic2_data = next(
-            p for p in updated_manifest.pic if "IMG_002" in p.source_path
+        updated_pic1_data = next(p for p in updated_manifest.pic if p.hash == hash1)
+        updated_pic2_data = next(p for p in updated_manifest.pic if p.hash == hash2)
+
+        # Photo1 was reprocessed -- its mtime in the new manifest reflects the touch
+        assert updated_pic1_data.mtime != initial_pic1_data.mtime, (
+            "Photo1 mtime should be updated after touching the file"
         )
 
-        # Photo1 should have been reprocessed (different mtime detected)
-        # The mtime field should be updated in the manifest
-        assert updated_pic1_data.mtime != initial_pic1_data.mtime, "Photo1 mtime should be updated after touching the file"
-        
-        # Photo2 should be unchanged (same mtime and content)
-        # With incremental processing, photo2 should have the same data as before
-        assert updated_pic2_data.mtime == initial_pic2_data.mtime, "Photo2 mtime should remain unchanged"
-        assert updated_pic2_data.hash == initial_pic2_data.hash, "Photo2 hash should remain unchanged"
-        
-        # Verify both photos are still in the manifest
-        assert len(updated_manifest.pic) == 2, "Both photos should still be in the manifest"
-        
-        # Verify that incremental processing is working:
-        # Photo2 should have identical data (reused from previous manifest)
-        assert updated_pic2_data.source_path == initial_pic2_data.source_path, "Photo2 source_path should be identical"
-        assert updated_pic2_data.dest_path == initial_pic2_data.dest_path, "Photo2 dest_path should be identical"
-        
-        # Success! Incremental processing is working correctly
+        # Photo2 is unchanged -- mtime, hash, and relative_path are identical
+        assert updated_pic2_data.mtime == initial_pic2_data.mtime, (
+            "Photo2 mtime should remain unchanged"
+        )
+        assert updated_pic2_data.hash == initial_pic2_data.hash, (
+            "Photo2 hash should remain unchanged"
+        )
+        assert updated_pic2_data.relative_path == initial_pic2_data.relative_path, (
+            "Photo2 relative_path should be identical (pic reused from prior manifest)"
+        )
 
-        # Manifest should still contain both photos
+        # Both photos are still in the manifest
         assert len(updated_manifest.pic) == 2
 
 

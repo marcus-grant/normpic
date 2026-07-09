@@ -1,6 +1,6 @@
 """Photo data model."""
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
@@ -14,8 +14,6 @@ class Pic:
     """Photo metadata record."""
 
     # Required fields
-    source_path: str
-    dest_path: str
     hash: str
     size_bytes: int
     mtime: str
@@ -25,7 +23,6 @@ class Pic:
     timestamp_source: Optional[str] = None
     camera: Optional[str] = None
     gps: Optional[Dict[str, float]] = None
-    errors: List[str] = field(default_factory=list)
     original_filename: Any = MISSING
     tag: Optional[List[str]] = None
     relative_path: Optional[str] = None
@@ -55,8 +52,6 @@ class Pic:
     def to_dict(self) -> Dict[str, Any]:
         """Convert Pic to dictionary for JSON serialization."""
         d: Dict[str, Any] = {
-            "source_path": self.source_path,
-            "dest_path": self.dest_path,
             "hash": self.hash,
             "size_bytes": self.size_bytes,
             "mtime": self.mtime,
@@ -67,7 +62,6 @@ class Pic:
             "timestamp_source": self.timestamp_source,
             "camera": self.camera,
             "gps": self.gps,
-            "errors": self.errors,
         }
         if self.original_filename is not MISSING:
             d["original_filename"] = self.original_filename

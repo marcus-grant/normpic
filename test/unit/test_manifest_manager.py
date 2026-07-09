@@ -327,16 +327,14 @@ _VALID_MANIFEST = {
     "collection_root": ".",
     "pic": [
         {
-            "source_path": "/src/a.jpg",
-            "dest_path": "/src/a.jpg",
             "hash": "b2b120:PZDRE6BC90T0BS0FGG0ZM7Y9",
+            "relative_path": "photo.jpg",
             "size_bytes": 1024,
             "mtime": "2024-01-01T00:00:00Z",
             "timestamp": None,
             "timestamp_source": None,
             "camera": None,
             "gps": None,
-            "errors": [],
         }
     ],
 }
@@ -405,13 +403,13 @@ class TestSourceManifestLoading:
         manifest = build_source_manifest(source_dir, "col")
 
         assert len(manifest.pic) == 2
-        paths = {p.source_path for p in manifest.pic}
-        assert str(source_dir / "a.jpg") in paths
-        assert str(source_dir / "b.jpg") in paths
+        rel_paths = {p.relative_path for p in manifest.pic}
+        assert "a.jpg" in rel_paths
+        assert "b.jpg" in rel_paths
         for pic in manifest.pic:
             assert pic.mtime.endswith("Z")
             assert pic.relative_path is not None
-            assert pic.relative_path == pic.source_path.split("/")[-1]
+            assert pic.relative_path in {"a.jpg", "b.jpg"}
             assert not pic.relative_path.startswith("/")
             assert not pic.relative_path.startswith("./")
             assert "\\" not in pic.relative_path
@@ -428,13 +426,12 @@ def _make_manifest(pics):
     )
 
 
-def _make_pic(source_path, dest_path, hash_val, size_bytes, mtime_str):
+def _make_pic(hash_val, size_bytes, mtime_str, relative_path=""):
     return Pic(
-        source_path=source_path,
-        dest_path=dest_path,
         hash=hash_val,
         size_bytes=size_bytes,
         mtime=mtime_str,
+        relative_path=relative_path,
     )
 
 
@@ -444,8 +441,8 @@ class TestHashKeyedChangeDetection:
     # --- Cycle 1: index building ---
 
     def test_index_basic(self):
-        pic_a = _make_pic("/src/a.jpg", "a.jpg", "b2b120:AAAA", 100, "2024-01-01T00:00:00.000000Z")
-        pic_b = _make_pic("/src/b.jpg", "b.jpg", "b2b120:BBBB", 200, "2024-01-01T00:00:00.000000Z")
+        pic_a = _make_pic("b2b120:AAAA", 100, "2024-01-01T00:00:00.000000Z", relative_path="a.jpg")
+        pic_b = _make_pic("b2b120:BBBB", 200, "2024-01-01T00:00:00.000000Z", relative_path="b.jpg")
         manifest = _make_manifest([pic_a, pic_b])
         index = build_hash_keyed_source_index(manifest)
         assert index["b2b120:AAAA"] is pic_a
@@ -456,8 +453,8 @@ class TestHashKeyedChangeDetection:
         assert index == {}
 
     def test_index_duplicate_hash(self):
-        pic_first = _make_pic("/src/a.jpg", "a.jpg", "b2b120:AAAA", 100, "2024-01-01T00:00:00.000000Z")
-        pic_second = _make_pic("/src/b.jpg", "b.jpg", "b2b120:AAAA", 100, "2024-01-01T00:00:00.000000Z")
+        pic_first = _make_pic("b2b120:AAAA", 100, "2024-01-01T00:00:00.000000Z", relative_path="a.jpg")
+        pic_second = _make_pic("b2b120:AAAA", 100, "2024-01-01T00:00:00.000000Z", relative_path="b.jpg")
         manifest = _make_manifest([pic_first, pic_second])
         index = build_hash_keyed_source_index(manifest)
         assert index["b2b120:AAAA"] is pic_first
@@ -477,7 +474,7 @@ class TestHashKeyedChangeDetection:
 
         mtime_str = "2024-01-01T00:00:00.000000Z"
         prev_mtime = datetime.fromisoformat(mtime_str).timestamp()
-        pic = _make_pic("/src/a.jpg", "a.jpg", "b2b120:AAAA", 100, mtime_str)
+        pic = _make_pic("b2b120:AAAA", 100, mtime_str, relative_path="a.jpg")
         index = {"b2b120:AAAA": pic}
 
         manager = ManifestManager()
@@ -488,7 +485,7 @@ class TestHashKeyedChangeDetection:
     def test_mtime_changed(self):
         mtime_str = "2020-01-01T00:00:00.000000Z"
         prev_mtime = datetime.fromisoformat(mtime_str).timestamp()
-        pic = _make_pic("/src/a.jpg", "a.jpg", "b2b120:AAAA", 100, mtime_str)
+        pic = _make_pic("b2b120:AAAA", 100, mtime_str, relative_path="a.jpg")
         index = {"b2b120:AAAA": pic}
 
         manager = ManifestManager()
@@ -518,7 +515,7 @@ class TestHashKeyedChangeDetection:
         # needs_reprocessing_by_hash: current_mtime is the raw st_mtime float;
         # matched.mtime is the strftime ISO string (same float, same origin)
         hash_val = manager.compute_file_hash(photo)
-        pic = _make_pic(str(photo), "dest.jpg", hash_val, photo.stat().st_size, mtime_iso)
+        pic = _make_pic(hash_val, photo.stat().st_size, mtime_iso, relative_path="dest.jpg")
         assert manager.needs_reprocessing_by_hash(hash_val, {hash_val: pic}, st_mtime) is False
 
         # Stored-string path: save the manifest to disk and reload it so that
@@ -540,7 +537,7 @@ class TestHashKeyedChangeDetection:
 
         mtime_str = "2024-01-01T00:00:00.000000Z"
         prev_mtime = datetime.fromisoformat(mtime_str).timestamp()
-        pic = _make_pic("/src/a.jpg", "a.jpg", "b2b120:AAAA", 100, mtime_str)
+        pic = _make_pic("b2b120:AAAA", 100, mtime_str, relative_path="a.jpg")
         index = {"b2b120:AAAA": pic}
 
         manager = ManifestManager()
@@ -548,14 +545,41 @@ class TestHashKeyedChangeDetection:
             "b2b120:AAAA", index, prev_mtime, dest_dir=dest_dir
         ) is True
 
+    def test_dest_check_uses_relative_path(self, tmp_path):
+        """dest-existence check resolves via relative_path, not dest_path."""
+        dest_dir = tmp_path / "dest"
+        dest_dir.mkdir()
+        # Only the relative_path target exists; dest_path target does not.
+        (dest_dir / "b.jpg").touch()
+
+        mtime_str = "2024-01-01T00:00:00.000000Z"
+        prev_mtime = datetime.fromisoformat(mtime_str).timestamp()
+        pic = Pic(
+            relative_path="b.jpg",
+            hash="b2b120:AAAA",
+            size_bytes=100,
+            mtime=mtime_str,
+        )
+        index = {"b2b120:AAAA": pic}
+
+        manager = ManifestManager()
+        # relative_path target ("b.jpg") exists; discriminates that the check
+        # uses relative_path and not some other field. Correct behavior: False.
+        assert manager.needs_reprocessing_by_hash(
+            "b2b120:AAAA", index, prev_mtime, dest_dir=dest_dir
+        ) is False
+
     # --- Cycle 4: equivalence test ---
 
-    def test_hash_keyed_agrees_with_path_keyed(self, tmp_path):
-        """Hash-keyed and path-keyed detections partition the same fixture identically.
+    def test_hash_keyed_change_detection_categorizes_correctly(self, tmp_path):
+        """Hash-keyed detection correctly partitions new, stale, dest-missing, unchanged.
 
-        Both paths read the SAME prior_manifest and on-disk files; they differ
-        only in lookup key. Equivalence emerges from logic, not fixture
-        hand-tuning.
+        Four source files against a prior manifest:
+        - A: unchanged (hash hit, current mtime, dest exists)
+        - B: stale mtime (hash hit, mtime differs)
+        - C: new (no hash in manifest)
+        - D: dest missing (hash hit, current mtime, but dest absent)
+        Expected: only A is unchanged; B, C, D need reprocessing.
         """
         source_dir = tmp_path / "source"
         dest_dir = tmp_path / "dest"
@@ -590,57 +614,35 @@ class TestHashKeyedChangeDetection:
 
         stale_mtime = "2020-01-01T00:00:00.000000Z"
 
-        # One shared prior manifest: A (unchanged), B (stale mtime), D (dest missing).
-        # C is absent -- it is NEW to both paths.
+        # Prior manifest: A (unchanged), B (stale mtime), D (dest missing).
+        # C is absent -- it is NEW.
         prior_manifest = _make_manifest([
-            _make_pic(str(path_a), "dest_a.jpg", hash_a, path_a.stat().st_size, mtime_a_str),
-            _make_pic(str(path_b), "dest_b.jpg", hash_b, path_b.stat().st_size, stale_mtime),
-            _make_pic(str(path_d), "dest_d.jpg", hash_d, path_d.stat().st_size, mtime_d_str),
+            _make_pic(hash_a, path_a.stat().st_size, mtime_a_str, relative_path="dest_a.jpg"),
+            _make_pic(hash_b, path_b.stat().st_size, stale_mtime, relative_path="dest_b.jpg"),
+            _make_pic(hash_d, path_d.stat().st_size, mtime_d_str, relative_path="dest_d.jpg"),
         ])
 
-        # Dest files: A and B exist, D is missing
+        # Dest files: A exists, B exists (stale mtime still means reprocess), D missing
         (dest_dir / "dest_a.jpg").touch()
         (dest_dir / "dest_b.jpg").touch()
         # dest_dir / "dest_d.jpg" intentionally absent
 
         source_photos = [path_a, path_b, path_c, path_d]
 
-        # Path-keyed partition (mirrors organize_photos logic)
-        existing_by_path = {pic.source_path: pic for pic in prior_manifest.pic}
-        path_needs, path_unchanged = [], []
-        for photo_path in source_photos:
-            existing_pic = existing_by_path.get(str(photo_path))
-            if existing_pic:
-                prev_mtime = datetime.fromisoformat(existing_pic.mtime).timestamp()
-                if not manager.needs_reprocessing(
-                    photo_path,
-                    previous_hash=existing_pic.hash,
-                    previous_mtime=prev_mtime,
-                    dest_path=dest_dir / existing_pic.dest_path,
-                ):
-                    path_unchanged.append(photo_path.name)
-                    continue
-            path_needs.append(photo_path.name)
-
-        # Hash-keyed partition
         hash_index = build_hash_keyed_source_index(prior_manifest)
-        hash_needs, hash_unchanged = [], []
+        needs, unchanged = [], []
         for photo_path in source_photos:
             current_hash = manager.compute_file_hash(photo_path)
             current_mtime = photo_path.stat().st_mtime
             if not manager.needs_reprocessing_by_hash(
                 current_hash, hash_index, current_mtime, dest_dir=dest_dir
             ):
-                hash_unchanged.append(photo_path.name)
+                unchanged.append(photo_path.name)
             else:
-                hash_needs.append(photo_path.name)
+                needs.append(photo_path.name)
 
-        assert set(path_needs) == set(hash_needs), (
-            f"path_needs={set(path_needs)} hash_needs={set(hash_needs)}"
-        )
-        assert set(path_unchanged) == set(hash_unchanged), (
-            f"path_unchanged={set(path_unchanged)} hash_unchanged={set(hash_unchanged)}"
-        )
+        assert set(unchanged) == {"a.jpg"}, f"unchanged={set(unchanged)}"
+        assert set(needs) == {"b.jpg", "c.jpg", "d.jpg"}, f"needs={set(needs)}"
 
 
 class TestCopyManifestRelativePath:
@@ -648,8 +650,6 @@ class TestCopyManifestRelativePath:
 
     def _base_pic(self, **kwargs):
         return Pic(
-            source_path=kwargs.get("source_path", "/src/a.jpg"),
-            dest_path=kwargs.get("dest_path", "col-20240101T000000-r5a.jpg"),
             hash=kwargs.get("hash", "b2b120:AAAAAAAAAAAAAAAAAAAAAAAA"),
             size_bytes=kwargs.get("size_bytes", 1024),
             mtime=kwargs.get("mtime", "2024-01-01T00:00:00.000000Z"),
@@ -658,7 +658,7 @@ class TestCopyManifestRelativePath:
 
     def test_relative_path_emitted_when_set(self):
         organized = "wedding-20241005T143045-r5a.jpg"
-        pic = self._base_pic(dest_path=organized, relative_path=organized)
+        pic = self._base_pic(relative_path=organized)
         d = pic.to_dict()
         assert "relative_path" in d
         assert d["relative_path"] == organized
@@ -672,7 +672,7 @@ class TestCopyManifestRelativePath:
         # A normal organized filename must satisfy all canonical-path rules:
         # no leading ./, no .., no backslash, no absolute prefix.
         organized = "wedding-20241005T143045-r5a.jpg"
-        pic = self._base_pic(dest_path=organized, relative_path=organized)
+        pic = self._base_pic(relative_path=organized)
         d = pic.to_dict()
         rp = d["relative_path"]
         assert not rp.startswith("/"), "must not be absolute"
@@ -682,9 +682,13 @@ class TestCopyManifestRelativePath:
         assert "//" not in rp, "must not have empty segments"
 
     def test_schema_rejects_non_canonical_relative_path(self):
+        import json
+        from pathlib import Path
         from jsonschema import validate, ValidationError
-        from normpic.model.schema_v0 import PIC_SCHEMA
         import pytest
+
+        _schema_path = Path(__file__).resolve().parent.parent.parent / "schema" / "v0.1.0.json"
+        _manifest_schema = json.loads(_schema_path.read_text())
 
         bad_values = [
             "./wedding-20241005T143045-r5a.jpg",   # leading ./
@@ -694,12 +698,18 @@ class TestCopyManifestRelativePath:
             "foo\\bar.jpg",                         # backslash
         ]
         base = {
-            "source_path": "/src/a.jpg",
-            "dest_path": "a.jpg",
             "hash": "b2b120:AAAAAAAAAAAAAAAAAAAAAAAA",
             "size_bytes": 1,
             "mtime": "2024-01-01T00:00:00Z",
         }
+        manifest_wrapper = {
+            "version": "0.1.0",
+            "collection_name": "test",
+            "generated_at": "2024-01-01T00:00:00Z",
+        }
         for bad in bad_values:
             with pytest.raises(ValidationError):
-                validate(instance={**base, "relative_path": bad}, schema=PIC_SCHEMA)
+                validate(
+                    instance={**manifest_wrapper, "pic": [{**base, "relative_path": bad}]},
+                    schema=_manifest_schema,
+                )

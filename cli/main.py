@@ -108,6 +108,7 @@ def main(
             collection_name=config.collection_name,
             collection_description=config.collection_description,
             dry_run=dry_run,
+            force=config.force_reprocess,
         )
 
         # Output summary

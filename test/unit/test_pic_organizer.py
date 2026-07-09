@@ -259,6 +259,6 @@ class TestCreateOrderedPics:
         ]
 
         for i, pic in enumerate(pics):
-            assert pic.dest_path == expected_filenames[i]
+            assert pic.relative_path == expected_filenames[i]
             assert isinstance(pic, Pic)
             assert pic.timestamp_source == "exif"

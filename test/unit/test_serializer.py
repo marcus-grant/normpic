@@ -20,8 +20,6 @@ class TestManifestSerializer:
 
         pics = [
             Pic(
-                source_path="/path/to/source.jpg",
-                dest_path="/path/to/dest.jpg",
                 hash="abc123",
                 size_bytes=1024,
                 mtime="2023-11-04T22:04:16Z",
@@ -50,19 +48,17 @@ class TestManifestSerializer:
         json_data = {
             "version": "0.1.0",
             "collection_name": "test-collection",
-            "generated_at": "2025-11-06T19:30:00",
+            "generated_at": "2025-11-06T19:30:00Z",
             "pic": [
                 {
-                    "source_path": "/path/to/source.jpg",
-                    "dest_path": "/path/to/dest.jpg",
-                    "hash": "abc123",
+                    "hash": "b2b120:AAAAAAAAAAAAAAAAAAAAAAAA",
+                    "relative_path": "photo.jpg",
                     "size_bytes": 1024,
                     "mtime": "2023-11-04T22:04:16Z",
                     "timestamp": None,
                     "timestamp_source": None,
                     "camera": None,
                     "gps": None,
-                    "errors": [],
                 }
             ],
             "collection_description": None,
@@ -74,9 +70,9 @@ class TestManifestSerializer:
 
         assert manifest.version == "0.1.0"
         assert manifest.collection_name == "test-collection"
-        assert manifest.generated_at == datetime(2025, 11, 6, 19, 30, 0)
+        assert manifest.generated_at == datetime(2025, 11, 6, 19, 30, 0, tzinfo=timezone.utc)
         assert len(manifest.pic) == 1
-        assert manifest.pic[0].source_path == "/path/to/source.jpg"
+        assert manifest.pic[0].hash == "b2b120:AAAAAAAAAAAAAAAAAAAAAAAA"
 
     def test_round_trip_serialization(self):
         """Test that serialize -> deserialize preserves data."""
@@ -88,9 +84,8 @@ class TestManifestSerializer:
             generated_at=generated_at,
             pic=[
                 Pic(
-                    source_path="/path/to/source.jpg",
-                    dest_path="/path/to/dest.jpg",
-                    hash="abc123",
+                    hash="b2b120:AAAAAAAAAAAAAAAAAAAAAAAA",
+                    relative_path="photo.jpg",
                     size_bytes=1024,
                     mtime="2023-11-04T22:04:16Z",
                     timestamp=generated_at,
@@ -112,7 +107,7 @@ class TestManifestSerializer:
 
         original_pic = original_manifest.pic[0]
         deserialized_pic = deserialized_manifest.pic[0]
-        assert deserialized_pic.source_path == original_pic.source_path
+        assert deserialized_pic.hash == original_pic.hash
         assert deserialized_pic.timestamp == original_pic.timestamp
         assert deserialized_pic.timestamp_source == original_pic.timestamp_source
 
@@ -121,12 +116,11 @@ class TestManifestSerializer:
         valid_manifest = Manifest(
             version="0.1.0",
             collection_name="test-collection",
-            generated_at=datetime(2025, 11, 6, 19, 30, 0),
+            generated_at=datetime(2025, 11, 6, 19, 30, 0, tzinfo=timezone.utc),
             pic=[
                 Pic(
-                    source_path="/path/to/source.jpg",
-                    dest_path="/path/to/dest.jpg",
-                    hash="abc123",
+                    hash="b2b120:AAAAAAAAAAAAAAAAAAAAAAAA",
+                    relative_path="photo.jpg",
                     size_bytes=1024,
                     mtime="2023-11-04T22:04:16Z",
                 )
@@ -141,8 +135,6 @@ class TestManifestSerializer:
         """Test schema validation fails for invalid manifest."""
         # size_bytes=-1 passes model construction but fails schema (minimum: 0)
         invalid_pic = Pic(
-            source_path="/path/to/source.jpg",
-            dest_path="/path/to/dest.jpg",
             hash="abc123",
             size_bytes=-1,
             mtime="2023-11-04T22:04:16Z",
@@ -164,12 +156,11 @@ class TestManifestSerializer:
         valid_manifest = Manifest(
             version="0.1.0",
             collection_name="test-collection",
-            generated_at=datetime(2025, 11, 6, 19, 30, 0),
+            generated_at=datetime(2025, 11, 6, 19, 30, 0, tzinfo=timezone.utc),
             pic=[
                 Pic(
-                    source_path="/path/to/source.jpg",
-                    dest_path="/path/to/dest.jpg",
-                    hash="abc123",
+                    hash="b2b120:AAAAAAAAAAAAAAAAAAAAAAAA",
+                    relative_path="photo.jpg",
                     size_bytes=1024,
                     mtime="2023-11-04T22:04:16Z",
                 )
@@ -183,3 +174,50 @@ class TestManifestSerializer:
         assert json_str is not None
         parsed = json.loads(json_str)
         assert parsed["version"] == "0.1.0"
+
+    def test_validate_rejects_pic_without_relative_path(self):
+        """Canonical schema requires relative_path; schema_v0 did not.
+
+        Discriminator: Pic(relative_path=None) serializes without the key.
+        schema_v0 would pass; canonical raises ValidationError.
+        """
+        manifest = Manifest(
+            version="0.1.0",
+            collection_name="test-collection",
+            generated_at=datetime(2025, 11, 6, 19, 30, 0, tzinfo=timezone.utc),
+            pic=[
+                Pic(
+                    hash="b2b120:AAAAAAAAAAAAAAAAAAAAAAAA",
+                    size_bytes=1,
+                    mtime="2024-01-01T00:00:00.000000Z",
+                    # relative_path defaults to None -- omitted from to_dict()
+                )
+            ],
+        )
+        serializer = ManifestSerializer()
+        with pytest.raises(ValidationError):
+            serializer.validate(manifest)
+
+    def test_deserialize_tolerates_missing_legacy_fields(self):
+        """deserialize over a manifest lacking source_path/dest_path/errors is clean."""
+        json_data = {
+            "version": "0.1.0",
+            "collection_name": "test-collection",
+            "generated_at": "2025-11-06T19:30:00Z",
+            "pic": [
+                {
+                    "hash": "b2b120:AAAAAAAAAAAAAAAAAAAAAAAA",
+                    "relative_path": "photo.jpg",
+                    "size_bytes": 100,
+                    "mtime": "2024-01-01T00:00:00.000000Z",
+                    "timestamp": None,
+                    "timestamp_source": None,
+                    "camera": None,
+                    "gps": None,
+                }
+            ],
+        }
+
+        manifest = ManifestSerializer().deserialize(json.dumps(json_data))
+        assert len(manifest.pic) == 1
+        assert manifest.pic[0].hash == "b2b120:AAAAAAAAAAAAAAAAAAAAAAAA"

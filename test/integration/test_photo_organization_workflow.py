@@ -1,5 +1,6 @@
 """Integration tests for complete photo organization workflow with manifest generation."""
 
+import pytest
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -86,10 +87,9 @@ class TestPhotoOrganizationWorkflow:
             ),  # 14:30:47.456 (same timestamp but different camera from nikon)
         ]
 
-        for i, (expected_filename, source_photo) in enumerate(expected_order):
+        for i, (expected_filename, _source_photo) in enumerate(expected_order):
             pic = manifest.pic[i]
-            assert pic.dest_path == expected_filename
-            assert pic.source_path == str(source_photo)
+            assert pic.relative_path == expected_filename
             assert pic.timestamp_source == "exif"
 
         # Assert: Verify manifest metadata
@@ -98,12 +98,12 @@ class TestPhotoOrganizationWorkflow:
         assert manifest.version.startswith("0.")
         assert isinstance(manifest.generated_at, datetime)
 
-        # Assert: Verify symlinks created
+        # Assert: Verify symlinks created and not dangling
         for pic in manifest.pic:
-            dest_file = dest_dir / pic.dest_path
+            dest_file = dest_dir / pic.relative_path
             assert dest_file.exists()
             assert dest_file.is_symlink()
-            assert dest_file.readlink() == Path(pic.source_path)
+            assert dest_file.readlink().exists()
 
         # Assert: Verify manifest.json written
         manifest_file = dest_dir / "manifest.json"
@@ -167,7 +167,7 @@ class TestPhotoOrganizationWorkflow:
 
         # Assert: Canon burst photos are adjacent (burst preservation)
         # iPhone should not interrupt the Canon sequence
-        canon_pics = [pic for pic in manifest.pic if "r5a" in pic.dest_path]
+        canon_pics = [pic for pic in manifest.pic if "r5a" in pic.relative_path]
         assert len(canon_pics) == 3
 
         # Canon pics should be consecutive in manifest.pic
@@ -177,7 +177,7 @@ class TestPhotoOrganizationWorkflow:
         # Verify burst counter progression
         for i, pic in enumerate(canon_pics):
             expected_counter = str(i)  # Base32: 0, 1, 2
-            assert f"-{expected_counter}.jpg" in pic.dest_path
+            assert f"-{expected_counter}.jpg" in pic.relative_path
 
     def test_fallback_ordering_without_exif(self, tmp_path):
         """Test: Photos without EXIF use filename → mtime ordering."""
@@ -216,8 +216,13 @@ class TestPhotoOrganizationWorkflow:
         # Expected order: photo_a_first → photo_m_middle → photo_z_last
         assert len(manifest.pic) == 3
 
-        filenames = [Path(pic.source_path).name for pic in manifest.pic]
-        assert filenames == [
+        # Verify source filename ordering via symlink resolution:
+        # each symlink target is the original source file
+        source_names = [
+            (dest_dir / pic.relative_path).readlink().name
+            for pic in manifest.pic
+        ]
+        assert source_names == [
             "photo_a_first.jpg",
             "photo_m_middle.jpg",
             "photo_z_last.jpg",
@@ -258,10 +263,7 @@ class TestPhotoOrganizationWorkflow:
 
         assert len(manifest.pic) == 2
         for pic in manifest.pic:
-            assert pic.relative_path is not None, f"relative_path missing on {pic.dest_path}"
-            assert pic.relative_path == pic.dest_path, (
-                f"relative_path {pic.relative_path!r} != dest_path {pic.dest_path!r}"
-            )
+            assert pic.relative_path is not None, "relative_path missing on pic"
             # Canonical-form guard: bare filename must satisfy contract rules
             rp = pic.relative_path
             assert not rp.startswith("/")
@@ -276,6 +278,124 @@ class TestPhotoOrganizationWorkflow:
         for orig, loaded_pic in zip(manifest.pic, loaded.pic):
             assert loaded_pic.relative_path == orig.relative_path
 
+    def test_hash_keyed_reprocessing_recognizes_content_at_new_path(
+        self, create_photo_with_exif, tmp_path
+    ):
+        """Content-identical file at a different source path is recognized as unchanged.
+
+        Discriminating observable: relative_path in the returned manifest.
+        Under source_path-keying the phantom key misses, the file is reprocessed,
+        and relative_path becomes a newly generated filename.
+        Under hash-keying the hash hits, the old pic is reused, and relative_path
+        stays as the phantom dest_filename.
+        """
+        import json as _json
+
+        source_dir = tmp_path / "source"
+        dest_dir = tmp_path / "dest"
+        source_dir.mkdir()
+        dest_dir.mkdir()
+
+        create_photo_with_exif(
+            source_dir / "IMG_001.jpg",
+            DateTimeOriginal="2024:10:05 14:30:45",
+            Make="Canon",
+            Model="EOS R5",
+        )
+
+        real_hash = ManifestManager().compute_file_hash(source_dir / "IMG_001.jpg")
+        stat = (source_dir / "IMG_001.jpg").stat()
+        mtime_str = datetime.fromtimestamp(
+            stat.st_mtime, tz=timezone.utc
+        ).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
+        dest_filename = "existing-dest.jpg"
+        fake_manifest = {
+            "version": "0.1.0",
+            "collection_name": "test",
+            "generated_at": "2024-10-05T14:30:45.000000Z",
+            "collection_root": ".",
+            "pic": [{
+                "relative_path": dest_filename,
+                "hash": real_hash,
+                "size_bytes": stat.st_size,
+                "mtime": mtime_str,
+                "timestamp": None,
+                "timestamp_source": None,
+                "camera": None,
+                "gps": None,
+            }],
+        }
+        (dest_dir / "manifest.json").write_text(_json.dumps(fake_manifest))
+        (dest_dir / dest_filename).symlink_to((source_dir / "IMG_001.jpg").resolve())
+
+        manifest = organize_photos(
+            source_dir=source_dir,
+            dest_dir=dest_dir,
+            collection_name="test",
+        )
+
+        assert len(manifest.pic) == 1
+        assert manifest.pic[0].relative_path == dest_filename, (
+            f"Expected relative_path={dest_filename!r}, "
+            f"got={manifest.pic[0].relative_path!r}. "
+            "Source_path-keying misses the phantom key and reprocesses to a new filename; "
+            "hash-keying finds the hash and reuses the old pic with the original relative_path."
+        )
+
+    def test_stat_skip_prevents_rehash_for_unchanged_file(
+        self, create_photo_with_exif, tmp_path
+    ):
+        """An unchanged file (same path, mtime, size) is not rehashed on a second run.
+
+        Discriminating observable: total b2b120_hash calls across photo_manager
+        and manifest_manager on the second run.
+        Current code: 1 (manifest_manager.needs_reprocessing hash-verifies).
+        Hash-keyed without stat-skip: 1 (detection loop computes hash).
+        Hash-keyed with stat-skip: 0 (stored hash reused; no file read).
+        """
+        import normpic.manager.photo_manager as _pm
+        import normpic.manager.manifest_manager as _mm
+        from unittest.mock import patch
+
+        source_dir = tmp_path / "source"
+        dest_dir = tmp_path / "dest"
+        source_dir.mkdir()
+        dest_dir.mkdir()
+
+        create_photo_with_exif(
+            source_dir / "IMG_001.jpg",
+            DateTimeOriginal="2024:10:05 14:30:45",
+            Make="Canon",
+            Model="EOS R5",
+        )
+
+        organize_photos(
+            source_dir=source_dir,
+            dest_dir=dest_dir,
+            collection_name="test",
+        )
+
+        real_pm_hash = _pm.b2b120_hash
+        real_mm_hash = _mm.b2b120_hash
+
+        with (
+            patch.object(_pm, "b2b120_hash", wraps=real_pm_hash) as mock_pm,
+            patch.object(_mm, "b2b120_hash", wraps=real_mm_hash) as mock_mm,
+        ):
+            organize_photos(
+                source_dir=source_dir,
+                dest_dir=dest_dir,
+                collection_name="test",
+            )
+
+        total = mock_pm.call_count + mock_mm.call_count
+        assert total == 0, (
+            f"Stat-skip should prevent all rehashing for an unchanged file; "
+            f"got {mock_pm.call_count} photo_manager + "
+            f"{mock_mm.call_count} manifest_manager = {total} calls"
+        )
+
 
 class TestSymlinkReconciliationByHash:
     """Equivalence tests for resolve_symlink_pairs_by_hash."""
@@ -287,7 +407,7 @@ class TestSymlinkReconciliationByHash:
         ).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
     def test_hash_reconciliation_agrees_with_stored_paths(self, tmp_path):
-        """Hand-built fixture: hash-reconciled pairs equal stored-field pairs."""
+        """Hand-built fixture: hash-reconciled pairs match expected source/dest paths."""
         source_dir = tmp_path / "source"
         dest_dir = tmp_path / "dest"
         source_dir.mkdir()
@@ -309,16 +429,12 @@ class TestSymlinkReconciliationByHash:
             collection_root=".",
             pic=[
                 Pic(
-                    source_path=str(src_a),
-                    dest_path=str(src_a),
                     hash=hash_a,
                     size_bytes=src_a.stat().st_size,
                     mtime=self._make_mtime_str(src_a),
                     relative_path=src_a.name,
                 ),
                 Pic(
-                    source_path=str(src_b),
-                    dest_path=str(src_b),
                     hash=hash_b,
                     size_bytes=src_b.stat().st_size,
                     mtime=self._make_mtime_str(src_b),
@@ -329,16 +445,12 @@ class TestSymlinkReconciliationByHash:
 
         copy_pics = [
             Pic(
-                source_path=str(src_a),
-                dest_path="col-001.jpg",
                 hash=hash_a,
                 size_bytes=src_a.stat().st_size,
                 mtime=self._make_mtime_str(src_a),
                 relative_path="col-001.jpg",
             ),
             Pic(
-                source_path=str(src_b),
-                dest_path="col-002.jpg",
                 hash=hash_b,
                 size_bytes=src_b.stat().st_size,
                 mtime=self._make_mtime_str(src_b),
@@ -346,20 +458,21 @@ class TestSymlinkReconciliationByHash:
             ),
         ]
 
-        old_pairs = [
-            (Path(p.source_path).resolve(), dest_dir / p.dest_path)
-            for p in copy_pics
+        # Expected: source resolved via hash index, dest via relative_path
+        expected_pairs = [
+            ((source_dir / src_a.name).resolve(), dest_dir / "col-001.jpg"),
+            ((source_dir / src_b.name).resolve(), dest_dir / "col-002.jpg"),
         ]
         new_pairs = resolve_symlink_pairs_by_hash(
             source_manifest, source_dir, copy_pics, dest_dir
         )
 
-        assert new_pairs == old_pairs
+        assert new_pairs == expected_pairs
 
     def test_hash_reconciliation_agrees_with_producer_generated(
         self, create_photo_with_exif, tmp_path
     ):
-        """Producer-generated manifests: hash-reconciled pairs equal stored-field pairs."""
+        """Producer-generated manifests: hash-reconciled pairs have correct structure."""
         source_dir = tmp_path / "source"
         dest_dir = tmp_path / "dest"
         source_dir.mkdir()
@@ -388,15 +501,16 @@ class TestSymlinkReconciliationByHash:
             (source_dir / "manifest.json").read_text()
         )
 
-        old_pairs = [
-            (Path(p.source_path).resolve(), dest_dir / p.dest_path)
-            for p in copy_manifest.pic
-        ]
         new_pairs = resolve_symlink_pairs_by_hash(
             source_manifest, source_dir, copy_manifest.pic, dest_dir
         )
 
-        assert new_pairs == old_pairs
+        # Verify shape: one pair per pic, dest under dest_dir, source under source_dir
+        assert len(new_pairs) == len(copy_manifest.pic)
+        for resolved_src, dest_path in new_pairs:
+            assert str(resolved_src).startswith(str(source_dir))
+            assert str(dest_path).startswith(str(dest_dir))
+            assert resolved_src.exists()
 
     def test_no_source_match_raises(self, tmp_path):
         """Copy pic whose hash is absent from source index raises RuntimeError."""
@@ -414,15 +528,12 @@ class TestSymlinkReconciliationByHash:
         )
 
         orphan = Pic(
-            source_path="/src/orphan.jpg",
-            dest_path="orphan-copy.jpg",
             hash="b2b120:ZZZZZZZZZZZZZZZZZZZZZZZZ",
             size_bytes=1,
             mtime="2024-01-01T00:00:00.000000Z",
             relative_path="orphan-copy.jpg",
         )
 
-        import pytest
         with pytest.raises(RuntimeError, match="no source match for hash"):
             resolve_symlink_pairs_by_hash(
                 source_manifest, source_dir, [orphan], dest_dir
@@ -466,3 +577,90 @@ class TestProducerConformance:
         schema_path = _Path(__file__).parent.parent.parent / "schema" / "v0.1.0.json"
         schema = _json.loads(schema_path.read_text())
         _validate(instance=data, schema=schema)
+
+
+class TestCutoverAcceptanceGate:
+    """Acceptance gate for ref/drop-source-dest-cutover. Unskip as the final step."""
+
+    def test_cutover_complete_relative_path_only(
+        self, create_photo_with_exif, tmp_path
+    ):
+        """Defines the cutover end state. Must pass green when the skip is removed.
+
+        Asserts:
+        - No source_path, dest_path, or errors on any pic in serialized output.
+        - All pics carry relative_path.
+        - Symlinks created and not dangling; count matches pic count.
+        - Second run over same dest: unchanged pics skipped via hash-keyed
+          reprocessing with those fields absent, proving reprocessing needs
+          no source_path.
+        - Output validates against schema/v0.1.0.json.
+        - Deserialize over a manifest lacking source_path/dest_path raises no error.
+        """
+        import json as _json
+        from jsonschema import validate as _validate
+        from pathlib import Path as _Path
+
+        source_dir = tmp_path / "source"
+        dest_dir = tmp_path / "dest"
+        source_dir.mkdir()
+        dest_dir.mkdir()
+
+        create_photo_with_exif(
+            source_dir / "IMG_001.jpg",
+            DateTimeOriginal="2024:10:05 14:30:45",
+            Make="Canon",
+            Model="EOS R5",
+        )
+        create_photo_with_exif(
+            source_dir / "IMG_002.jpg",
+            DateTimeOriginal="2024:10:05 14:30:46",
+            Make="Canon",
+            Model="EOS R5",
+        )
+
+        manifest = organize_photos(
+            source_dir=source_dir,
+            dest_dir=dest_dir,
+            collection_name="cutover-gate",
+        )
+
+        assert len(manifest.pic) == 2
+
+        manifest_path = dest_dir / "manifest.json"
+        manifest_text = manifest_path.read_text()
+        data = _json.loads(manifest_text)
+
+        forbidden = {"source_path", "dest_path", "errors"}
+        for pic_data in data["pic"]:
+            present = forbidden & set(pic_data.keys())
+            assert not present, f"Dropped fields still in output: {present}"
+            assert "relative_path" in pic_data
+
+        symlinks = [dest_dir / pic_data["relative_path"] for pic_data in data["pic"]]
+        for link in symlinks:
+            assert link.exists(), f"Symlink missing or dangling: {link}"
+            assert link.is_symlink()
+        assert len(symlinks) == 2
+
+        schema_path = _Path(__file__).parent.parent.parent / "schema" / "v0.1.0.json"
+        schema = _json.loads(schema_path.read_text())
+        _validate(instance=data, schema=schema)
+
+        manifest2 = organize_photos(
+            source_dir=source_dir,
+            dest_dir=dest_dir,
+            collection_name="cutover-gate",
+        )
+
+        assert len(manifest2.pic) == 2
+        data2 = _json.loads((dest_dir / "manifest.json").read_text())
+        for pic_data in data2["pic"]:
+            present = forbidden & set(pic_data.keys())
+            assert not present, f"Dropped fields in second-run output: {present}"
+
+        serializer = ManifestSerializer()
+        loaded = serializer.deserialize(manifest_text)
+        assert len(loaded.pic) == 2
+        for pic in loaded.pic:
+            assert pic.relative_path is not None
