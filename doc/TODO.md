@@ -8,8 +8,8 @@ legacy source_path/dest_path/errors removed.
 Verified end-to-end on the real wedding archive (645 pics, zero
 dangling symlinks, canonical-valid).
 
-Remaining to publish v0.1.0: ref/serializer-v01-contract, then
-chr/pyright-clean, then Phase C/D/E (docs, verification, release).
+Remaining to publish v0.1.0: chr/pyright-clean, then Phase C/D/E
+(docs, verification, release).
 
 Downstream, gated on v0.1.0 publishing: galleria binds its manifest
 reader to the frozen contract, then marcustack (composer; live deploy

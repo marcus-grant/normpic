@@ -1,5 +1,18 @@
 # NormPic Development Changelog
 
+## 2026-07-10
+
+### ref/serializer-v01-contract
+
+Serializer finalized to the v0.1 contract. Optional pic fields
+(timestamp, timestamp_source, camera, gps) now omitted when unset
+rather than emitted as null, per the contract's prefer-absence rule;
+deserialize reads them via .get() so absence-form manifests round-trip.
+Serialize output pinned deterministic with sort_keys. Obligations for
+always-emit required fields, collection_root default, and canonical
+b2b120 hash were already satisfied by prior arc work. Test count
+285 -> 289.
+
 ## 2026-07-07
 
 ### ref/drop-source-dest-cutover
@@ -379,19 +392,19 @@ Pre-ship tightening of the v0.1.0 schema artifact, manifest contract
 doc, and conformance inventory.
 No version bump; all changes are intra-draft corrections.
 
-- **Schema** (`schema/v0.1.0.json`): added backslash prohibition to
+- __Schema__ (`schema/v0.1.0.json`): added backslash prohibition to
   `relative_path`; added `minLength:1` and path-separator
   prohibitions to `original_filename`; added `minLength:1` to
   `collection_description`, `camera`, and `tag` items; added
   explicit URI-scheme `not` pattern and `"default": "."` annotation
   to `collection_root`.
-- **Contract doc** (`manifest-contract.md`): `size_bytes` described
+- __Contract doc__ (`manifest-contract.md`): `size_bytes` described
   as non-negative integer; backslash ban in `relative_path` is now
   an explicit MUST; `original_filename` has an explicit MUST
   prohibiting path separators; empty-string rejection note added at
   the `Categories` section level for all string fields; `collection_root`
   URI rejection corrects to cite the explicit `not` pattern.
-- **Conformance inventory** (`conformance.md`): four new invalid
+- __Conformance inventory__ (`conformance.md`): four new invalid
   cases added: `relative_path` with backslash (schema), `original_filename`
   with path separator (schema), timestamp with invalid calendar value
   (implementation), `collection_root` with URI scheme (schema).
@@ -403,7 +416,7 @@ No version bump; all changes are intra-draft corrections.
 Completes the Phase A planning artifacts tracked in
 `doc/TODO.md`; v0.1 implementation work (Phase B) is now unblocked.
 
-- **Conformance Requirement Defined**: new planning artifact at
+- __Conformance Requirement Defined__: new planning artifact at
   `doc/architecture/conformance.md` specifies what any normpic
   implementation must demonstrate to claim v0.1 conformance.
   Documents the two-layer validation model (schema-mechanical
@@ -412,10 +425,10 @@ Completes the Phase A planning artifacts tracked in
   case with the catching layer for each invalid case, producer and
   consumer responsibilities, and v0.1.0 acceptance criteria.
   Peer to `manifest-contract.md`, references it as source of truth.
-- **Architecture README Updated**: `doc/architecture/README.md` now
+- __Architecture README Updated__: `doc/architecture/README.md` now
   references the conformance requirement alongside the manifest
   contract.
-- **Schema Versioning Rewritten**: `doc/architecture/schema-versioning.md`
+- __Schema Versioning Rewritten__: `doc/architecture/schema-versioning.md`
   reframed as implementation-side mechanics.
   Contract-side versioning policy stays in `manifest-contract.md`,
   referenced not duplicated.
@@ -423,7 +436,7 @@ Completes the Phase A planning artifacts tracked in
   v0.1.0 schema (was v1), documents the deferred decision on how
   `schema/v0.1.0.json` relates to the Python schema module, and
   retains the serializer-separation and future-migration sections.
-- **TODO Restructured for Conformance Discipline**: `doc/TODO.md`
+- __TODO Restructured for Conformance Discipline__: `doc/TODO.md`
   gains a "Conformance Fixture Discipline" section near the top
   pointing at `architecture/conformance.md` as the fixture spec.
   Fixtures are now explicitly Phase B implementation work, built
@@ -432,19 +445,19 @@ Completes the Phase A planning artifacts tracked in
   Phase A items updated to reflect completion of
   `conformance.md`, `schema/v0.1.0.json`, and the schema-versioning
   rewrite.
-- **MVP Scope Decision Documented**: new section in `doc/TODO.md`
+- __MVP Scope Decision Documented__: new section in `doc/TODO.md`
   parks compressed-variant collections as a v0.1 open question
   rather than a roadmap item.
   The ongoing wedding gallery work will inform whether this lands
   in v0.1 or rolls to v0.2; design constraints (ergonomic handling,
   minimal schema impact) documented for the in-v0.1 case.
-- **Roadmap Gaps Filled**: `doc/ROADMAP.md` gains entries migrated
+- __Roadmap Gaps Filled__: `doc/ROADMAP.md` gains entries migrated
   from an obsolete Galleria FUTURE document covering progress
   reporting, dry-run mode, configurable filename counter, enhanced
   subsecond-ordering refinements, direct upload from source,
   streaming for large collections, fully remote operation,
   automated archive upload, and async processing pipeline.
-- **Data Model Layer Rewritten**: `doc/architecture/data-models.md`
+- __Data Model Layer Rewritten__: `doc/architecture/data-models.md`
   rewritten as the Python-implementation companion to the manifest
   contract.
   Updated to `normpic/` paths (was `src/`), refreshed dataclass
@@ -461,13 +474,13 @@ Completes the Phase A planning artifacts tracked in
 Marks the end of the project hiatus and the start of v0.1 contract
 alignment work.
 
-- **Manifest Contract Defined**: new foundational planning artifact
+- __Manifest Contract Defined__: new foundational planning artifact
   at `doc/architecture/manifest-contract.md` captures the durable
   v0.1 manifest contract that consumers and reimplementations depend
   on.
   Implementation-agnostic, designed to survive the anticipated Rust
   rewrite and any future Static Site Generator plugin adapters.
-- **Contract Changes from Pre-Hiatus State**:
+- __Contract Changes from Pre-Hiatus State__:
   - Hash: SHA-256 hex replaced with BLAKE2b-120 (15-byte digest)
     encoded as Crockford Base32 uppercase, prefixed with `b2b120:`.
   - Paths: absolute `source_path` and `dest_path` removed from the
@@ -485,22 +498,22 @@ alignment work.
     manifest.
     Diagnostics now logs-only at runtime; a structured sidecar is
     deferred for a future version.
-- **Two-Layer Contract Architecture**: the contract is now split
+- __Two-Layer Contract Architecture__: the contract is now split
   into a prose document (`manifest-contract.md`) for semantics and
   rationale, and a JSON Schema artifact (`schema/v0.1.0.json`,
   pending) for mechanical validation.
-- **Defensive Decisions Locked**: forward-compatibility seams,
+- __Defensive Decisions Locked__: forward-compatibility seams,
   canonical forms (paths, Crockford case, RFC 3339 timestamps),
   parse-time version semantics, optional/nullable/absent matrix, and
   deterministic-per-implementation ordering are all pinned in the
   contract.
-- **Pre-Hiatus MVP Status Reframed**: the pre-hiatus "MVP complete
+- __Pre-Hiatus MVP Status Reframed__: the pre-hiatus "MVP complete
   with 200 tests" claim is subsumed by the larger v0.1 contract
   alignment work.
   Existing tests still pass against the old contract; alignment to
   the new contract is the Phase B implementation work tracked in
   `doc/TODO.md`.
-- **Planning Documents Restructured**:
+- __Planning Documents Restructured__:
   - `doc/TODO.md` rewritten to track v0.1 contract alignment with
     sequenced phases and explicit upstream triggers per task.
   - `doc/ROADMAP.md` created to hold post-v0.1 work; TODO no longer
@@ -512,7 +525,7 @@ alignment work.
     redesign in progress.
   - Top `README.md` adjusted: S3 dropped from advertised features
     (deferred post-v0.1, tracked in `ROADMAP.md`).
-- **Pre-Hiatus Field-Name Reconciliation Pending**: the existing
+- __Pre-Hiatus Field-Name Reconciliation Pending__: the existing
   Python implementation may use field names from the pre-hiatus
   contract.
   An audit and alignment PR is the first task in Phase B of the
@@ -522,23 +535,23 @@ alignment work.
 
 ### Major Package Restructuring for Parent Project Integration
 
-- **Critical MVP Fix**: Resolved packaging issues blocking parent project integration
+- __Critical MVP Fix__: Resolved packaging issues blocking parent project integration
   - Restructured from `src/` to conventional `normpic/` package layout  
   - Fixed all 26 files with import issues (`from src.X` → relative/package imports)
   - Created clean API entry point in `normpic/__init__.py` with main exports
   - Updated all test imports from `src.` to `normpic.` package imports
-  - **Package Integration Now Working**: `from normpic import organize_photos` functional
-- **Package Configuration**: Simplified pyproject.toml with conventional setuptools discovery
-- **Quality Assurance**: All 200 tests pass, ruff linting clean, CLI functional with `uv run`
-- **Implementation**: 6 systematic commits on `fix/packaging` branch for easy review
-- **Documentation**: Updated TODO.md with completion status and success criteria
-- **Ready for Parent Projects**: Package can now be installed and imported by gallery builders
+  - __Package Integration Now Working__: `from normpic import organize_photos` functional
+- __Package Configuration__: Simplified pyproject.toml with conventional setuptools discovery
+- __Quality Assurance__: All 200 tests pass, ruff linting clean, CLI functional with `uv run`
+- __Implementation__: 6 systematic commits on `fix/packaging` branch for easy review
+- __Documentation__: Updated TODO.md with completion status and success criteria
+- __Ready for Parent Projects__: Package can now be installed and imported by gallery builders
 
 ## 2025-11-13
 
 ### Integration Documentation Completion
 
-- **Documentation Updates**: Completed integration guide organization and indexing
+- __Documentation Updates__: Completed integration guide organization and indexing
   - Added Integration section to `doc/README.md` with direct links to all 4 integration guides
   - Updated `doc/guides/README.md` to include Integration Guides section
   - Fixed 9 f-string linting issues in performance script
@@ -548,112 +561,112 @@ alignment work.
 
 ### Performance Documentation and Real-World Analysis
 
-- **Performance Measurement Script**: Created comprehensive benchmarking system
+- __Performance Measurement Script__: Created comprehensive benchmarking system
   - Added `script/performance_test.py` with system resource monitoring (psutil)
   - Automated subprocess execution with memory, CPU, and timing metrics
   - Image size analysis with distribution statistics across size ranges
   - Support for multiple collections (full vs web-optimized) comparison
   - Generates detailed JSON results and human-readable summaries
-- **Performance Documentation**: Baseline measurements for real-world wedding collection
+- __Performance Documentation__: Baseline measurements for real-world wedding collection
   - Added `doc/analysis/performance.md` with hardware specs and benchmark results
   - 645 photos, 21.17GB full resolution vs 2.19GB web-optimized comparison
   - Demonstrated 5.9× speed improvement for smaller files (38.9 vs 229.5 photos/sec)
   - Documented AMD Ryzen 7040U + FireCuda NVMe performance characteristics
-- **Timestamp Analysis**: Camera-specific EXIF accuracy documentation
+- __Timestamp Analysis__: Camera-specific EXIF accuracy documentation
   - Added `doc/analysis/timestamps.md` with timeline verification using reference photos
   - Canon EOS R5 timezone EXIF issue analysis (correct local time, wrong timezone marker)
   - Wedding event timeline validation: 16:10 ceremony vs 16:00 start time
   - Future enhancement plans for EXIF modification and timezone correction
-- **Analysis Documentation Structure**: Organized analysis section with hierarchical links
+- __Analysis Documentation Structure__: Organized analysis section with hierarchical links
   - Added `doc/analysis/README.md` as analysis section index
   - Updated `doc/README.md` to link analysis section for performance and timestamp documentation
   - Maintains discoverable documentation hierarchy standards
-- **Status**: Performance testing infrastructure complete, commit 11 documentation ready
+- __Status__: Performance testing infrastructure complete, commit 11 documentation ready
 
 ### Enhanced Filesystem Operations and Environment Variable Support
 
-- **Enhanced Symlink Detection**: Added performance optimizations for large directory trees
+- __Enhanced Symlink Detection__: Added performance optimizations for large directory trees
   - Recursive directory scanning with progress reporting callbacks
   - Added `scan_directory_symlinks()` for comprehensive file type analysis
   - Added `batch_validate_symlinks()` for efficient bulk validation
   - Graceful handling of permission errors and inaccessible files
   - Added 9 comprehensive tests for new enhanced functionality
-- **Secure Environment Variable Support**: Implemented NORMPIC_* environment variable parsing
+- __Secure Environment Variable Support__: Implemented NORMPIC_* environment variable parsing
   - Whitelisted approach: only reads specific NORMPIC_SOURCE_DIR, NORMPIC_DEST_DIR, NORMPIC_COLLECTION_NAME, NORMPIC_CONFIG_PATH
   - Environment variables override file configuration (precedence system)
   - All environment variables fully mocked during testing for security
   - Added integration test for config precedence workflow
   - Added 21 unit tests with comprehensive mocking coverage
-- **Config Precedence System**: Implemented complete configuration precedence hierarchy
+- __Config Precedence System__: Implemented complete configuration precedence hierarchy
   - Added `load_config_with_full_precedence()` with defaults < file < env < CLI precedence
   - Extended CLI with --source-dir, --dest-dir, --collection-name options
   - CLI arguments now override all other configuration sources
   - Added 2 integration tests for CLI override scenarios
   - Added 3 unit tests for full precedence edge cases
-- **Status**: All 200 tests passing, ruff checks passing, commits 8-10 complete
+- __Status__: All 200 tests passing, ruff checks passing, commits 8-10 complete
 
 ## 2025-11-11
 
 ### Error Handling Documentation and Mock Filesystem Testing
 
-- **Comprehensive Error Documentation**: Created user-friendly error handling guides
+- __Comprehensive Error Documentation__: Created user-friendly error handling guides
   - Added `doc/guides/errors.md` with error interpretation and troubleshooting
   - Updated `doc/guides/README.md` to include error handling guide
   - Enhanced `doc/modules/schema.md` with new error schema structure
   - Documented error types, severity levels, and processing status
-- **Mock Filesystem Testing**: Added deterministic testing utilities
+- __Mock Filesystem Testing__: Added deterministic testing utilities
   - Created comprehensive mock filesystem implementation (MockPath, MockFilesystem)
   - Added 11 tests covering all filesystem operations
   - Enabled testing without real filesystem dependencies
-- **Filesystem Utilities**: Completed core filesystem operations
+- __Filesystem Utilities__: Completed core filesystem operations
   - Symlink creation and validation with atomic operations
   - Broken symlink detection with recursive scanning
   - File hash computation (SHA-256) with progress callbacks
-- **Status**: All 164 tests passing, ruff checks passing, commits 6-7 complete
+- __Status__: All 164 tests passing, ruff checks passing, commits 6-7 complete
 
 ## 2025-11-10
 
 ### Error Handling Refactor and Test Suite Corrections
 
-- **Error Handling Optimization**: Streamlined error handling implementation
+- __Error Handling Optimization__: Streamlined error handling implementation
   - Replaced complex `ErrorResult` objects with simple `ErrorEntry` dataclass
   - Removed redundant severity field (intrinsic to error type)
   - Simplified manifest schema, ~60% memory reduction
-- **Test Suite Filename Format Corrections**: Fixed filename generation tests
-- **Removed Handoff Section**: Cleaned up TODO.md after reviewing handoff instructions
-- **Fixed Test Expectations**: Updated 7 failing tests to match corrected filename format
+- __Test Suite Filename Format Corrections__: Fixed filename generation tests
+- __Removed Handoff Section__: Cleaned up TODO.md after reviewing handoff instructions
+- __Fixed Test Expectations__: Updated 7 failing tests to match corrected filename format
   - Single photos with unique timestamps: No `-0` counter (e.g., `ceremony-20241005T163000-i15.heic`)
   - Mixed cameras with different timestamps: No counters needed
   - Burst sequences (same timestamp + same camera): All get counters starting with `-0`
-- **Burst Collision Detection Enhancement**: Implemented proper burst sequence handling
+- __Burst Collision Detection Enhancement__: Implemented proper burst sequence handling
   - Modified `_create_ordered_pics()` in photo_manager.py to group by timestamp+camera
   - Photos with same timestamp to the second AND same camera get sequential counters
   - Different cameras at same timestamp remain separate (no counters)
-- **File Extension Fix**: Corrected filename generation to preserve original extensions (.heic, .jpg)
-- **Test Restructuring**: Updated burst sequence test to use complete workflow instead of incremental filename generation
-- **Status**: All 153 tests passing, ruff checks passing
+- __File Extension Fix__: Corrected filename generation to preserve original extensions (.heic, .jpg)
+- __Test Restructuring__: Updated burst sequence test to use complete workflow instead of incremental filename generation
+- __Status__: All 153 tests passing, ruff checks passing
 
 ## Previous Entry - 2025-11-10
 
 ### Error Handling Implementation Complete (TDD GREEN Phase)
 
-- **Critical Filename Generation Bug Fix**: Discovered and fixed systematic issue with counter logic
-  - **Issue**: Filename generation always added `-0` suffix even for unique timestamps
-  - **Root Cause**: Logic always called counter function instead of checking if base filename was available
-  - **Fix**: Modified `generate_filename()` to only add counters when actual filename conflicts occur
-  - **Impact**: Eliminates unnecessary `-0` suffixes in real photo collections
-- **Comprehensive Error Handling Implementation**: Full TDD GREEN phase completion
+- __Critical Filename Generation Bug Fix__: Discovered and fixed systematic issue with counter logic
+  - __Issue__: Filename generation always added `-0` suffix even for unique timestamps
+  - __Root Cause__: Logic always called counter function instead of checking if base filename was available
+  - __Fix__: Modified `generate_filename()` to only add counters when actual filename conflicts occur
+  - __Impact__: Eliminates unnecessary `-0` suffixes in real photo collections
+- __Comprehensive Error Handling Implementation__: Full TDD GREEN phase completion
   - `src/util/error_handling.py`: Complete ErrorHandler with severity levels and processing status
   - `src/manager/photo_manager.py`: Integrated error handling throughout photo organization workflow
   - `src/model/manifest.py`: Enhanced with error/warning/processing_status fields
   - `src/serializer/manifest.py`: Updated deserializer to handle new optional fields
-- **Error Processing Features**: Production-ready error handling capabilities
+- __Error Processing Features__: Production-ready error handling capabilities
   - Graceful handling of unsupported formats (RAW/GIF/MP4) with INFO-level logging
   - Corrupted file detection with WARNING-level logging and continued processing
   - EXIF extraction failures with fallback to filesystem timestamps
   - Comprehensive processing status tracking in manifest output
   - Proper error categorization and summary statistics
-- **Test Suite Updates**: Updated all tests to match corrected filename format
+- __Test Suite Updates__: Updated all tests to match corrected filename format
   - Fixed filename generation unit tests to expect no counters for unique timestamps
   - Updated integration tests to match corrected behavior
   - All error handling E2E tests passing with comprehensive coverage
@@ -662,19 +675,19 @@ alignment work.
 
 ### Filesystem Utilities Implementation (Priority 3 TDD)
 
-- **Filesystem Module**: Created `src/util/filesystem.py` with comprehensive utilities
+- __Filesystem Module__: Created `src/util/filesystem.py` with comprehensive utilities
   - `create_symlink()`: Atomic symlink creation with progress reporting
   - `validate_symlink_integrity()`: Symlink validation and target checking  
   - `detect_broken_symlinks()`: Recursive broken symlink detection
   - `compute_file_hash()`: Optimized SHA-256 computation with progress callbacks
-- **Atomic Operations**: Symlinks use temporary file + rename for crash safety
-- **Performance Optimizations**: 64KB chunk size for optimal hash computation
-- **Progress Reporting**: Callback hooks for UI integration
-- **Comprehensive Testing**: 23 unit tests + 2 integration tests
+- __Atomic Operations__: Symlinks use temporary file + rename for crash safety
+- __Performance Optimizations__: 64KB chunk size for optimal hash computation
+- __Progress Reporting__: Callback hooks for UI integration
+- __Comprehensive Testing__: 23 unit tests + 2 integration tests
   - Full TDD RED-GREEN-REFACTOR cycle implementation
   - E2E workflow testing: symlink creation → validation → broken link detection
   - Error handling tests for edge cases and invalid inputs
-- **Documentation Update**: Enhanced `doc/modules/filesystem.md` with usage examples
+- __Documentation Update__: Enhanced `doc/modules/filesystem.md` with usage examples
   - Added API documentation for all new functions
   - Performance optimization details and configuration options
   - Clear separation of concerns vs photo manager responsibilities
@@ -683,42 +696,42 @@ alignment work.
 
 ### Manifest Loading Functionality (TDD Implementation)
 
-- **Manifest Manager Enhancement**: Added `load_existing_manifest()` function
+- __Manifest Manager Enhancement__: Added `load_existing_manifest()` function
   - Implemented standalone function for loading manifests from any path
   - Added comprehensive unit tests with schema validation scenarios
   - Improved error handling with specific exception types (ValidationError, JSONDecodeError)
   - Enhanced `save_manifest()` with atomic write operations for data safety
   - Added UTF-8 encoding specification for better file handling
-- **Integration Testing**: Created manifest loading workflow tests
+- __Integration Testing__: Created manifest loading workflow tests
   - Added `test/integration/test_manifest_loading_workflow.py`
   - E2E test validates manifest loading, validation, and reuse in photo organization
   - Verified compatibility with existing photo organization workflow
-- **TDD Process**: Followed complete RED-GREEN-REFACTOR cycle
+- __TDD Process__: Followed complete RED-GREEN-REFACTOR cycle
   - RED: Created failing E2E and unit tests
   - GREEN: Implemented minimal functionality to pass tests
   - REFACTOR: Added error handling, atomic writes, and better validation
 
 ### CLI Implementation (Complete MVP Feature)
 
-- **CLI Implementation**: Full command-line interface for photo organization
+- __CLI Implementation__: Full command-line interface for photo organization
   - Implemented `cli/main.py` using Click framework with all operational flags
   - Added `--dry-run`, `--verbose`, `--force`, `--config` flags  
   - Wire CLI to existing photo_manager workflow
   - Updated `main.py` to call CLI interface
-- **Configuration Management**: JSON-based configuration system
+- __Configuration Management__: JSON-based configuration system
   - Extended `src/model/config.py` with source_dir/dest_dir fields
   - Added JSON file loading with comprehensive validation
   - Implemented path validation and directory creation
   - Default config path: `./config.json`
-- **Dry-run Support**: Added dry-run mode throughout photo workflow
+- __Dry-run Support__: Added dry-run mode throughout photo workflow
   - Updated `src/manager/photo_manager.py` with dry_run parameter
   - Skip symlink creation in dry-run mode  
   - Generate `manifest.dryrun.json` instead of `manifest.json`
-- **Comprehensive Testing**: Full TDD approach for new functionality
+- __Comprehensive Testing__: Full TDD approach for new functionality
   - Added 12 unit tests for config JSON loading/validation (`test/unit/test_config.py`)
   - Added 11 CLI integration tests (`test/integration/test_cli.py`)  
   - All 101 tests passing, including existing photo workflow tests
-- **Code Quality**: Clean implementation following project standards
+- __Code Quality__: Clean implementation following project standards
   - Proper error handling and exit codes
   - Summary output: "Processed X pics, Y warnings, Z errors"
   - Ruff linting compliance
@@ -727,43 +740,43 @@ alignment work.
 
 ### Documentation Update & Cleanup (Post-Feature)
 
-- **Implementation Documentation**: Focused on actual code and complex tests
+- __Implementation Documentation__: Focused on actual code and complex tests
   - Created `doc/modules/photo-manager.md` - Documents photo_manager.py functions and orchestration
   - Created `doc/test/integration-tests.md` - Documents complex test scenarios and expected behaviors
   - Updated `doc/architecture/module-organization.md` with implemented modules list
-- **Architecture Documentation**: Comprehensive updates for photo organization workflow
+- __Architecture Documentation__: Comprehensive updates for photo organization workflow
   - Updated `doc/architecture/README.md` with implemented photo_manager.py workflow
   - Added Manager Pattern documentation for `src/manager/photo_manager.py`
   - Documented temporal ordering, burst preservation, and workflow orchestration
   - Updated system structure diagram to reflect actual implementation
-- **Organization Algorithm Documentation**: Created detailed ordering algorithm docs
+- __Organization Algorithm Documentation__: Created detailed ordering algorithm docs
   - Created `doc/modules/organization.md` with EXIF timestamp → filename → mtime precedence hierarchy
   - Document burst sequence preservation (no camera interleaving)
   - Explain subsecond precision handling and temporal ordering algorithms
-- **Documentation Index Updates**: Linked all new documentation properly
+- __Documentation Index Updates__: Linked all new documentation properly
   - Updated `doc/README.md` project status to reflect completed photo organization workflow
   - Updated `doc/modules/README.md` and `doc/test/README.md` with new documentation links
   - Document 78 passing tests and readiness for CLI implementation
-- **Cleanup Superseded Content**: Removed obsolete ordering logic from deleteme directory
+- __Cleanup Superseded Content__: Removed obsolete ordering logic from deleteme directory
   - Deleted `test_file_processing_dual.py` (complex batch processing superseded)
   - Deleted `file_processing.py` (dual collection logic superseded by simple workflow)
   - Focused cleanup on organization/ordering content replaced by new implementation
 
 ### Photo Organization and Processing Workflow (TDD)
 
-- **Architecture Decision**: Implemented proper module organization in `src/manager/`
+- __Architecture Decision__: Implemented proper module organization in `src/manager/`
   - `src/manager/photo_manager.py` - High-level photo organization workflow orchestration
   - Follows documented architecture patterns (manager for orchestration, not catch-all core)
-- **Ordering Algorithm**: EXIF timestamp → filename → mtime precedence
+- __Ordering Algorithm__: EXIF timestamp → filename → mtime precedence
   - Subsecond precision handling for fine-grained temporal ordering
   - Graceful fallback when EXIF data unavailable
-- **Burst Sequence Preservation**: No camera interleaving on shared timestamps  
+- __Burst Sequence Preservation__: No camera interleaving on shared timestamps  
   - Same camera photos stay together: [A1,A3,A5,B2,B4,B6] not [A1,B2,A3,B4,A5,B6]
   - Critical for maintaining burst shot continuity
-- **Complete Workflow**: Source photos → organized symlinks + manifest.json
+- __Complete Workflow__: Source photos → organized symlinks + manifest.json
   - Integrates EXIF extraction, filename generation, and manifest serialization
   - Schema-validated JSON manifest with full photo metadata
-- **Test Coverage**: 78 tests passing (integration + unit tests)
+- __Test Coverage__: 78 tests passing (integration + unit tests)
   - Integration tests for complete workflows with burst preservation
   - Unit tests for ordering algorithms and filename generation
   - Mock-based testing for file I/O isolation
@@ -772,29 +785,29 @@ alignment work.
 
 ### EXIF Extraction and Filename Generation Implementation (TDD)
 
-- **Architecture Decision**: Implemented template/util split pattern
+- __Architecture Decision__: Implemented template/util split pattern
   - `src/util/exif.py` - Generic EXIF extraction utilities (reusable)
   - `src/template/filename.py` - Domain-specific filename template application
-- **Data Models**: Created structured EXIF data models
+- __Data Models__: Created structured EXIF data models
   - `CameraInfo` dataclass for camera make/model
   - `ExifData` dataclass for structured EXIF metadata
-- **EXIF Utilities**: Comprehensive EXIF extraction
+- __EXIF Utilities__: Comprehensive EXIF extraction
   - Extract timestamp, subsecond precision, camera info, timezone offset
   - Graceful handling of missing/corrupted EXIF data
   - Compatible with piexif library (existing project dependency)
-- **Filename Templates**: Template-based filename generation
+- __Filename Templates__: Template-based filename generation
   - Format: `{collection-?}{YYYYMMDDTHHMMSS}{-camera?}{-counter?}.ext`
   - Camera code mapping (Canon R5→r5a, iPhone 15→i15, etc.)
   - Base32 counter system for burst sequences (0-V, 32 photos max)
-- **TDD Implementation**: Integration-first approach
+- __TDD Implementation__: Integration-first approach
   - 5 integration tests for complete workflows
   - 48 unit tests for individual components
   - 68 total tests passing (100% success rate)
-- **Test Infrastructure**: Shared fixtures and documentation
+- __Test Infrastructure__: Shared fixtures and documentation
   - `create_photo_with_exif` fixture for ephemeral test photos
   - Comprehensive test documentation in `doc/test/`
   - Project-wide fixture availability via conftest.py
-- **Specifications**: Adapted from deleteme-normpic-modules reference
+- __Specifications__: Adapted from deleteme-normpic-modules reference
   - Extracted specs from existing tests, not direct code copy
   - Modern implementation with structured data models
   - Clean separation of concerns (template vs utility functions)
