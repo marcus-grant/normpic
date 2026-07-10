@@ -119,18 +119,12 @@ class TestPic:
             "hash": "abc123def456",
             "size_bytes": 1024,
             "mtime": "2023-11-04T22:04:16Z",
-            "timestamp": None,
-            "timestamp_source": None,
-            "camera": None,
-            "gps": None,
         }
 
         assert pic.to_dict() == expected
-        assert "tag" not in pic.to_dict()
-        assert "original_filename" not in pic.to_dict()
-        assert "source_path" not in pic.to_dict()
-        assert "dest_path" not in pic.to_dict()
-        assert "errors" not in pic.to_dict()
+        for absent in ("timestamp", "timestamp_source", "camera", "gps",
+                       "tag", "original_filename", "source_path", "dest_path", "errors"):
+            assert absent not in pic.to_dict()
 
     def test_tag_absent_by_default(self):
         """Test that tag defaults to None (absent)."""

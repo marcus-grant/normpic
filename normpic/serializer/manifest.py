@@ -34,7 +34,7 @@ class ManifestSerializer:
             self.validate(manifest)
             
         manifest_dict = manifest.to_dict()
-        return json.dumps(manifest_dict, indent=2)
+        return json.dumps(manifest_dict, indent=2, sort_keys=True)
 
     def deserialize(self, json_str: str) -> Manifest:
         """Deserialize JSON string to Manifest object.
@@ -57,19 +57,17 @@ class ManifestSerializer:
         # Convert to objects
         pics = []
         for pic_data in data["pic"]:
-            # Parse timestamp if present
-            timestamp = None
-            if pic_data["timestamp"]:
-                timestamp = datetime.fromisoformat(pic_data["timestamp"])
-                
+            ts_raw = pic_data.get("timestamp")
+            timestamp = datetime.fromisoformat(ts_raw) if ts_raw else None
+
             pic = Pic(
                 hash=pic_data["hash"],
                 size_bytes=pic_data["size_bytes"],
                 mtime=pic_data["mtime"],
                 timestamp=timestamp,
-                timestamp_source=pic_data["timestamp_source"],
-                camera=pic_data["camera"],
-                gps=pic_data["gps"],
+                timestamp_source=pic_data.get("timestamp_source"),
+                camera=pic_data.get("camera"),
+                gps=pic_data.get("gps"),
                 relative_path=pic_data.get("relative_path"),
             )
             pics.append(pic)

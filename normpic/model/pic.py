@@ -55,14 +55,15 @@ class Pic:
             "hash": self.hash,
             "size_bytes": self.size_bytes,
             "mtime": self.mtime,
-            "timestamp": (
-                self.timestamp.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-                if self.timestamp else None
-            ),
-            "timestamp_source": self.timestamp_source,
-            "camera": self.camera,
-            "gps": self.gps,
         }
+        if self.timestamp is not None:
+            d["timestamp"] = self.timestamp.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        if self.timestamp_source is not None:
+            d["timestamp_source"] = self.timestamp_source
+        if self.camera is not None:
+            d["camera"] = self.camera
+        if self.gps is not None:
+            d["gps"] = self.gps
         if self.original_filename is not MISSING:
             d["original_filename"] = self.original_filename
         if self.tag is not None:

@@ -221,3 +221,94 @@ class TestManifestSerializer:
         manifest = ManifestSerializer().deserialize(json.dumps(json_data))
         assert len(manifest.pic) == 1
         assert manifest.pic[0].hash == "b2b120:AAAAAAAAAAAAAAAAAAAAAAAA"
+
+    def test_pic_unset_optionals_omitted_from_dict(self):
+        """Pic with all four optional fields unset must not emit those keys."""
+        pic = Pic(
+            hash="b2b120:AAAAAAAAAAAAAAAAAAAAAAAA",
+            relative_path="photo.jpg",
+            size_bytes=100,
+            mtime="2024-01-01T00:00:00.000000Z",
+        )
+        d = pic.to_dict()
+        for key in ("timestamp", "timestamp_source", "camera", "gps"):
+            assert key not in d, f"absent optional field {key!r} should not appear in dict"
+
+        manifest = Manifest(
+            version="0.1.0",
+            collection_name="test-collection",
+            generated_at=datetime(2025, 11, 6, 19, 30, 0, tzinfo=timezone.utc),
+            pic=[pic],
+        )
+        ManifestSerializer().validate(manifest)
+
+    def test_deserialize_absence_form_round_trips(self):
+        """serialize -> deserialize over absence-form manifest must not KeyError."""
+        pic = Pic(
+            hash="b2b120:AAAAAAAAAAAAAAAAAAAAAAAA",
+            relative_path="photo.jpg",
+            size_bytes=100,
+            mtime="2024-01-01T00:00:00.000000Z",
+        )
+        manifest = Manifest(
+            version="0.1.0",
+            collection_name="test-collection",
+            generated_at=datetime(2025, 11, 6, 19, 30, 0, tzinfo=timezone.utc),
+            pic=[pic],
+        )
+        serializer = ManifestSerializer()
+        json_str = serializer.serialize(manifest)
+        loaded = serializer.deserialize(json_str)
+        p = loaded.pic[0]
+        assert p.timestamp is None
+        assert p.timestamp_source is None
+        assert p.camera is None
+        assert p.gps is None
+
+    def test_serialize_is_deterministic(self):
+        """Serializing the same Manifest twice must produce byte-identical output."""
+        generated_at = datetime(2025, 11, 6, 19, 30, 0, tzinfo=timezone.utc)
+        manifest = Manifest(
+            version="0.1.0",
+            collection_name="test-collection",
+            generated_at=generated_at,
+            pic=[
+                Pic(
+                    hash="b2b120:AAAAAAAAAAAAAAAAAAAAAAAA",
+                    relative_path="photo.jpg",
+                    size_bytes=1024,
+                    mtime="2023-11-04T22:04:16Z",
+                    timestamp=generated_at,
+                    timestamp_source="exif",
+                    camera="Canon EOS R5",
+                    gps={"lat": 40.7128, "lon": -74.006},
+                )
+            ],
+        )
+        serializer = ManifestSerializer()
+        assert serializer.serialize(manifest) == serializer.serialize(manifest)
+
+    def test_serialize_round_trip_is_deterministic(self):
+        """serialize -> deserialize -> serialize must produce the same bytes."""
+        generated_at = datetime(2025, 11, 6, 19, 30, 0, tzinfo=timezone.utc)
+        manifest = Manifest(
+            version="0.1.0",
+            collection_name="test-collection",
+            generated_at=generated_at,
+            pic=[
+                Pic(
+                    hash="b2b120:AAAAAAAAAAAAAAAAAAAAAAAA",
+                    relative_path="photo.jpg",
+                    size_bytes=1024,
+                    mtime="2023-11-04T22:04:16Z",
+                    timestamp=generated_at,
+                    timestamp_source="exif",
+                    camera="Canon EOS R5",
+                    gps={"lat": 40.7128, "lon": -74.006},
+                )
+            ],
+        )
+        serializer = ManifestSerializer()
+        first = serializer.serialize(manifest)
+        third = serializer.serialize(serializer.deserialize(first))
+        assert first == third
