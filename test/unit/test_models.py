@@ -8,6 +8,8 @@ from normpic.model.pic import Pic, MISSING
 from normpic.model.manifest import Manifest
 from normpic.model.config import Config
 
+_REL_PATH = "subdir/photo.jpg"
+
 
 class TestPic:
     """Test Pic dataclass."""
@@ -18,6 +20,7 @@ class TestPic:
             hash="abc123def456",
             size_bytes=1024,
             mtime="2023-11-04T22:04:16Z",
+            relative_path=_REL_PATH,
         )
 
         assert pic.hash == "abc123def456"
@@ -35,6 +38,7 @@ class TestPic:
             hash="abc123def456",
             size_bytes=1024,
             mtime="2023-11-04T22:04:16Z",
+            relative_path=_REL_PATH,
             timestamp=timestamp,
             timestamp_source="exif",
             camera="Canon EOS R5",
@@ -54,6 +58,7 @@ class TestPic:
             hash="abc123def456",
             size_bytes=1024,
             mtime="2023-11-04T22:04:16Z",
+            relative_path=_REL_PATH,
             original_filename="photo.jpg",
         )
 
@@ -65,6 +70,7 @@ class TestPic:
             hash="abc123def456",
             size_bytes=1024,
             mtime="2023-11-04T22:04:16Z",
+            relative_path=_REL_PATH,
         )
 
         assert pic.original_filename is MISSING
@@ -77,6 +83,7 @@ class TestPic:
                 hash="abc123def456",
                 size_bytes=1024,
                 mtime="2023-11-04T22:04:16Z",
+                relative_path=_REL_PATH,
                 original_filename=None,
             )
 
@@ -87,6 +94,7 @@ class TestPic:
                 hash="abc123def456",
                 size_bytes=1024,
                 mtime="2023-11-04T22:04:16Z",
+                relative_path=_REL_PATH,
                 original_filename="",
             )
 
@@ -97,6 +105,7 @@ class TestPic:
                 hash="abc123def456",
                 size_bytes=1024,
                 mtime="2023-11-04T22:04:16Z",
+                relative_path=_REL_PATH,
                 original_filename="a/b.jpg",
             )
         with pytest.raises(ValueError):
@@ -104,6 +113,7 @@ class TestPic:
                 hash="abc123def456",
                 size_bytes=1024,
                 mtime="2023-11-04T22:04:16Z",
+                relative_path=_REL_PATH,
                 original_filename="a\\b.jpg",
             )
 
@@ -113,17 +123,25 @@ class TestPic:
             hash="abc123def456",
             size_bytes=1024,
             mtime="2023-11-04T22:04:16Z",
+            relative_path=_REL_PATH,
         )
 
         expected = {
             "hash": "abc123def456",
             "size_bytes": 1024,
             "mtime": "2023-11-04T22:04:16Z",
+            "relative_path": _REL_PATH,
         }
 
         assert pic.to_dict() == expected
-        for absent in ("timestamp", "timestamp_source", "camera", "gps",
-                       "tag", "original_filename", "source_path", "dest_path", "errors"):
+        for absent in (
+            "timestamp",
+            "timestamp_source",
+            "camera",
+            "gps",
+            "tag",
+            "original_filename",
+        ):
             assert absent not in pic.to_dict()
 
     def test_tag_absent_by_default(self):
@@ -132,6 +150,7 @@ class TestPic:
             hash="abc123def456",
             size_bytes=1024,
             mtime="2023-11-04T22:04:16Z",
+            relative_path=_REL_PATH,
         )
 
         assert pic.tag is None
@@ -142,6 +161,7 @@ class TestPic:
             hash="abc123def456",
             size_bytes=1024,
             mtime="2023-11-04T22:04:16Z",
+            relative_path=_REL_PATH,
             tag=["vacation", "2025"],
         )
 
@@ -153,6 +173,7 @@ class TestPic:
             hash="abc123def456",
             size_bytes=1024,
             mtime="2023-11-04T22:04:16Z",
+            relative_path=_REL_PATH,
             tag=[],
         )
 
@@ -165,6 +186,7 @@ class TestPic:
                 hash="abc123def456",
                 size_bytes=1024,
                 mtime="2023-11-04T22:04:16Z",
+                relative_path=_REL_PATH,
                 timestamp_source=value,
             )
 
@@ -175,6 +197,7 @@ class TestPic:
                 hash="abc123def456",
                 size_bytes=1024,
                 mtime="2023-11-04T22:04:16Z",
+                relative_path=_REL_PATH,
                 timestamp_source="bad",
             )
 
@@ -184,6 +207,7 @@ class TestPic:
             hash="abc123def456",
             size_bytes=1024,
             mtime="2023-11-04T22:04:16Z",
+            relative_path=_REL_PATH,
             timestamp_source=None,
         )
 
@@ -202,11 +226,13 @@ class TestManifest:
                 hash="abc123",
                 size_bytes=1024,
                 mtime="2023-11-04T22:04:16Z",
+                relative_path="a/1.jpg",
             ),
             Pic(
                 hash="def456",
                 size_bytes=2048,
                 mtime="2023-11-04T22:04:16Z",
+                relative_path="b/2.png",
             ),
         ]
 
@@ -257,6 +283,7 @@ class TestManifest:
                 hash="abc123",
                 size_bytes=1024,
                 mtime="2023-11-04T22:04:16Z",
+                relative_path=_REL_PATH,
             )
         ]
 

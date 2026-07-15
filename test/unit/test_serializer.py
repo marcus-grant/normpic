@@ -23,6 +23,7 @@ class TestManifestSerializer:
                 hash="abc123",
                 size_bytes=1024,
                 mtime="2023-11-04T22:04:16Z",
+                relative_path="pic.jpg",
             )
         ]
 
@@ -70,7 +71,9 @@ class TestManifestSerializer:
 
         assert manifest.version == "0.1.0"
         assert manifest.collection_name == "test-collection"
-        assert manifest.generated_at == datetime(2025, 11, 6, 19, 30, 0, tzinfo=timezone.utc)
+        assert manifest.generated_at == datetime(
+            2025, 11, 6, 19, 30, 0, tzinfo=timezone.utc
+        )
         assert len(manifest.pic) == 1
         assert manifest.pic[0].hash == "b2b120:AAAAAAAAAAAAAAAAAAAAAAAA"
 
@@ -138,6 +141,7 @@ class TestManifestSerializer:
             hash="abc123",
             size_bytes=-1,
             mtime="2023-11-04T22:04:16Z",
+            relative_path="pic.jpg",
         )
 
         invalid_manifest = Manifest(
@@ -175,28 +179,15 @@ class TestManifestSerializer:
         parsed = json.loads(json_str)
         assert parsed["version"] == "0.1.0"
 
-    def test_validate_rejects_pic_without_relative_path(self):
-        """Canonical schema requires relative_path; schema_v0 did not.
-
-        Discriminator: Pic(relative_path=None) serializes without the key.
-        schema_v0 would pass; canonical raises ValidationError.
-        """
-        manifest = Manifest(
-            version="0.1.0",
-            collection_name="test-collection",
-            generated_at=datetime(2025, 11, 6, 19, 30, 0, tzinfo=timezone.utc),
-            pic=[
-                Pic(
-                    hash="b2b120:AAAAAAAAAAAAAAAAAAAAAAAA",
-                    size_bytes=1,
-                    mtime="2024-01-01T00:00:00.000000Z",
-                    # relative_path defaults to None -- omitted from to_dict()
-                )
-            ],
-        )
-        serializer = ManifestSerializer()
-        with pytest.raises(ValidationError):
-            serializer.validate(manifest)
+    def test_pic_requires_relative_path(self):
+        """v0.1 contract requires relative_path on every pic;
+        the model must reject construction without it."""
+        with pytest.raises(TypeError):
+            Pic(  # type: ignore relative_path is missing, should raise
+                hash="b2b120:AAAAAAAAAAAAAAAAAAAAAAAA",
+                size_bytes=1,
+                mtime="2024-01-01T00:00:00.000000Z",
+            )
 
     def test_deserialize_tolerates_missing_legacy_fields(self):
         """deserialize over a manifest lacking source_path/dest_path/errors is clean."""
@@ -232,7 +223,9 @@ class TestManifestSerializer:
         )
         d = pic.to_dict()
         for key in ("timestamp", "timestamp_source", "camera", "gps"):
-            assert key not in d, f"absent optional field {key!r} should not appear in dict"
+            assert key not in d, (
+                f"absent optional field {key!r} should not appear in dict"
+            )
 
         manifest = Manifest(
             version="0.1.0",
