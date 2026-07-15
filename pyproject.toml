@@ -28,3 +28,10 @@ include = ["normpic*"]
 
 [tool.pytest.ini_options]
 pythonpath = "."
+norecursedirs = ["deleteme-normpic-modules", ".venv"] # Old deleteme, keep till gone
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+include = ["normpic", "test", "script"]
+exclude = ["deleteme-normpic-modules", "**/__pycache__", ".venv"]
