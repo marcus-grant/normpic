@@ -19,7 +19,6 @@ def _full_pic():
         timestamp_source="exif",
         camera="Canon EOS R5",
         gps={"lat": 59.0, "lon": 18.0},
-        tag=["wedding", "ceremony"],
         original_filename="IMG_0001.jpg",
     )
 
@@ -123,6 +122,12 @@ class TestManifestSerializer:
             msg = f"absent optional {key!r} leaked into serialized JSON"
             assert key not in pic_json, msg
 
+    def test_deserialize_preserves_original_filename(self):
+        """deserialize must reconstruct original_filename, not drop it."""
+        ser = ManifestSerializer()
+        loaded = ser.deserialize(ser.serialize(self._manifest(pic=[_full_pic()])))
+        assert loaded.pic[0].original_filename == "IMG_0001.jpg"
+
     def test_deserialize_absence_form_round_trips(self):
         """Absent optionals round-trip back as None, not KeyError."""
         ser = ManifestSerializer()
@@ -138,9 +143,6 @@ class TestManifestSerializer:
         m = self._manifest(pic=[_full_pic()])
         assert (ser := ManifestSerializer()).serialize(m) == ser.serialize(m)
 
-    @pytest.mark.skip(
-        "Found bug in serializer that breaks contract, fixing next commit"
-    )
     def test_serialize_round_trip_is_deterministic(self):
         """serialize -> deserialize -> serialize yields the same bytes."""
         m = self._manifest(pic=[_full_pic()])
