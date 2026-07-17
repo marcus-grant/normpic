@@ -10,13 +10,13 @@ from .pic import Pic
 @dataclass
 class Manifest:
     """Photo collection manifest."""
-    
+
     # Required fields
     version: str
     collection_name: str
     generated_at: datetime
     pic: List[Pic]
-    
+
     # Optional fields
     collection_description: Optional[str] = None
     config: Optional[Dict[str, Any]] = None
@@ -31,10 +31,11 @@ class Manifest:
             "collection_root": self.collection_root,
             "pic": [p.to_dict() for p in self.pic],
         }
-        
+
         # Add optional fields only if they have values
         if self.collection_description is not None:
             result["collection_description"] = self.collection_description
         if self.config is not None:
             result["config"] = self.config
         return result
+
