@@ -17,6 +17,7 @@ class Pic:
     hash: str
     size_bytes: int
     mtime: str
+    relative_path: str
 
     # Optional fields
     timestamp: Optional[datetime] = None
@@ -25,7 +26,6 @@ class Pic:
     gps: Optional[Dict[str, float]] = None
     original_filename: Any = MISSING
     tag: Optional[List[str]] = None
-    relative_path: Optional[str] = None
 
     def __post_init__(self) -> None:
         """Validate fields at construction."""
@@ -41,13 +41,12 @@ class Pic:
             if self.original_filename == "":
                 raise ValueError("original_filename must be a non-empty string")
             if "/" in self.original_filename or "\\" in self.original_filename:
-                raise ValueError(
-                    "original_filename must not contain path separators"
-                )
-        if self.timestamp_source is not None and self.timestamp_source not in _TS_VALUES:
-            raise ValueError(
-                f"timestamp_source must be one of {sorted(_TS_VALUES)}"
-            )
+                raise ValueError("original_filename must not contain path separators")
+        if (
+            self.timestamp_source is not None
+            and self.timestamp_source not in _TS_VALUES
+        ):
+            raise ValueError(f"timestamp_source must be one of {sorted(_TS_VALUES)}")
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert Pic to dictionary for JSON serialization."""

@@ -7,10 +7,12 @@ from pathlib import Path
 from jsonschema import validate
 
 from ..model.manifest import Manifest
-from ..model.pic import Pic
+from ..model.pic import Pic, MISSING
 
 _MANIFEST_SCHEMA = json.loads(
-    (Path(__file__).resolve().parent.parent.parent / "schema" / "v0.1.0.json").read_text()
+    (
+        Path(__file__).resolve().parent.parent.parent / "schema" / "v0.1.0.json"
+    ).read_text()
 )
 
 
@@ -19,41 +21,41 @@ class ManifestSerializer:
 
     def serialize(self, manifest: Manifest, validate: bool = False) -> str:
         """Serialize Manifest to JSON string.
-        
+
         Args:
             manifest: Manifest object to serialize
             validate: Whether to validate against schema before serializing
-            
+
         Returns:
             JSON string representation
-            
+
         Raises:
             ValidationError: If validate=True and manifest is invalid
         """
         if validate:
             self.validate(manifest)
-            
+
         manifest_dict = manifest.to_dict()
         return json.dumps(manifest_dict, indent=2, sort_keys=True)
 
     def deserialize(self, json_str: str) -> Manifest:
         """Deserialize JSON string to Manifest object.
-        
+
         Args:
             json_str: JSON string to deserialize
-            
+
         Returns:
             Manifest object
-            
+
         Raises:
             ValidationError: If JSON doesn't match manifest schema
             json.JSONDecodeError: If JSON is malformed
         """
         data = json.loads(json_str)
-        
+
         # Validate against schema
         validate(instance=data, schema=_MANIFEST_SCHEMA)
-        
+
         # Convert to objects
         pics = []
         for pic_data in data["pic"]:
@@ -69,12 +71,13 @@ class ManifestSerializer:
                 camera=pic_data.get("camera"),
                 gps=pic_data.get("gps"),
                 relative_path=pic_data.get("relative_path"),
+                original_filename=pic_data.get("original_filename", MISSING),
             )
             pics.append(pic)
-        
+
         # Parse generated_at timestamp
         generated_at = datetime.fromisoformat(data["generated_at"])
-        
+
         manifest = Manifest(
             version=data["version"],
             collection_name=data["collection_name"],
@@ -84,17 +87,18 @@ class ManifestSerializer:
             config=data.get("config"),
             collection_root=data.get("collection_root", "."),
         )
-        
+
         return manifest
 
     def validate(self, manifest: Manifest) -> None:
         """Validate manifest against schema.
-        
+
         Args:
             manifest: Manifest object to validate
-            
+
         Raises:
             ValidationError: If manifest doesn't match schema
         """
         manifest_dict = manifest.to_dict()
         validate(instance=manifest_dict, schema=_MANIFEST_SCHEMA)
+

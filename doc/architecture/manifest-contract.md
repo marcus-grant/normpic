@@ -683,13 +683,11 @@ the contract document.
 
 ### Open decisions
 
-- Pre-hiatus field-name reconciliation.
-  The existing Python implementation may use field names from the
-  pre-hiatus contract that are not in this draft.
-  A code-level audit is needed to identify any survivors.
-  Lean: align all names to this contract; the implementation tracks
-  the contract, not vice versa.
-  Resolve via an early-PR task in the v0.1 sequenced TODO.
+None.
+All prior open decisions are resolved.
+Pre-hiatus field-name reconciliation resolved in Phase B: the
+implementation was aligned to this contract.
+See CHANGELOG 2026-06-10 through 2026-07-10.
 
 ### Decisions resolved during drafting
 

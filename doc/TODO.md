@@ -8,8 +8,8 @@ legacy source_path/dest_path/errors removed.
 Verified end-to-end on the real wedding archive (645 pics, zero
 dangling symlinks, canonical-valid).
 
-Remaining to publish v0.1.0: chr/pyright-clean, then Phase C/D/E
-(docs, verification, release).
+Remaining to publish v0.1.0: Phase C/D/E (docs, verification,
+release). Phase B and chr/pyright-clean complete.
 
 Downstream, gated on v0.1.0 publishing: galleria binds its manifest
 reader to the frozen contract, then marcustack (composer; live deploy
@@ -104,89 +104,6 @@ The list shrinks to zero before v0.1.0 is published.
 
 Each task carries an explicit upstream trigger so a developer
 picking this up knows what to do and when.
-
-### Phase B: Implementation Alignment
-
-Complete as of 2026-07-07. See CHANGELOG entries 2026-06-10 through
-2026-07-07 for per-PR detail. Two items remain open:
-
-#### ref/serializer-v01-contract
-
-Align the manifest serializer at `normpic/serializer/manifest.py`
-with the v0.1 contract's producer rules.
-Implements always-emit `collection_root` with default `"."`, drops
-diagnostics emission, honors canonical forms on emit, and enforces
-byte-identical determinism over repeated runs of the same input.
-The model and schema are already contract-shaped (see CHANGELOG
-2026-06-23 through 2026-07-07); this PR closes the emit side.
-
-Files touched: `normpic/serializer/manifest.py`,
-`test/unit/test_serializer.py`, and any
-`test/integration/test_*_workflow.py` files whose golden output
-strings change due to the new emit rules.
-
-Serializer obligations per the v0.1 contract:
-
-- `version` and all required fields emitted on every manifest.
-- `collection_root` always emitted, including the literal `"."` in
-  the default case.
-- Hashes emitted with the `b2b120:` prefix in uppercase Crockford,
-  unchanged from the producer's input (the hash module already
-  returns canonical form).
-- Optional + nullable fields: producer prefers absence over
-  explicit `null` for unset values.
-  No `null` literal in the JSON output for these fields.
-- Optional arrays: producer prefers absence over `[]` for unset
-  arrays.
-  No empty `tag` arrays in the JSON output.
-- Canonical forms on emit: UTF-8 without BOM, forward-slash paths
-  only, RFC 3339 UTC timestamps with mandatory `Z` suffix, NFC
-  Unicode normalization on `relative_path`.
-- Byte-identical determinism: the same input produces a
-  byte-identical manifest, including pic ordering, across repeated
-  runs.
-- Diagnostics not emitted (now logs-only per contract).
-
-Commits:
-
-- `Ref: align serializer field-presence with v0.1 contract`.
-  Always-emit `collection_root` including default, drop
-  diagnostics emission, and prefer absence over `null` or `[]` for
-  optional fields and arrays.
-  `test_serializer.py` updated in lockstep.
-- `Ref: serializer enforces canonical forms and determinism on
-  emit`.
-  NFC normalization of `relative_path` on emit, RFC 3339 UTC with
-  `Z` suffix verified, UTF-8 without BOM, deterministic key order,
-  no trailing whitespace differences across runs.
-  A determinism test that serializes the same model twice and
-  asserts byte-identical output anchors the cycle.
-- `Doc: PR close per discipline preamble`.
-
-Verification at PR close: `uv run pytest
-test/unit/test_serializer.py test/integration/` green; the
-determinism test asserts byte-identical output across repeated
-serializations of the same model.
-
-#### chr/pyright-clean
-
-Bring the tree to green under `uv run pyright`, then wire pyright
-into the enforced quality gate (pyproject or task runner) so it is
-machine-checked, not convention-only.
-The tree currently reports 42 pyright errors.
-
-Plan must triage before implementing:
-
-- Real typing gaps in live code: fix with annotations only, no
-  change to implementation or test logic.
-- Errors originating in stale code (`deleteme-normpic-modules/` or
-  other dead artifacts): the fix is deletion, which is a scope and
-  behavior change, not a typing pass.
-  Escalate the triage outcome for approval before proceeding, since
-  it changes the nature of the PR.
-
-Deconflict any deletions here against the Phase E pre-extraction
-sweep so the two do not double-claim the same removals.
 
 ### Phase C: Documentation Downstream of Contract
 

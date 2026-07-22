@@ -155,169 +155,182 @@ class TestChangeDetection:
         """Test detecting when file content changes via hash comparison."""
         # Arrange: Create a photo and get its initial hash
         photo_path = create_photo_with_exif(
-            tmp_path / "test.jpg", 
+            tmp_path / "test.jpg",
             DateTimeOriginal="2024:10:05 14:30:45",
             Make="Canon",
-            Model="EOS R5"
+            Model="EOS R5",
         )
-        
+
         from normpic.manager.manifest_manager import ManifestManager
+
         manager = ManifestManager()
-        
+
         # Get actual hash of the photo
         actual_hash = manager.compute_file_hash(photo_path)
-        
+
         # Act: Check if needs reprocessing with same hash (should be False)
         needs_reprocessing_same = manager.needs_reprocessing(
-            photo_path, 
-            previous_hash=actual_hash
+            photo_path, previous_hash=actual_hash
         )
-        
+
         # Act: Check if needs reprocessing with different hash (should be True)
         needs_reprocessing_different = manager.needs_reprocessing(
-            photo_path, 
-            previous_hash="different_hash_value"
+            photo_path, previous_hash="different_hash_value"
         )
-        
+
         # Assert: Same hash = no reprocessing needed
         assert not needs_reprocessing_same, "Same hash should not trigger reprocessing"
-        
-        # Assert: Different hash = reprocessing needed  
-        assert needs_reprocessing_different, "Different hash should trigger reprocessing"
+
+        # Assert: Different hash = reprocessing needed
+        assert needs_reprocessing_different, (
+            "Different hash should trigger reprocessing"
+        )
 
     def test_detect_mtime_changes(self, tmp_path, create_photo_with_exif):
         """Test detecting filesystem modification time changes from previous manifest."""
         # Arrange: Create a photo
         photo_path = create_photo_with_exif(
-            tmp_path / "test.jpg",
-            DateTimeOriginal="2024:10:05 14:30:45"
+            tmp_path / "test.jpg", DateTimeOriginal="2024:10:05 14:30:45"
         )
-        
+
         original_mtime = photo_path.stat().st_mtime
-        
+
         from normpic.manager.manifest_manager import ManifestManager
+
         manager = ManifestManager()
-        
+
         # Act: Check with same mtime (should not need reprocessing)
         needs_reprocessing_same = manager.needs_reprocessing(
-            photo_path, 
-            previous_mtime=original_mtime
+            photo_path, previous_mtime=original_mtime
         )
-        
+
         # Modify the file's mtime
         import time
+
         time.sleep(0.1)
         photo_path.touch()  # Updates mtime
         new_mtime = photo_path.stat().st_mtime
-        
+
         # Verify mtime actually changed
         assert new_mtime > original_mtime
-        
+
         # Act: Check with old mtime after file was touched (should need reprocessing)
         needs_reprocessing_changed = manager.needs_reprocessing(
-            photo_path, 
-            previous_mtime=original_mtime
+            photo_path, previous_mtime=original_mtime
         )
-        
+
         # Assert: Same mtime = no reprocessing needed
         assert not needs_reprocessing_same, "Same mtime should not trigger reprocessing"
-        
+
         # Assert: Different mtime = reprocessing needed
         assert needs_reprocessing_changed, "Changed mtime should trigger reprocessing"
 
     def test_detect_config_changes(self, tmp_path):
         """Test detecting when config changes affect processing requirements."""
         from normpic.manager.manifest_manager import ManifestManager
+
         manager = ManifestManager()
-        
+
         # Test with same collection names (should not affect processing)
         same_config_old = {"collection_name": "wedding"}
         same_config_new = {"collection_name": "wedding"}
-        
+
         # Test with different collection names (affects filename generation)
         old_config = {"collection_name": "old_collection"}
         new_config = {"collection_name": "new_collection"}
-        
+
         # Test with unrelated config changes (should not affect processing)
         unrelated_old = {"collection_name": "wedding", "some_other_field": "old_value"}
         unrelated_new = {"collection_name": "wedding", "some_other_field": "new_value"}
-        
+
         # Act: Test different scenarios
-        no_change = manager.config_affects_reprocessing(same_config_old, same_config_new)
+        no_change = manager.config_affects_reprocessing(
+            same_config_old, same_config_new
+        )
         collection_change = manager.config_affects_reprocessing(old_config, new_config)
-        unrelated_change = manager.config_affects_reprocessing(unrelated_old, unrelated_new)
-        
+        unrelated_change = manager.config_affects_reprocessing(
+            unrelated_old, unrelated_new
+        )
+
         # Assert: Same collection name = no reprocessing
         assert not no_change, "Same collection name should not trigger reprocessing"
-        
+
         # Assert: Different collection name = reprocessing needed
-        assert collection_change, "Different collection name should trigger reprocessing"
-        
+        assert collection_change, (
+            "Different collection name should trigger reprocessing"
+        )
+
         # Assert: Unrelated config changes = no reprocessing
-        assert not unrelated_change, "Unrelated config changes should not trigger reprocessing"
+        assert not unrelated_change, (
+            "Unrelated config changes should not trigger reprocessing"
+        )
 
     def test_detect_missing_destination_files(self, tmp_path, create_photo_with_exif):
         """Test detecting when destination symlink files are missing."""
         # Arrange: Create source photo
         source_path = create_photo_with_exif(
-            tmp_path / "source.jpg",
-            DateTimeOriginal="2024:10:05 14:30:45"
+            tmp_path / "source.jpg", DateTimeOriginal="2024:10:05 14:30:45"
         )
-        
+
         # Expected destination path (symlink that should exist)
         dest_dir = tmp_path / "dest"
         dest_dir.mkdir()
         dest_path = dest_dir / "test-20241005T143045.jpg"
-        
+
         from normpic.manager.manifest_manager import ManifestManager
+
         manager = ManifestManager()
-        
+
         # Act: Test with missing destination file
         dest_missing_before = manager.destination_file_missing(source_path, dest_path)
-        
+
         # Create symlink to source file
         dest_path.symlink_to(source_path)
-        
+
         # Act: Test with existing correct symlink
         dest_missing_after = manager.destination_file_missing(source_path, dest_path)
-        
+
         # Assert: Missing destination should be detected
         assert dest_missing_before, "Missing destination file should be detected"
-        
+
         # Assert: Existing correct symlink should not be considered missing
-        assert not dest_missing_after, "Existing correct symlink should not be considered missing"
+        assert not dest_missing_after, (
+            "Existing correct symlink should not be considered missing"
+        )
 
     def test_unchanged_files_skipped(self, tmp_path, create_photo_with_exif):
         """Test that unchanged files are correctly identified as not needing reprocessing."""
         # Arrange: Create a photo
         photo_path = create_photo_with_exif(
-            tmp_path / "unchanged.jpg",
-            DateTimeOriginal="2024:10:05 14:30:45"
+            tmp_path / "unchanged.jpg", DateTimeOriginal="2024:10:05 14:30:45"
         )
-        
+
         current_mtime = photo_path.stat().st_mtime
-        
+
         from normpic.manager.manifest_manager import ManifestManager
+
         manager = ManifestManager()
-        
+
         # Get the actual hash
         current_hash = manager.compute_file_hash(photo_path)
-        
+
         # Act: Test with unchanged file (same mtime and hash)
         needs_reprocessing_unchanged = manager.needs_reprocessing(
-            photo_path, 
-            previous_mtime=current_mtime,
-            previous_hash=current_hash
+            photo_path, previous_mtime=current_mtime, previous_hash=current_hash
         )
-        
+
         # Act: Test with no previous data (should need processing)
         needs_reprocessing_no_data = manager.needs_reprocessing(photo_path)
-        
+
         # Assert: Unchanged file should not need reprocessing
-        assert not needs_reprocessing_unchanged, "Unchanged file should not need reprocessing"
-        
+        assert not needs_reprocessing_unchanged, (
+            "Unchanged file should not need reprocessing"
+        )
+
         # Assert: File with no previous data should need processing
-        assert needs_reprocessing_no_data, "File with no previous data should need processing"
+        assert needs_reprocessing_no_data, (
+            "File with no previous data should need processing"
+        )
 
 
 _VALID_MANIFEST = {
@@ -371,9 +384,7 @@ class TestSourceManifestLoading:
         source_dir = tmp_path / "source"
         source_dir.mkdir()
         bad = {"version": "0.1.0", "pic": []}  # missing collection_name, generated_at
-        (source_dir / "manifest.json").write_text(
-            json.dumps(bad), encoding="utf-8"
-        )
+        (source_dir / "manifest.json").write_text(json.dumps(bad), encoding="utf-8")
         assert load_source_manifest(source_dir) is None
 
     def test_source_manifest_present_impl_invalid(self, tmp_path):
@@ -381,9 +392,7 @@ class TestSourceManifestLoading:
         source_dir.mkdir()
         bad = dict(_VALID_MANIFEST)
         bad["collection_root"] = "foo/../../../bar"  # non-leading dotdot
-        (source_dir / "manifest.json").write_text(
-            json.dumps(bad), encoding="utf-8"
-        )
+        (source_dir / "manifest.json").write_text(json.dumps(bad), encoding="utf-8")
         assert load_source_manifest(source_dir) is None
 
     def test_build_source_manifest_empty_dir(self, tmp_path):
@@ -397,8 +406,12 @@ class TestSourceManifestLoading:
     def test_build_source_manifest_scans_photos(self, tmp_path, create_photo_with_exif):
         source_dir = tmp_path / "source"
         source_dir.mkdir()
-        create_photo_with_exif(source_dir / "a.jpg", DateTimeOriginal="2024:01:01 00:00:00")
-        create_photo_with_exif(source_dir / "b.jpg", DateTimeOriginal="2024:01:01 00:00:01")
+        create_photo_with_exif(
+            source_dir / "a.jpg", DateTimeOriginal="2024:01:01 00:00:00"
+        )
+        create_photo_with_exif(
+            source_dir / "b.jpg", DateTimeOriginal="2024:01:01 00:00:01"
+        )
 
         manifest = build_source_manifest(source_dir, "col")
 
@@ -441,8 +454,12 @@ class TestHashKeyedChangeDetection:
     # --- Cycle 1: index building ---
 
     def test_index_basic(self):
-        pic_a = _make_pic("b2b120:AAAA", 100, "2024-01-01T00:00:00.000000Z", relative_path="a.jpg")
-        pic_b = _make_pic("b2b120:BBBB", 200, "2024-01-01T00:00:00.000000Z", relative_path="b.jpg")
+        pic_a = _make_pic(
+            "b2b120:AAAA", 100, "2024-01-01T00:00:00.000000Z", relative_path="a.jpg"
+        )
+        pic_b = _make_pic(
+            "b2b120:BBBB", 200, "2024-01-01T00:00:00.000000Z", relative_path="b.jpg"
+        )
         manifest = _make_manifest([pic_a, pic_b])
         index = build_hash_keyed_source_index(manifest)
         assert index["b2b120:AAAA"] is pic_a
@@ -453,8 +470,12 @@ class TestHashKeyedChangeDetection:
         assert index == {}
 
     def test_index_duplicate_hash(self):
-        pic_first = _make_pic("b2b120:AAAA", 100, "2024-01-01T00:00:00.000000Z", relative_path="a.jpg")
-        pic_second = _make_pic("b2b120:AAAA", 100, "2024-01-01T00:00:00.000000Z", relative_path="b.jpg")
+        pic_first = _make_pic(
+            "b2b120:AAAA", 100, "2024-01-01T00:00:00.000000Z", relative_path="a.jpg"
+        )
+        pic_second = _make_pic(
+            "b2b120:AAAA", 100, "2024-01-01T00:00:00.000000Z", relative_path="b.jpg"
+        )
         manifest = _make_manifest([pic_first, pic_second])
         index = build_hash_keyed_source_index(manifest)
         assert index["b2b120:AAAA"] is pic_first
@@ -478,9 +499,12 @@ class TestHashKeyedChangeDetection:
         index = {"b2b120:AAAA": pic}
 
         manager = ManifestManager()
-        assert manager.needs_reprocessing_by_hash(
-            "b2b120:AAAA", index, prev_mtime, dest_dir=dest_dir
-        ) is False
+        assert (
+            manager.needs_reprocessing_by_hash(
+                "b2b120:AAAA", index, prev_mtime, dest_dir=dest_dir
+            )
+            is False
+        )
 
     def test_mtime_changed(self):
         mtime_str = "2020-01-01T00:00:00.000000Z"
@@ -490,7 +514,10 @@ class TestHashKeyedChangeDetection:
 
         manager = ManifestManager()
         current_mtime = prev_mtime + 1.0
-        assert manager.needs_reprocessing_by_hash("b2b120:AAAA", index, current_mtime) is True
+        assert (
+            manager.needs_reprocessing_by_hash("b2b120:AAAA", index, current_mtime)
+            is True
+        )
 
     def test_mtime_roundtrip_no_false_changed(self, tmp_path):
         """st_mtime through ISO round-trip must not produce a false CHANGED."""
@@ -506,17 +533,25 @@ class TestHashKeyedChangeDetection:
 
         # needs_reprocessing: previous_mtime arrives as ISO-parsed float
         previous_mtime = datetime.fromisoformat(mtime_iso).timestamp()
-        assert manager.needs_reprocessing(
-            photo,
-            previous_hash=manager.compute_file_hash(photo),
-            previous_mtime=previous_mtime,
-        ) is False
+        assert (
+            manager.needs_reprocessing(
+                photo,
+                previous_hash=manager.compute_file_hash(photo),
+                previous_mtime=previous_mtime,
+            )
+            is False
+        )
 
         # needs_reprocessing_by_hash: current_mtime is the raw st_mtime float;
         # matched.mtime is the strftime ISO string (same float, same origin)
         hash_val = manager.compute_file_hash(photo)
-        pic = _make_pic(hash_val, photo.stat().st_size, mtime_iso, relative_path="dest.jpg")
-        assert manager.needs_reprocessing_by_hash(hash_val, {hash_val: pic}, st_mtime) is False
+        pic = _make_pic(
+            hash_val, photo.stat().st_size, mtime_iso, relative_path="dest.jpg"
+        )
+        assert (
+            manager.needs_reprocessing_by_hash(hash_val, {hash_val: pic}, st_mtime)
+            is False
+        )
 
         # Stored-string path: save the manifest to disk and reload it so that
         # matched.mtime arrives as a string from JSON, not from a float in this
@@ -526,9 +561,12 @@ class TestHashKeyedChangeDetection:
         loaded = ManifestManager(manifest_path).load_manifest()
         assert loaded is not None
         loaded_pic = loaded.pic[0]
-        assert manager.needs_reprocessing_by_hash(
-            hash_val, {hash_val: loaded_pic}, st_mtime
-        ) is False
+        assert (
+            manager.needs_reprocessing_by_hash(
+                hash_val, {hash_val: loaded_pic}, st_mtime
+            )
+            is False
+        )
 
     def test_dest_missing(self, tmp_path):
         dest_dir = tmp_path / "dest"
@@ -541,9 +579,12 @@ class TestHashKeyedChangeDetection:
         index = {"b2b120:AAAA": pic}
 
         manager = ManifestManager()
-        assert manager.needs_reprocessing_by_hash(
-            "b2b120:AAAA", index, prev_mtime, dest_dir=dest_dir
-        ) is True
+        assert (
+            manager.needs_reprocessing_by_hash(
+                "b2b120:AAAA", index, prev_mtime, dest_dir=dest_dir
+            )
+            is True
+        )
 
     def test_dest_check_uses_relative_path(self, tmp_path):
         """dest-existence check resolves via relative_path, not dest_path."""
@@ -565,9 +606,12 @@ class TestHashKeyedChangeDetection:
         manager = ManifestManager()
         # relative_path target ("b.jpg") exists; discriminates that the check
         # uses relative_path and not some other field. Correct behavior: False.
-        assert manager.needs_reprocessing_by_hash(
-            "b2b120:AAAA", index, prev_mtime, dest_dir=dest_dir
-        ) is False
+        assert (
+            manager.needs_reprocessing_by_hash(
+                "b2b120:AAAA", index, prev_mtime, dest_dir=dest_dir
+            )
+            is False
+        )
 
     # --- Cycle 4: equivalence test ---
 
@@ -616,11 +660,28 @@ class TestHashKeyedChangeDetection:
 
         # Prior manifest: A (unchanged), B (stale mtime), D (dest missing).
         # C is absent -- it is NEW.
-        prior_manifest = _make_manifest([
-            _make_pic(hash_a, path_a.stat().st_size, mtime_a_str, relative_path="dest_a.jpg"),
-            _make_pic(hash_b, path_b.stat().st_size, stale_mtime, relative_path="dest_b.jpg"),
-            _make_pic(hash_d, path_d.stat().st_size, mtime_d_str, relative_path="dest_d.jpg"),
-        ])
+        prior_manifest = _make_manifest(
+            [
+                _make_pic(
+                    hash_a,
+                    path_a.stat().st_size,
+                    mtime_a_str,
+                    relative_path="dest_a.jpg",
+                ),
+                _make_pic(
+                    hash_b,
+                    path_b.stat().st_size,
+                    stale_mtime,
+                    relative_path="dest_b.jpg",
+                ),
+                _make_pic(
+                    hash_d,
+                    path_d.stat().st_size,
+                    mtime_d_str,
+                    relative_path="dest_d.jpg",
+                ),
+            ]
+        )
 
         # Dest files: A exists, B exists (stale mtime still means reprocess), D missing
         (dest_dir / "dest_a.jpg").touch()
@@ -653,7 +714,7 @@ class TestCopyManifestRelativePath:
             hash=kwargs.get("hash", "b2b120:AAAAAAAAAAAAAAAAAAAAAAAA"),
             size_bytes=kwargs.get("size_bytes", 1024),
             mtime=kwargs.get("mtime", "2024-01-01T00:00:00.000000Z"),
-            relative_path=kwargs.get("relative_path"),
+            relative_path=kwargs.get("relative_path", "photo.jpg"),
         )
 
     def test_relative_path_emitted_when_set(self):
@@ -662,11 +723,6 @@ class TestCopyManifestRelativePath:
         d = pic.to_dict()
         assert "relative_path" in d
         assert d["relative_path"] == organized
-
-    def test_relative_path_absent_when_none(self):
-        pic = self._base_pic()
-        d = pic.to_dict()
-        assert "relative_path" not in d
 
     def test_relative_path_canonical_form(self):
         # A normal organized filename must satisfy all canonical-path rules:
@@ -687,15 +743,17 @@ class TestCopyManifestRelativePath:
         from jsonschema import validate, ValidationError
         import pytest
 
-        _schema_path = Path(__file__).resolve().parent.parent.parent / "schema" / "v0.1.0.json"
+        _schema_path = (
+            Path(__file__).resolve().parent.parent.parent / "schema" / "v0.1.0.json"
+        )
         _manifest_schema = json.loads(_schema_path.read_text())
 
         bad_values = [
-            "./wedding-20241005T143045-r5a.jpg",   # leading ./
-            "/abs/path.jpg",                        # absolute
-            "foo/../bar.jpg",                       # .. segment
-            "foo//bar.jpg",                         # empty segment
-            "foo\\bar.jpg",                         # backslash
+            "./wedding-20241005T143045-r5a.jpg",  # leading ./
+            "/abs/path.jpg",  # absolute
+            "foo/../bar.jpg",  # .. segment
+            "foo//bar.jpg",  # empty segment
+            "foo\\bar.jpg",  # backslash
         ]
         base = {
             "hash": "b2b120:AAAAAAAAAAAAAAAAAAAAAAAA",
@@ -710,6 +768,9 @@ class TestCopyManifestRelativePath:
         for bad in bad_values:
             with pytest.raises(ValidationError):
                 validate(
-                    instance={**manifest_wrapper, "pic": [{**base, "relative_path": bad}]},
+                    instance={
+                        **manifest_wrapper,
+                        "pic": [{**base, "relative_path": bad}],
+                    },
                     schema=_manifest_schema,
                 )

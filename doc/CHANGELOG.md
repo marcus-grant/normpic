@@ -1,5 +1,18 @@
 # NormPic Development Changelog
 
+## 2026-07-20
+
+### chr/v01-housekeeping
+
+pyright brought to green across the tree and wired into the enforced
+quality gate as a blocking check, machine-checked not convention-only.
+Fixed a deserialize round-trip dropping original_filename, required
+Pic.relative_path per the v0.1 contract, migrated model and serializer
+tests to a verified Pic factory.
+Extraction residue removed: deleteme-normpic-modules/ was untracked and
+gitignored; deleted off-tree and its *deleteme* ignore rules removed
+from .gitignore. Full gate green after removal.
+
 ## 2026-07-10
 
 ### ref/serializer-v01-contract
