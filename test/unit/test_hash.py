@@ -1,44 +1,36 @@
-import pytest
-from normpic.util.hash import b2b120_hash, b2b120_encode_digest
+# test/unit/test_hash.py
+"""
+Tests for the NormPic content-id wrapper over b3c32.
+
+The wrapper's only job is the b3-120: prefix; hashing and encoding are
+b3c32's, certified in b3c32.
+These cover the wrapper surface (the prefix and basic shape) and the
+verify_conformance tripwire that fails the suite if b3c32's certified
+120-bit surface moves under us.
+
+Author: Marcus Grant
+Created: 2026-07-21
+License: Apache-2.0
+"""
+
+import b3c32
+
+from normpic.util.hash import content_id, PREFIX
 
 
-def test_encoder_all_zeros_fixed_width():
-    assert b2b120_encode_digest(b"\x00" * 15) == "0" * 24
+def test_content_id_has_prefix():
+    """The wrapper prepends the b3-120: prefix to the bare code."""
+    assert content_id(b"").startswith(PREFIX)
+    assert content_id(b"any data").startswith(PREFIX)
 
 
-def test_encoder_all_ones_fixed_width():
-    assert b2b120_encode_digest(b"\xff" * 15) == "Z" * 24
+def test_content_id_prefixes_the_bare_b3c32_code():
+    """content_id is exactly the prefix on b3c32's bare 120-bit code."""
+    data = b"any data"
+    assert content_id(data) == PREFIX + b3c32.hash_b32(data, 120)
 
 
-def test_output_length_invariant():
-    for i in range(256):
-        assert len(b2b120_hash(bytes([i]))) == 31
+def test_verify_conformance_passes():
+    """b3c32's certified 120-bit surface has not drifted under us."""
+    b3c32.verify_conformance()
 
-
-@pytest.mark.parametrize(
-    "data,expected",
-    [
-        (b"", "b2b120:PZDRE6BC90T0BS0FGG0ZM7Y9"),
-        (b"Hello, World!", "b2b120:D7GS0E632ZGYMQAVRXHYZ315"),
-        (b"\xff", "b2b120:N07C0CD6R447SA6JT1CEVAWW"),
-        (b"\x00" * 5, "b2b120:DGGXXPQBAP0A56H3CJKG23P6"),
-        (b"\x00" * 4099, "b2b120:DCJF8WQMWPFWGA3ZTB62HJA2"),
-        (b"\xaa" * 4099, "b2b120:SXBV2Q0G5PZNCC60ED9AXGBZ"),
-        (b"abcdefghijklmno", "b2b120:BDK03DC3KTTBN8T7FJSYQS38"),
-        (b"\x55", "b2b120:Q7G303N6ZTD10Y24XE57PJJB"),
-    ],
-)
-def test_hash_vectors(data, expected):
-    assert b2b120_hash(data) == expected
-
-
-def test_output_has_b2b120_prefix():
-    assert b2b120_hash(b"").startswith("b2b120:")
-    assert b2b120_hash(b"any data").startswith("b2b120:")
-
-
-def test_suffix_has_no_lookalike_chars():
-    for data in [b"", b"Hello, World!", b"\x55", b"\xaa" * 4099]:
-        suffix = b2b120_hash(data)[7:]
-        for ch in "ILOU":
-            assert ch not in suffix

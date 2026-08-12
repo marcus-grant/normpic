@@ -1,8 +1,10 @@
 import json
 from pathlib import Path
 
+from b3c32 import CROCKFORD32_ALPHABET
 from jsonschema import Draft202012Validator
 
+from normpic.util.hash import PREFIX
 from normpic.util.manifest_validate import consumer_normalize as consumer_normalize
 from normpic.util.manifest_validate import impl_validate as impl_validate
 
@@ -22,3 +24,18 @@ def load_fixture(path: Path) -> dict:
 def schema_validate(manifest: dict) -> list:
     validator = Draft202012Validator(load_schema())
     return list(validator.iter_errors(manifest))
+
+
+def assert_valid_content_id(value: str) -> None:
+    """Assert value is a well-formed NormPic content id.
+
+    Checks the format contract only, never a specific digest: the
+    b3-120: prefix, a 24-symbol payload, all symbols in b3c32's
+    Crockford alphabet.
+    Digest correctness is b3c32's to certify, not normpic's.
+    """
+    assert value.startswith(PREFIX), f"missing {PREFIX} prefix: {value!r}"
+    payload = value[len(PREFIX) :]
+    assert len(payload) == 24, f"payload not 24 chars: {payload!r}"
+    for ch in payload:
+        assert ch in CROCKFORD32_ALPHABET, f"non-Crockford char {ch!r}"

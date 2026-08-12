@@ -94,6 +94,27 @@ No contract impact; producer-internal improvements to NormPic.
 - Multithreading with speedup documentation in `analysis/`.
 - EXIF caching with speedup documentation.
 - Configurable symlink versus copy behavior.
+- Streaming file hashing via a b3c32 streaming API.
+  The v0.1 content-id cutover made compute_file_hash read the whole
+  file into memory and delegate to b3c32's one-shot hash_b32, because
+  b3c32 exposes no incremental hasher.
+  This is fine at wedding-gallery scale but loads large originals
+  (RAW files can be tens of MB) entirely into memory.
+  - Depends on b3c32 gaining a streaming or update-style entry point;
+    coordinate with the b3c32 maintainer, this is a library request
+    first and a normpic change second.
+  - When available, restore compute_file_hash's chunked read loop and
+    its progress_callback, delegating chunks to the streaming hasher
+    instead of reading all bytes.
+  - Re-enable the two skipped tests in test_filesystem_utils:
+    test_compute_file_hash_custom_chunk_size and
+    test_compute_file_hash_progress_callback.
+  - The compute_file_hash signature already carries chunk_size and
+    progress_callback as accepted-but-unused params, reserved for this
+    work, so restoring streaming is not a signature change.
+  - Distinct from the collection-level "streaming processing for very
+    large collections" under Long-Term; this is per-file hash
+    streaming, that is whole-collection.
 - UTC offset support (EXIF, GPS, config).
 - Timestamp systematic correction via config.
 - RAW format support.

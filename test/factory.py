@@ -2,9 +2,10 @@
 
 from dataclasses import replace
 from normpic.model.pic import Pic
+from normpic.util.hash import PREFIX
 
 DEFAULT_PIC = Pic(
-    hash="b2b120:AAAAAAAAAAAAAAAAAAAAAAAA",
+    hash=f"{PREFIX}AAAAAAAAAAAAAAAAAAAAAAAA",
     size_bytes=1024,
     mtime="2023-11-04T22:04:16Z",
     relative_path="subdir/photo.jpg",

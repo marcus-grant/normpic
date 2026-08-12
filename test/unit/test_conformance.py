@@ -7,21 +7,17 @@ from test.helpers.conformance import (
     load_fixture,
     schema_validate,
 )
+from normpic.util.hash import PREFIX
 
 
-@pytest.mark.parametrize(
-    "path", sorted((CONFORMANCE_DIR / "valid").glob("*.json"))
-)
+@pytest.mark.parametrize("path", sorted((CONFORMANCE_DIR / "valid").glob("*.json")))
 def test_valid_fixture_passes_schema(path):
     manifest = load_fixture(path)
     errors = schema_validate(manifest)
     assert not errors, f"{path.name}: expected valid, got {errors}"
 
 
-@pytest.mark.parametrize(
-    "path",
-    sorted((CONFORMANCE_DIR / "invalid").glob("*.json"))
-)
+@pytest.mark.parametrize("path", sorted((CONFORMANCE_DIR / "invalid").glob("*.json")))
 def test_invalid_fixture_rejected_by_schema(path):
     manifest = load_fixture(path)
     errors = schema_validate(manifest)
@@ -29,8 +25,7 @@ def test_invalid_fixture_rejected_by_schema(path):
 
 
 @pytest.mark.parametrize(
-    "path",
-    sorted((CONFORMANCE_DIR / "invalid" / "impl").glob("*.json"))
+    "path", sorted((CONFORMANCE_DIR / "invalid" / "impl").glob("*.json"))
 )
 def test_impl_layer_fixture_rejected_by_impl(path):
     manifest = load_fixture(path)
@@ -43,8 +38,7 @@ def test_impl_layer_fixture_rejected_by_impl(path):
 
 
 @pytest.mark.parametrize(
-    "path",
-    sorted((CONFORMANCE_DIR / "consumer-lenient").glob("*.json"))
+    "path", sorted((CONFORMANCE_DIR / "consumer-lenient").glob("*.json"))
 )
 def test_consumer_lenient_fixture_schema_rejects_raw(path):
     manifest = load_fixture(path)
@@ -53,8 +47,7 @@ def test_consumer_lenient_fixture_schema_rejects_raw(path):
 
 
 @pytest.mark.parametrize(
-    "path",
-    sorted((CONFORMANCE_DIR / "consumer-lenient").glob("*.json"))
+    "path", sorted((CONFORMANCE_DIR / "consumer-lenient").glob("*.json"))
 )
 def test_consumer_lenient_fixture_accepted_after_normalize(path):
     manifest = load_fixture(path)
@@ -82,7 +75,7 @@ def test_consumer_normalize_crockford_alias_fold():
         "collection_root": ".",
         "pic": [
             {
-                "hash": "b2b120:iIlLoO000000000000000000",
+                "hash": f"{PREFIX}iIlLoO000000000000000000",
                 "relative_path": "img.jpg",
                 "original_filename": "img.jpg",
                 "size_bytes": 1,
@@ -91,4 +84,4 @@ def test_consumer_normalize_crockford_alias_fold():
         ],
     }
     result = consumer_normalize(manifest)
-    assert result["pic"][0]["hash"] == "b2b120:111100000000000000000000"
+    assert result["pic"][0]["hash"] == f"{PREFIX}111100000000000000000000"

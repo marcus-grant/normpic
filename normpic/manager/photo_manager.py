@@ -17,7 +17,7 @@ from .manifest_manager import (
 )
 from ..template.filename import BASE32_ALPHABET, get_camera_code, format_timestamp
 from ..util.error_handling import ErrorHandler
-from ..util.hash import b2b120_hash
+from ..util.hash import content_id
 
 
 def organize_photos(
@@ -99,7 +99,7 @@ def organize_photos(
         ):
             current_hash = prior_pic.hash
         else:
-            current_hash = b2b120_hash(photo_path.read_bytes())
+            current_hash = content_id(photo_path.read_bytes())
 
         if not manifest_manager.needs_reprocessing_by_hash(
             current_hash, hash_index, current_mtime, dest_dir
@@ -347,7 +347,7 @@ def _create_ordered_pics(pics_data, collection_name: str, dest_dir: Path) -> Lis
             timestamp_source = "exif" if exif_data.timestamp else "filename"
             stat = photo_path.stat()
             file_size = stat.st_size
-            file_hash = b2b120_hash(photo_path.read_bytes())
+            file_hash = content_id(photo_path.read_bytes())
             file_mtime = datetime.fromtimestamp(
                 stat.st_mtime, tz=timezone.utc
             ).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
@@ -410,4 +410,3 @@ def resolve_symlink_pairs_by_hash(
         dest = dest_dir / pic.relative_path
         pairs.append((source_resolved, dest))
     return pairs
-

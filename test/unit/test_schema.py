@@ -6,11 +6,13 @@ from pathlib import Path
 import pytest
 from jsonschema import validate, ValidationError
 
+from normpic.util.hash import PREFIX
+
 _SCHEMA_PATH = Path(__file__).resolve().parent.parent.parent / "schema" / "v0.1.0.json"
 MANIFEST_SCHEMA = json.loads(_SCHEMA_PATH.read_text())
 
 _VALID_PIC = {
-    "hash": "b2b120:AAAAAAAAAAAAAAAAAAAAAAAA",
+    "hash": f"{PREFIX}AAAAAAAAAAAAAAAAAAAAAAAA",
     "relative_path": "photo.jpg",
     "size_bytes": 1024,
     "mtime": "2023-11-04T22:04:16Z",
@@ -47,10 +49,12 @@ class TestManifestSchema:
 
     def test_manifest_with_invalid_pic_fails(self):
         """Test that manifest with invalid pic entry fails validation."""
-        invalid_manifest = _manifest_with({
-            "source_path": "/path/to/source.jpg",
-            # Missing required: hash, relative_path, size_bytes, mtime
-        })
+        invalid_manifest = _manifest_with(
+            {
+                "source_path": "/path/to/source.jpg",
+                # Missing required: hash, relative_path, size_bytes, mtime
+            }
+        )
         with pytest.raises(ValidationError):
             validate(instance=invalid_manifest, schema=MANIFEST_SCHEMA)
 

@@ -9,6 +9,7 @@ description = "Organize and rename photo collections with a consistent schema"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "b3c32==0.0.2",
     "click>=8.3.0",
     "jsonschema>=4.25.1",
     "piexif>=1.1.3",
