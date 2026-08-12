@@ -1,50 +1,5 @@
 # NormPic - v0.1 Contract Alignment TODO
 
-## SESSION SCRATCH (delete before PR submit): b3c32 cutover
-
-Working notes for the b3c32 integration branch (ft/content-id-b3c32).
-This whole section is deleted before the PR is submitted.
-
-Done this session:
-
-- b3c32==0.0.2 dependency from PyPI (replaced git subdirectory pin).
-- content_id wrapper over b3c32.hash_b32, owns the b3-120: prefix.
-- verify_conformance tripwire in the suite.
-- filesystem.compute_file_hash cut to whole-file read + wrapper.
-- manifest_validate lenient decode routed through coerce_crockford_b32.
-- assert_valid_content_id format helper (b3c32 alphabet).
-- Committed as a partial cutover; suite green with skips, ruff and
-  pyright have residual errors from the incomplete cutover.
-
-Remaining to reach full green (ruff + pyright + pytest), in order:
-
-- Fix: import content_id in test_manifest_loading_workflow.
-  - Used at lines 126, 127, 212 but never imported.
-  - Clears the 3 ruff and 3 pyright residual errors.
-- Chr: swap schema hash pattern prefix b2b120: -> b3-120:.
-  - schema/v0.1.0.json pattern and description only.
-  - Length {24} and Crockford char class stay unchanged.
-- Tst: re-cut placeholder hashes to b3-120: across fixtures and tests.
-  - Coupled to the schema swap; same commit or tree goes red.
-  - Fixtures under test/fixture/conformance/ valid and invalid.
-  - Placeholder literals in test_schema, test_models, test_serializer,
-    test_manifest_manager, factory, test_factory.
-  - Keep hash-wrong-length fixture at 23 chars on purpose.
-- Tst: un-skip and verify integration tests on real b3-120 output.
-  - test_cli, test_error_handling_workflow, test_exif_filename_workflow,
-    test_photo_organization_workflow, test_manifest_loading_workflow.
-  - test_manifest_manager mtime_roundtrip.
-  - Remove the schema-prefix-swap-pending skips as each goes green.
-  - Watch for assertions with deeper b2b120 assumptions than prefix.
-
-Stays skipped, deferred to v0.2 (NOT this branch):
-
-- filesystem streaming tests (custom_chunk_size, progress_callback).
-  - Await a b3c32 streaming API; tracked in ROADMAP, not here.
-
-Handoff after this section is fully cleared and the branch is green on
-all three gates.
-
 ## Current Status: v0.1 contract frozen; Phase B complete
 
 The v0.1 copy-manifest contract is frozen: relative_path-only pics,

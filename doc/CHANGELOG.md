@@ -1,5 +1,27 @@
 # NormPic Development Changelog
 
+## 2026-08-12
+
+### ft/content-id-b3c32
+
+Content ids are now produced by the b3c32 library (unkeyed BLAKE3-120,
+Crockford Base32) instead of the internal BLAKE2b implementation.
+The hasher, encoder, and lenient decoder are b3c32's; NormPic keeps only
+a thin content_id wrapper that owns the b3c32: prefix, and a
+verify_conformance call in the suite so an automated release rejects a
+conformance-breaking library bump.
+The manifest hash prefix changed from b2b120: to b3c32: across the
+schema, fixtures, and tests; the schema hash pattern and its $defs key
+were renamed to match, with length and Crockford alphabet unchanged.
+manifest_validate lenient decode now delegates to coerce_crockford_b32
+rather than a local alias map.
+filesystem.compute_file_hash reads the whole file and delegates to the
+wrapper; incremental/streaming hashing is deferred to v0.2 pending a
+b3c32 streaming API, with two filesystem tests skipped and tracked in
+ROADMAP.
+Dependency b3c32==0.0.2 pinned from PyPI, replacing the git-subdirectory
+source. Test count 289 -> 291 passing, 2 skipped.
+
 ## 2026-07-20
 
 ### chr/v01-housekeeping
