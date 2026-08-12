@@ -2,6 +2,16 @@
 
 ## 2026-08-12
 
+### doc/content-address-b3c32
+
+Aligned contract docs to the b3c32: hash prefix and unkeyed
+BLAKE3-120 algorithm, replacing all b2b120:/BLAKE2b references in
+manifest-contract.md, conformance.md, data-models.md, README.md, and
+ROADMAP.md. Documented the low-pad hasher/encoder and that the prefix
+determines algorithm, encoding, and 24-char length. Field-format
+example uses the real empty-input vector. Migrated
+script/check_schema.py sample hashes and fixed a stale sha256 label.
+
 ### ft/content-id-b3c32
 
 Content ids are now produced by the b3c32 library (unkeyed BLAKE3-120,
