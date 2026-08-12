@@ -61,15 +61,17 @@
       "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\\.[0-9]+)?Z$",
       "description": "RFC 3339 UTC timestamp with mandatory 'Z' suffix. Fractional seconds optional. Offset variants like '+00:00' are NOT accepted."
     },
-    "hash_b2b120": {
+    "hash_b3c32": {
       "type": "string",
-      "pattern": "^b2b120:[0-9ABCDEFGHJKMNPQRSTVWXYZ]{24}$",
-      "description": "Content-addressed identity. Algorithm prefix 'b2b120:' followed by a 24-character BLAKE2b-120 digest in Crockford Base32 uppercase canonical form. Crockford alphabet excludes I, L, O, U."
+      "pattern": "^b3c32:[0-9ABCDEFGHJKMNPQRSTVWXYZ]{24}$",
+      "description": "Content-addressed identity. Algorithm prefix 'b3c32:' followed by a 24-character Blake3 120 bit digest in Crockford Base32 uppercase canonical form. Crockford alphabet excludes I, L, O, U."
     },
     "relative_path": {
       "type": "string",
       "minLength": 1,
-      "if": { "type": "string" },
+      "if": {
+        "type": "string"
+      },
       "then": {
         "allOf": [
           {
@@ -115,7 +117,9 @@
           "const": "."
         },
         {
-          "if": { "type": "string" },
+          "if": {
+            "type": "string"
+          },
           "then": {
             "allOf": [
               {
@@ -199,7 +203,7 @@
       ],
       "properties": {
         "hash": {
-          "$ref": "#/$defs/hash_b2b120"
+          "$ref": "#/$defs/hash_b3c32"
         },
         "relative_path": {
           "$ref": "#/$defs/relative_path"

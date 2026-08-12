@@ -9,6 +9,7 @@ from jsonschema import ValidationError
 from normpic.model.pic import Pic
 from normpic.model.manifest import Manifest
 from normpic.serializer.manifest import ManifestSerializer
+from normpic.util.hash import PREFIX
 from test.factory import make_pic
 
 
@@ -55,7 +56,7 @@ class TestManifestSerializer:
             "generated_at": "2026-01-01T12:00:00Z",
             "pic": [
                 {
-                    "hash": "b2b120:AAAAAAAAAAAAAAAAAAAAAAAA",
+                    "hash": f"{PREFIX}AAAAAAAAAAAAAAAAAAAAAAAA",
                     "relative_path": "photo.jpg",
                     "size_bytes": 1024,
                     "mtime": "2023-11-04T22:04:16Z",
@@ -73,7 +74,7 @@ class TestManifestSerializer:
         assert m.collection_name == "test-collection"
         assert m.generated_at == datetime(2026, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
         assert len(m.pic) == 1
-        assert m.pic[0].hash == "b2b120:AAAAAAAAAAAAAAAAAAAAAAAA"
+        assert m.pic[0].hash == f"{PREFIX}AAAAAAAAAAAAAAAAAAAAAAAA"
 
     def test_round_trip_serialization(self):
         """Test that serialize -> deserialize preserves data."""

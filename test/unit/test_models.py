@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from normpic.model.pic import Pic, MISSING
 from normpic.model.manifest import Manifest
 from normpic.model.config import Config
+from normpic.util.hash import PREFIX
 
 from test.factory import DEFAULT_PIC as _PIC, make_pic
 
@@ -19,7 +20,7 @@ class TestPic:
     def test_required_field_omitted_raises(self, missing):
         """Omitting any required field fails construction."""
         kwargs = {
-            "hash": "b2b120:AAAAAAAAAAAAAAAAAAAAAAAA",
+            "hash": f"{PREFIX}AAAAAAAAAAAAAAAAAAAAAAAA",
             "size_bytes": 1024,
             "mtime": "2023-11-04T22:04:16Z",
             "relative_path": "subdir/photo.jpg",
@@ -63,7 +64,7 @@ class TestPic:
     def test_original_filename_absent(self):
         """Absent original_filename is the MISSING sentinel, not None."""
         pic = Pic(
-            hash="b2b120:AAAAAAAAAAAAAAAAAAAAAAAA",
+            hash=f"{PREFIX}AAAAAAAAAAAAAAAAAAAAAAAA",
             size_bytes=1024,
             mtime="2023-11-04T22:04:16Z",
             relative_path="subdir/photo.jpg",

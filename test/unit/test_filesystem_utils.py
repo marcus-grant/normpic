@@ -336,7 +336,7 @@ class TestComputeFileHash:
             # Use small chunk size
             hash_result = compute_file_hash(test_file, chunk_size=4)
             # Should produce same hash regardless of chunk size
-            expected = "b2b120:YCDCYQP339E3NEK83KXGA1TT"
+            expected = f"{PREFIX}YCDCYQP339E3NEK83KXGA1TT"
             assert hash_result == expected
 
     @pytest.mark.skip(

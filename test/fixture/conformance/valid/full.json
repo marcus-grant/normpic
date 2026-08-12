@@ -3,11 +3,13 @@
   "collection_name": "Full Example",
   "collection_description": "All contract fields populated.",
   "generated_at": "2025-06-15T12:00:00Z",
-  "config": { "source_dir": "photos/source" },
+  "config": {
+    "source_dir": "photos/source"
+  },
   "collection_root": ".",
   "pic": [
     {
-      "hash": "b2b120:PZDRE6BC90T0BS0FGG0ZM7Y9",
+      "hash": "b3c32:PZDRE6BC90T0BS0FGG0ZM7Y9",
       "relative_path": "2024/wedding/IMG_0001.jpg",
       "original_filename": "IMG_0001.jpg",
       "size_bytes": 3145728,
@@ -15,8 +17,14 @@
       "timestamp": "2024-09-14T10:23:00Z",
       "timestamp_source": "exif",
       "camera": "Canon EOS R5",
-      "gps": { "lat": 48.8566, "lon": 2.3522 },
-      "tag": ["wedding", "ceremony"]
+      "gps": {
+        "lat": 48.8566,
+        "lon": 2.3522
+      },
+      "tag": [
+        "wedding",
+        "ceremony"
+      ]
     }
   ]
 }

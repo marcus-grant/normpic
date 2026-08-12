@@ -17,6 +17,7 @@ from normpic.manager.manifest_manager import (
 )
 from normpic.model.manifest import Manifest
 from normpic.model.pic import Pic
+from normpic.util.hash import PREFIX
 
 
 class TestManifestManager:
@@ -342,7 +343,7 @@ _VALID_MANIFEST = {
     "collection_root": ".",
     "pic": [
         {
-            "hash": "b2b120:PZDRE6BC90T0BS0FGG0ZM7Y9",
+            "hash": f"{PREFIX}PZDRE6BC90T0BS0FGG0ZM7Y9",
             "relative_path": "photo.jpg",
             "size_bytes": 1024,
             "mtime": "2024-01-01T00:00:00Z",
@@ -457,15 +458,15 @@ class TestHashKeyedChangeDetection:
 
     def test_index_basic(self):
         pic_a = _make_pic(
-            "b2b120:AAAA", 100, "2024-01-01T00:00:00.000000Z", relative_path="a.jpg"
+            "b3c32:AAAA", 100, "2024-01-01T00:00:00.000000Z", relative_path="a.jpg"
         )
         pic_b = _make_pic(
-            "b2b120:BBBB", 200, "2024-01-01T00:00:00.000000Z", relative_path="b.jpg"
+            "b3c32:BBBB", 200, "2024-01-01T00:00:00.000000Z", relative_path="b.jpg"
         )
         manifest = _make_manifest([pic_a, pic_b])
         index = build_hash_keyed_source_index(manifest)
-        assert index["b2b120:AAAA"] is pic_a
-        assert index["b2b120:BBBB"] is pic_b
+        assert index["b3c32:AAAA"] is pic_a
+        assert index["b3c32:BBBB"] is pic_b
 
     def test_index_empty_manifest(self):
         index = build_hash_keyed_source_index(_make_manifest([]))
@@ -473,21 +474,21 @@ class TestHashKeyedChangeDetection:
 
     def test_index_duplicate_hash(self):
         pic_first = _make_pic(
-            "b2b120:AAAA", 100, "2024-01-01T00:00:00.000000Z", relative_path="a.jpg"
+            "b3c32:AAAA", 100, "2024-01-01T00:00:00.000000Z", relative_path="a.jpg"
         )
         pic_second = _make_pic(
-            "b2b120:AAAA", 100, "2024-01-01T00:00:00.000000Z", relative_path="b.jpg"
+            "b3c32:AAAA", 100, "2024-01-01T00:00:00.000000Z", relative_path="b.jpg"
         )
         manifest = _make_manifest([pic_first, pic_second])
         index = build_hash_keyed_source_index(manifest)
-        assert index["b2b120:AAAA"] is pic_first
+        assert index["b3c32:AAAA"] is pic_first
 
     # --- Cycle 2: per-photo detection ---
 
     def test_not_in_index(self):
         manager = ManifestManager()
         index = {}
-        assert manager.needs_reprocessing_by_hash("b2b120:ZZZZ", index, 1000.0) is True
+        assert manager.needs_reprocessing_by_hash("b3c32:ZZZZ", index, 1000.0) is True
 
     def test_unchanged(self, tmp_path):
         dest_dir = tmp_path / "dest"
@@ -497,13 +498,13 @@ class TestHashKeyedChangeDetection:
 
         mtime_str = "2024-01-01T00:00:00.000000Z"
         prev_mtime = datetime.fromisoformat(mtime_str).timestamp()
-        pic = _make_pic("b2b120:AAAA", 100, mtime_str, relative_path="a.jpg")
-        index = {"b2b120:AAAA": pic}
+        pic = _make_pic("b3c32:AAAA", 100, mtime_str, relative_path="a.jpg")
+        index = {"b3c32:AAAA": pic}
 
         manager = ManifestManager()
         assert (
             manager.needs_reprocessing_by_hash(
-                "b2b120:AAAA", index, prev_mtime, dest_dir=dest_dir
+                "b3c32:AAAA", index, prev_mtime, dest_dir=dest_dir
             )
             is False
         )
@@ -511,13 +512,13 @@ class TestHashKeyedChangeDetection:
     def test_mtime_changed(self):
         mtime_str = "2020-01-01T00:00:00.000000Z"
         prev_mtime = datetime.fromisoformat(mtime_str).timestamp()
-        pic = _make_pic("b2b120:AAAA", 100, mtime_str, relative_path="a.jpg")
-        index = {"b2b120:AAAA": pic}
+        pic = _make_pic("b3c32:AAAA", 100, mtime_str, relative_path="a.jpg")
+        index = {"b3c32:AAAA": pic}
 
         manager = ManifestManager()
         current_mtime = prev_mtime + 1.0
         assert (
-            manager.needs_reprocessing_by_hash("b2b120:AAAA", index, current_mtime)
+            manager.needs_reprocessing_by_hash("b3c32:AAAA", index, current_mtime)
             is True
         )
 
@@ -578,13 +579,13 @@ class TestHashKeyedChangeDetection:
 
         mtime_str = "2024-01-01T00:00:00.000000Z"
         prev_mtime = datetime.fromisoformat(mtime_str).timestamp()
-        pic = _make_pic("b2b120:AAAA", 100, mtime_str, relative_path="a.jpg")
-        index = {"b2b120:AAAA": pic}
+        pic = _make_pic("b3c32:AAAA", 100, mtime_str, relative_path="a.jpg")
+        index = {"b3c32:AAAA": pic}
 
         manager = ManifestManager()
         assert (
             manager.needs_reprocessing_by_hash(
-                "b2b120:AAAA", index, prev_mtime, dest_dir=dest_dir
+                "b3c32:AAAA", index, prev_mtime, dest_dir=dest_dir
             )
             is True
         )
@@ -600,18 +601,18 @@ class TestHashKeyedChangeDetection:
         prev_mtime = datetime.fromisoformat(mtime_str).timestamp()
         pic = Pic(
             relative_path="b.jpg",
-            hash="b2b120:AAAA",
+            hash="b3c32:AAAA",
             size_bytes=100,
             mtime=mtime_str,
         )
-        index = {"b2b120:AAAA": pic}
+        index = {"b3c32:AAAA": pic}
 
         manager = ManifestManager()
         # relative_path target ("b.jpg") exists; discriminates that the check
         # uses relative_path and not some other field. Correct behavior: False.
         assert (
             manager.needs_reprocessing_by_hash(
-                "b2b120:AAAA", index, prev_mtime, dest_dir=dest_dir
+                "b3c32:AAAA", index, prev_mtime, dest_dir=dest_dir
             )
             is False
         )
@@ -714,7 +715,7 @@ class TestCopyManifestRelativePath:
 
     def _base_pic(self, **kwargs):
         return Pic(
-            hash=kwargs.get("hash", "b2b120:AAAAAAAAAAAAAAAAAAAAAAAA"),
+            hash=kwargs.get("hash", "b3c32:AAAAAAAAAAAAAAAAAAAAAAAA"),
             size_bytes=kwargs.get("size_bytes", 1024),
             mtime=kwargs.get("mtime", "2024-01-01T00:00:00.000000Z"),
             relative_path=kwargs.get("relative_path", "photo.jpg"),
@@ -759,7 +760,7 @@ class TestCopyManifestRelativePath:
             "foo\\bar.jpg",  # backslash
         ]
         base = {
-            "hash": "b2b120:AAAAAAAAAAAAAAAAAAAAAAAA",
+            "hash": "b3c32:AAAAAAAAAAAAAAAAAAAAAAAA",
             "size_bytes": 1,
             "mtime": "2024-01-01T00:00:00Z",
         }

@@ -3,6 +3,7 @@
 from dataclasses import fields
 
 from normpic.model.pic import Pic, MISSING
+from normpic.util.hash import PREFIX
 from test.factory import DEFAULT_PIC, make_pic
 
 
@@ -33,7 +34,7 @@ class TestPicFactory:
 
     def test_default_pic_is_contract_valid(self):
         """DEFAULT_PIC constructs and carries required fields."""
-        assert DEFAULT_PIC.hash.startswith("b2b120:")
+        assert DEFAULT_PIC.hash.startswith(PREFIX)
         assert DEFAULT_PIC.size_bytes > 0
         assert DEFAULT_PIC.mtime
         assert DEFAULT_PIC.relative_path

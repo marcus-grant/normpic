@@ -156,7 +156,7 @@ class ManifestManager:
         """Check if a photo needs reprocessing using a hash-keyed manifest index.
 
         Args:
-            current_hash: b2b120 hash of the source file (caller-computed)
+            current_hash: b3c32 hash of the source file (caller-computed)
             hash_index: {hash: Pic} built from a prior manifest
             current_mtime: source file mtime as float timestamp (caller-computed)
             dest_dir: base directory for resolving matched_pic.relative_path; if
@@ -336,4 +336,3 @@ def build_hash_keyed_source_index(manifest: Manifest) -> Dict[str, Pic]:
         if pic.hash not in index:
             index[pic.hash] = pic
     return index
-
