@@ -1,13 +1,9 @@
 """Integration tests for error handling workflow with comprehensive file format testing."""
 
-import pytest
-
-# These imports will fail initially - that's the point of TDD
 from normpic.manager.photo_manager import organize_photos
 from normpic.serializer.manifest import ManifestSerializer
 
 
-@pytest.mark.skip(reason="schema prefix swap pending; b3-120 cutover incomplete")
 class TestErrorHandlingWorkflow:
     """Integration tests for error handling with various file formats and corruption scenarios."""
 
@@ -179,4 +175,3 @@ class TestErrorHandlingWorkflow:
         # - Invalid files skipped with warnings
         # - Comprehensive error reporting in manifest
         # - Fallback timestamp handling for files without EXIF
-

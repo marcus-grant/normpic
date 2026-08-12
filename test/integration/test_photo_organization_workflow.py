@@ -10,10 +10,7 @@ from normpic.manager.manifest_manager import ManifestManager
 from normpic.model.manifest import Manifest
 from normpic.model.pic import Pic
 from normpic.serializer.manifest import ManifestSerializer
-
-pytestmark = pytest.mark.skip(
-    reason="schema prefix swap pending; b3-120 cutover incomplete"
-)
+from normpic.util.hash import PREFIX
 
 
 class TestPhotoOrganizationWorkflow:
@@ -533,7 +530,7 @@ class TestSymlinkReconciliationByHash:
         )
 
         orphan = Pic(
-            hash="b2b120:ZZZZZZZZZZZZZZZZZZZZZZZZ",
+            hash=f"{PREFIX}ZZZZZZZZZZZZZZZZZZZZZZZZ",
             size_bytes=1,
             mtime="2024-01-01T00:00:00.000000Z",
             relative_path="orphan-copy.jpg",

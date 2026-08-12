@@ -2,15 +2,11 @@
 
 from datetime import datetime
 
-import pytest
-
-# These imports will fail initially - that's the point of TDD
 from normpic.util.exif import extract_exif_data, extract_camera_info
 from normpic.template.filename import generate_filename
 from normpic.model.exif import CameraInfo, ExifData
 
 
-@pytest.mark.skip("schema prefix swap pending; b3-120 cutover incomplete")
 class TestCompleteWorkflows:
     """Integration tests for end-to-end photo processing workflows."""
 

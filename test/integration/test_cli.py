@@ -6,13 +6,8 @@ from tempfile import TemporaryDirectory, NamedTemporaryFile
 from unittest.mock import patch
 
 from click.testing import CliRunner
-import pytest
 
 from cli.main import main
-
-pytestmark = pytest.mark.skip(
-    reason="schema prefix swap pending; b3-120 cutover incomplete"
-)
 
 
 class TestCLIConfigHandling:
