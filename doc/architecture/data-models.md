@@ -64,7 +64,7 @@ means and which canonical forms are required.
 @dataclass
 class Pic:
     # required
-    hash: str               # b2b120: prefixed Crockford Base32
+    hash: str               # b3c32: prefixed Crockford Base32
     relative_path: str
     size_bytes: int
     mtime: datetime
@@ -162,3 +162,4 @@ in [schema-versioning.md](schema-versioning.md).
 - **future Rust port of normpic** (planned): will have its own
   data-model document with native Rust types.
   The same contract applies to both implementations.
+

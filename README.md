@@ -32,8 +32,9 @@ for the full contract and
   across your collection.
 - **Chronological sorting**: organize by EXIF timestamps or file
   metadata.
-- **Content-addressed identity**: BLAKE2b-120 hashes give every photo
-  a stable, portable identifier independent of filename or location.
+- **Content-addressed identity**: BLAKE3-120 hashes (via the `b3c32`
+  library) give every photo a stable, portable identifier independent
+  of filename or location.
 - **Batch processing**: handle entire photo collections efficiently.
 
 ## Documentation
