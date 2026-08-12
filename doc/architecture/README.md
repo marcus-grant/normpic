@@ -52,7 +52,6 @@ serialization.
 normpic/                  # Main package (conventional layout)
 |-- __init__.py           # Clean API exports
 |-- model/                # Data structures (Pic, Manifest, Config)
-|   `-- schema_v0.py      # JSON Schema definitions as Python constants
 |-- serializer/           # JSON serialization/validation layer
 |-- util/                 # Generic utilities (EXIF, filesystem ops)
 |-- template/             # Template application (filename generation)
@@ -78,4 +77,3 @@ Complete photo collection processing workflow:
 
 This architecture enables clean testing, future schema evolution, and
 integration with external tools like Galleria.
-

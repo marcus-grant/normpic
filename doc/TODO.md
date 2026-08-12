@@ -112,18 +112,18 @@ Triggered by Phase A merged; parallelizable with Phase B.
 - [ ] Update `modules/manifest.md` examples to the new contract.
 - [ ] Update `guides/manifest-integration.md`.
 - [ ] Update `guides/gallery-builder-integration.md`.
-- [ ] Purge all stale `schema_v0.py` references now that the single
+- [x] Purge all stale `schema_v0.py` references now that the single
       JSON schema is the sole cross-language source of truth.
       Affected: `modules/schema.md`, `architecture/schema-versioning.md`,
       `architecture/data-models.md`, `architecture/package-structure.md`,
       `architecture/README.md`.
       Point each at `schema/v0.1.0.json` as the artifact the producer
       loads and validates against.
-- [ ] Update `architecture/data-models.md` to point at
+- [x] Update `architecture/data-models.md` to point at
       `manifest-contract.md` as the source of truth, dropping the
       parallel code-schema framing; the canonical
       `schema/v0.1.0.json` is the only schema.
-- [ ] Flip `architecture/schema-versioning.md` to "load
+- [x] Flip `architecture/schema-versioning.md` to "load
       `schema/v{version}.json`" instead of the
       code-dict-per-version approach; `schema_v0.py` is deleted.
 

@@ -2,13 +2,15 @@
 
 ## Overview
 
-This document covers manifest file operations and management. For manifest structure and schema, see [schema.md](schema.md).
+This document covers manifest file operations and management.
+For the manifest contract and field semantics,
+see [manifest-contract.md](../architecture/manifest-contract.md);
+for the schema artifact, see [schema.md](schema.md).
 
-**⚠️ Note**: Integration patterns will evolve as more tools integrate with NormPic. This document will need updates.
+**Note**: Integration patterns will evolve as more tools integrate with NormPic.
+This document will need updates.
 
 ## Manifest Operations
-
-### Manifest Creation
 
 Regular manifest creation (implemented in `src/manager/photo_manager.py`):
 
@@ -29,7 +31,7 @@ manifest_json = serializer.serialize(manifest, validate=True)
 manifest_file.write_text(manifest_json)
 ```
 
-### Dry-Run Manifest Creation
+## Dry-Run Manifest Creation
 
 When using `--dry-run` flag:
 
@@ -40,11 +42,12 @@ manifest_file = dest_dir / manifest_filename
 ```
 
 **Dry-run characteristics:**
+
 - No symlinks created  
 - Manifest shows what would be organized
 - Useful for preview/validation before actual processing
 
-### Manifest Loading
+## Manifest Loading
 
 Loading existing manifests for validation and reuse (implemented in `src/manager/manifest_manager.py`):
 
@@ -71,6 +74,7 @@ if manager.manifest_exists():
 ```
 
 **Loading behavior:**
+
 - Returns `None` if file doesn't exist
 - Returns `None` if JSON is malformed or schema validation fails  
 - Supports full schema validation against current version (0.1.0)
@@ -78,6 +82,7 @@ if manager.manifest_exists():
 - Safe error handling for file permission problems
 
 **Error Handling:**
+
 - JSON parsing errors → returns `None`
 - Schema validation failures → returns `None`  
 - File encoding issues → returns `None`
@@ -85,7 +90,7 @@ if manager.manifest_exists():
 
 This enables incremental processing workflows where existing manifests can be loaded and compared against current source files.
 
-### Atomic Manifest Updates
+## Atomic Manifest Updates
 
 Safe manifest writing to prevent corruption (implemented in `ManifestManager.save_manifest()`):
 
@@ -105,6 +110,7 @@ except OSError as e:
 ```
 
 **Atomic write process:**
+
 1. Serialize manifest to JSON with validation
 2. Write to temporary file (`manifest.tmp`)
 3. Atomically rename temp file to final name
@@ -112,7 +118,7 @@ except OSError as e:
 
 This prevents manifest corruption from interrupted writes or system crashes.
 
-### Change Detection (Priority 2 - Future)
+## Change Detection (Priority 2 - Future)
 
 Planned functionality for incremental updates:
 
@@ -152,6 +158,7 @@ Galleria consumes NormPic manifests to generate static photo galleries:
 ```
 
 **Galleria usage pattern:**
+
 1. NormPic organizes photos and creates manifest
 2. Galleria reads manifest to understand photo metadata
 3. Galleria generates HTML gallery with timeline, camera info, GPS data
@@ -159,18 +166,21 @@ Galleria consumes NormPic manifests to generate static photo galleries:
 ### Future Integrations
 
 **Photo Management Tools:**
+
 - Import organized collections into Lightroom/Capture One
 - Generate metadata sidecars for RAW processors
 - Create albums/collections in photo management software
 
 **Cloud Storage Sync:**
+
 - S3/Google Cloud sync using manifest for metadata preservation
 - Backup verification using manifest hashes
 - Selective sync based on collection criteria
 
 **Analysis Tools:**
+
 - Photo statistics and analytics
-- Timeline visualization 
+- Timeline visualization
 - Camera usage analysis
 - GPS track generation
 
@@ -249,15 +259,21 @@ except OSError as e:
 ## API Reference
 
 **Manifest Operations:**
-- `src/manager/manifest_manager.py` - ManifestManager class and load_existing_manifest() function
-- `src/serializer/manifest.py` - ManifestSerializer for JSON serialization/validation
+
+- `src/manager/manifest_manager.py`
+  - ManifestManager class and load_existing_manifest() function
+- `src/serializer/manifest.py`
+  - ManifestSerializer for JSON serialization/validation
 
 **Current Implementation:**
+
 - Manifest loading with validation ✓
-- Atomic manifest writing ✓ 
+- Atomic manifest writing ✓
 - Error handling for common failure modes ✓
 
 **Coming Next (Priority 2):**
+
 - Change detection for incremental updates
 - Dry-run manifest cleanup
 - Manifest version migration system
+

@@ -31,9 +31,8 @@ detection) without touching the models themselves.
 
 The separation between model and serializer is covered in detail
 in [schema-versioning.md](schema-versioning.md).
-That document also covers the relationship between
-`schema/v0.1.0.json` (canonical schema artifact) and
-`normpic/model/schema_v0.py` (Python schema module).
+That document also covers how `schema/v0.1.0.json` is loaded and
+validated against as the single canonical schema.
 
 ## Module organization
 
@@ -43,7 +42,6 @@ Serialization lives under `normpic/serializer/`.
 ```
 normpic/
 |-- model/
-|   |-- schema_v0.py    # Python schema module
 |   |-- pic.py          # Pic dataclass
 |   |-- manifest.py     # Manifest dataclass
 |   `-- config.py       # producer Config dataclass
@@ -162,4 +160,3 @@ in [schema-versioning.md](schema-versioning.md).
 - **future Rust port of normpic** (planned): will have its own
   data-model document with native Rust types.
   The same contract applies to both implementations.
-

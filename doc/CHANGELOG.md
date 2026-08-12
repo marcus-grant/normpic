@@ -2,6 +2,18 @@
 
 ## 2026-08-12
 
+### doc/purge-schema-v0
+
+Purged all stale schema_v0.py references from the docs now that the
+single JSON schema is the sole cross-language source of truth. Rewrote
+modules/schema.md into a router pointing at the schema artifact and
+manifest-contract.md, holding no restated field definitions. Flipped
+schema-versioning.md to the load-schema/v{version}.json model, dropping
+the deleted Python-module framing. Cleaned schema_v0.py from
+data-models.md, package-structure.md, and architecture/README.md tree
+diagrams, converting package-structure.md trees to ASCII. Fixed inbound
+links in modules/README.md and modules/manifest.md.
+
 ### doc/content-address-b3c32
 
 Aligned contract docs to the b3c32: hash prefix and unkeyed

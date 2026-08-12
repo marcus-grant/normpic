@@ -19,42 +19,34 @@ v0.1 draft, aligned with `manifest-contract.md` v0.1.0.
 This document tracks the contract.
 Updates here follow contract revisions, never the reverse.
 
-## Schema artifact and Python module
+## Schema artifact
 
-The JSON Schema at `schema/v0.1.0.json` is the canonical
-machine-readable schema artifact.
-The Python implementation uses a schema module at
-`normpic/model/schema_v0.py` for ergonomic in-Python access.
+The JSON Schema at `schema/v0.1.0.json` is the canonical,
+machine-readable schema and the single source of truth.
+There is no Python schema module.
+An earlier design kept a parallel Python schema module for in-Python
+access; it was deleted so that one JSON artifact defines the standard
+for any language or framework implementing the contract.
+The serializer loads the JSON from disk at validation time and
+validates against it directly.
 
-The relationship between these two artifacts is unresolved as of
-v0.1.0 planning.
-The Python module could load the JSON at import time, be generated
-from the JSON at build time, or be maintained in parallel with an
-equivalence test gating commits.
-The decision is deferred to Phase B implementation work.
+Versioned schema files
 
-Whichever approach is chosen, the JSON file remains canonical.
-The Python module is a convenience over it, never a source of
-truth.
+Schema versions are JSON files under schema/, one per version:
 
-## Versioned module structure
-
-Schema modules live under `normpic/model/`.
-
-```
-normpic/model/
-|-- schema_v0.py      # current v0.x schema
-|-- pic.py            # data models
-|-- manifest.py
-`-- config.py
+```txt
+schema/
+|-- v0.1.0.json   # current
+`-- v{version}.json
 ```
 
+The data models live in normpic/model/ (pic.py, manifest.py,
+config.py) and hold no schema definitions.
 Per the contract policy, v0.x minor bumps may be breaking.
-If a migration window requires supporting two v0.x schemas
-simultaneously, separate modules are introduced (e.g.
-`schema_v0_2.py` alongside a renamed `schema_v0_1.py`).
-Otherwise the single `schema_v0.py` is updated in place.
-When v1.0 lands, the v0 module is retained for legacy reading
+If a migration window requires supporting two schema versions
+simultaneously, both JSON files are kept and the serializer loads the
+one matching each manifest's version.
+When v1.0 lands, older version files are retained for legacy reading
 until removal is scheduled.
 
 ## Serializer separation
@@ -95,9 +87,10 @@ Consumers handle older versions via the migration system.
 - [manifest-contract.md](manifest-contract.md): the contract-side
   policy this document complements.
   This document is its implementation-side counterpart.
-- [conformance.md](conformance.md): the conformance requirement
+- [conformance.md](./conformance.md): the conformance requirement
   that defines consumer-facing version-handling responsibilities.
-- `schema/v0.1.0.json`: the canonical schema artifact the Python
+- `schema/v0.1.0.json`:
+  - the canonical schema artifact loaded and validated against directly.
   module mirrors.
 - **galleria** (planned, design documented): future consumer that
   will rely on the migration system once it must consume more than
@@ -106,3 +99,4 @@ Consumers handle older versions via the migration system.
   implementation-side versioning document analogous to this one.
   The contract-side policy in `manifest-contract.md` applies
   identically across implementations.
+
