@@ -148,24 +148,24 @@ any conforming consumer.
 Each MUST be rejected.
 The "Layer" column states which layer is responsible.
 
-| Case                                  | Rule violated              | Layer          |
+| Case                                  | Rule violated              | Layer |
 |---------------------------------------|----------------------------|----------------|
-| hash with non-`b2b120:` prefix        | hash algorithm prefix      | schema         |
-| hash with wrong length after prefix   | hash digest length         | schema         |
-| relative_path absolute (leading `/`)  | relative_path canonical    | schema         |
-| relative_path with `.` segment        | relative_path canonical    | schema         |
-| relative_path with `..` segment       | relative_path canonical    | schema         |
-| collection_root with leading `./`     | collection_root canonical  | schema         |
-| collection_root with non-leading `..` | collection_root canonical  | implementation |
-| timestamp with `+00:00` offset form   | timestamp canonical        | schema         |
-| GPS latitude outside -90..90          | GPS range                  | schema         |
-| empty required string                 | non-empty required strings | schema         |
-| null for non-nullable optional        | nullability rules          | schema         |
-| missing required field                | required-field rule        | schema         |
-| relative_path with backslash          | canonical forms            | schema         |
-| original_filename with path separator | no path component          | schema         |
-| timestamp with invalid calendar value | RFC 3339 validity          | implementation |
-| collection_root with URI scheme       | no URI in v0.1.0           | schema         |
+| hash w/ non-`b3c32:` prefix        | hash algorithm prefix      | schema |
+| hash w/ wrong length after prefix   | hash digest length         | schema  |
+| relative_path absolute (leading `/`) | relative_path canonical    | schema |
+| relative_path w/ `.` segment        | relative_path canonical    | schema |
+| relative_path w/ `..` segment       | relative_path canonical    | schema |
+| collection_root w/ leading `./`    | collection_root canonical  | schema |
+| collection_root w/ non-leading `..` | collection_root canonical  | impl.  |
+| timestamp with `+00:00` offset form | timestamp canonical        | schema |
+| GPS latitude outside -90..90        | GPS range                  | schema |
+| empty required string               | non-empty required strings | schema |
+| null for non-nullable optional      | nullability rules          | schema |
+| missing required field              | required-field rule        | schema |
+| relative_path with backslash        | canonical forms            | schema |
+| original_filename w/ path separator | no path component          | schema |
+| timestamp w/ invalid calendar value | RFC 3339 validity          | impl.  |
+| collection_root with URI scheme     | no URI in v0.1.0           | schema |
 
 Implementations MAY add cases for additional violations of the same
 rules (multiple hash-length variants, additional canonical-form
@@ -236,3 +236,4 @@ the reference suite where format permits.
   behavior from both normpic and galleria.
 - **future Rust port of normpic** (planned): primary motivation for
   the cross-implementation safety net this document specifies.
+

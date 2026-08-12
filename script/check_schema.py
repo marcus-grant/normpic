@@ -50,7 +50,7 @@ VALID_SAMPLES: dict[str, dict] = {
         "collection_root": "../photos/wedding",
         "pic": [
             {
-                "hash": "b2b120:0D7N3MKQ5Y8VBHRX2J4FWTAE",
+                "hash": "b3c32:NW9MKEFNZ6GTD8209QN3DQ69",
                 "relative_path": "2025/10/IMG_0001.jpg",
                 "original_filename": "IMG_0001.jpg",
                 "size_bytes": 1024000,
@@ -71,7 +71,7 @@ VALID_SAMPLES: dict[str, dict] = {
         "collection_root": ".",
         "pic": [
             {
-                "hash": "b2b120:0D7N3MKQ5Y8VBHRX2J4FWTAE",
+                "hash": "b3c32:NW9MKEFNZ6GTD8209QN3DQ69",
                 "relative_path": "img.jpg",
                 "size_bytes": 100,
                 "mtime": "2025-10-15T10:20:30Z",
@@ -101,7 +101,7 @@ INVALID_SAMPLES: dict[str, tuple[dict, str]] = {
             "collection_root": ".",
             "pic": [
                 {
-                    "hash": "b2b120:0D7N3MKQ5Y8VBHRX2J4FWTAE",
+                    "hash": "b3c32:NW9MKEFNZ6GTD8209QN3DQ69",
                     "relative_path": "/abs/path.jpg",
                     "size_bytes": 100,
                     "mtime": "2025-10-15T10:20:30Z",
@@ -125,7 +125,7 @@ INVALID_SAMPLES: dict[str, tuple[dict, str]] = {
                 }
             ],
         },
-        "sha256: instead of b2b120:",
+        "sha256: instead of b3c32:",
     ),
     "lowercase Crockford in hash": (
         {
@@ -135,7 +135,7 @@ INVALID_SAMPLES: dict[str, tuple[dict, str]] = {
             "collection_root": ".",
             "pic": [
                 {
-                    "hash": "b2b120:0d7n3mkq5y8vbhrx2j4fwtae",
+                    "hash": "b3c32:nw9mkefnz6gtd8209qn3dq69",
                     "relative_path": "img.jpg",
                     "size_bytes": 100,
                     "mtime": "2025-10-15T10:20:30Z",
@@ -152,7 +152,7 @@ INVALID_SAMPLES: dict[str, tuple[dict, str]] = {
             "collection_root": ".",
             "pic": [
                 {
-                    "hash": "b2b120:0D7N3MKQ5Y8VBHRX2J4FWTAE",
+                    "hash": "b3c32:NW9MKEFNZ6GTD8209QN3DQ69",
                     "relative_path": "img.jpg",
                     "size_bytes": 100,
                     "mtime": "2025-10-15T10:20:30Z",
@@ -190,7 +190,7 @@ INVALID_SAMPLES: dict[str, tuple[dict, str]] = {
             "collection_root": ".",
             "pic": [
                 {
-                    "hash": "b2b120:0D7N3MKQ5Y8VBHRX2J4FWTAE",
+                    "hash": "b3c32:NW9MKEFNZ6GTD8209QN3DQ69",
                     "relative_path": "img.jpg",
                     "original_filename": None,
                     "size_bytes": 100,
@@ -218,7 +218,7 @@ INVALID_SAMPLES: dict[str, tuple[dict, str]] = {
             "collection_root": ".",
             "pic": [
                 {
-                    "hash": "b2b120:0D7N3MKQ5Y8VBHRX2J4FWTAE",
+                    "hash": "b3c32:NW9MKEFNZ6GTD8209QN3DQ69",
                     "relative_path": "img.jpg",
                     "mtime": "2025-10-15T10:20:30Z",
                 }

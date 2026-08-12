@@ -180,11 +180,11 @@ derived from the source file's bytes.
 
 ### Algorithm
 
-BLAKE2b with a 120-bit (15-byte) digest, produced via `digest_size=15`
-directly.
-Not truncation of a longer digest.
-BLAKE2b at `digest_size=15` is a cryptographically distinct value
-from any prefix of `digest_size=32` or other sizes.
+Unkeyed BLAKE3 with a 120-bit (15-byte) digest, produced by the
+`b3c32` library via its certified 120-bit width.
+BLAKE3 is an extendable-output function, so a 120-bit digest is a
+true byte-prefix of any longer output at an aligned width, not a
+separate truncated value.
 
 ### Encoding
 
@@ -195,22 +195,24 @@ canonical emit form.
 
 ### Field format
 
-A literal prefix `b2b120:` followed by the 24-character encoded
+A literal prefix `b3c32:` followed by the 24-character encoded
 digest.
-
-Example: `b2b120:0D7N3MKQ5Y8VBHRX2J4FWTAE`
+Example (the hash of empty input): `b3c32:NW9MKEFNZ6GTD8209QN3DQ69`
 
 ### Prefix semantics
 
-The literal `b2b120` is the algorithm-and-size discriminator.
-Encoding (Crockford Base32) is implied by the schema version, not by
-the prefix.
-
-Future schema versions may introduce additional algorithms behind
-different prefixes (for example `b2b256:` for a longer BLAKE2b
-variant) without changing the field's shape.
-The prefix is the forward-compatibility seam that lets the hash field
-evolve without a breaking schema bump.
+The literal `b3c32` names the algorithm and encoding: unkeyed
+BLAKE3 with a 120-bit digest, encoded as Crockford Base32
+uppercase.
+The hasher and encoder are low-pad, producing a 120-bit digest that
+encodes to exactly 24 Crockford symbols.
+Algorithm, encoding, and length are therefore all determined by the
+prefix.
+Future schema versions may introduce a different algorithm or
+encoding behind a different prefix, without changing the field's
+shape.
+The prefix is the forward-compatibility seam that lets the hash
+field evolve without a breaking schema bump.
 
 ### What is hashed
 
@@ -232,7 +234,7 @@ A pixel-content hash is deferred for v0.1.0; see
 ### Producer and consumer obligations
 
 - Producer MUST emit uppercase canonical Crockford Base32.
-- Producer MUST emit the literal `b2b120:` prefix exactly.
+- Producer MUST emit the literal `b3c32:` prefix exactly.
 - Consumer SHOULD accept lowercase Crockford on read.
 - Consumer MUST verify the algorithm prefix matches a recognized
   scheme before assuming digest length or algorithm.
@@ -585,7 +587,7 @@ section wins.
   See [Status and versioning policy](#status-and-versioning-policy).
 - Emit all required fields per the schema.
   See [Manifest schema](#manifest-schema).
-- Emit hashes with the literal `b2b120:` prefix and uppercase
+- Emit hashes with the literal `b3c32:` prefix and uppercase
   canonical Crockford Base32 encoding.
   See [Hash identity](#hash-identity).
 - Honor canonical forms on emit: UTF-8, forward-slash paths only, RFC
@@ -695,9 +697,10 @@ Items resolved during the drafting of this document have been folded
 into the relevant sections rather than left here.
 For the record, the resolved decisions include:
 
-- BLAKE2b with `digest_size=15` for the hash algorithm.
-- Crockford Base32, uppercase canonical, no padding, no check digit.
-- `b2b120:` (no hyphen) as the hash field prefix.
+- Unkeyed BLAKE3 with a 120-bit digest for the hash algorithm,
+  via the b3c32 library.
+- Crockford Base32, uppercase canonical, low-pad, no check digit.
+- `b3c32:` as the hash field prefix.
 - `relative_path` strictly canonical: no leading `./`, no `..`, no
   embedded `.`, no absolute paths.
 - `collection_root` allows `..` segments at the start; emitted

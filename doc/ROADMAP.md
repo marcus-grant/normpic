@@ -50,7 +50,7 @@ Each is described more fully in the deferred section of
 - Cross-variant collection matching (full vs. web, etc.).
   A source shot and its compressed mirror are separate collections
   with separate manifests; their content hashes differ by design, so
-  b2b120 identity cannot link them.
+  b3c32 identity cannot link them.
   - v0.1 stopgap (consumer-side, no contract change): galleria maps a
     web pic to its full counterpart by timestamp across the two
     manifests.
