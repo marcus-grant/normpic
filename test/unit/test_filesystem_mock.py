@@ -11,6 +11,7 @@ from normpic.util.filesystem import (
     detect_broken_symlinks,
     compute_file_hash,
 )
+from normpic.util.hash import PREFIX
 
 
 class MockPath:
@@ -369,7 +370,7 @@ class TestFilesystemWithMocks:
 
             # Assert
             assert isinstance(hash_result, str)
-            assert len(hash_result) == 31
+            assert len(hash_result) == len(PREFIX) + 24
 
     def test_atomic_symlink_creation_with_mock_filesystem(self):
         """Test atomic symlink creation using mock filesystem."""
@@ -446,4 +447,3 @@ class TestMockFilesystemIntegration:
         link = fs.path("/photos/link.jpg")
         assert link.is_symlink()
         assert link.resolve().path == "/photos/img001.jpg"
-

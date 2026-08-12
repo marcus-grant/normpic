@@ -13,7 +13,7 @@ License: Apache-2.0
 
 import b3c32
 
-PREFIX = "b3-120:"
+PREFIX = "b3c32:"
 _BITS = 120
 
 

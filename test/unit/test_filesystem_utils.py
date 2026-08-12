@@ -5,6 +5,7 @@ import pytest
 from pathlib import Path
 from unittest.mock import patch
 
+from normpic.util.hash import PREFIX
 from test.helpers.conformance import assert_valid_content_id
 from normpic.util.filesystem import (
     create_symlink,
@@ -270,18 +271,15 @@ class TestComputeFileHash:
         """Test different files produce different hashes."""
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
-
             file1 = temp_path / "file1.jpg"
             file2 = temp_path / "file2.jpg"
             file1.write_bytes(b"content one")
             file2.write_bytes(b"content two")
-
             hash1 = compute_file_hash(file1)
             hash2 = compute_file_hash(file2)
-
             assert hash1 != hash2
-            assert len(hash1) == 31
-            assert len(hash2) == 31
+            assert len(hash1) == len(PREFIX) + 24
+            assert len(hash2) == len(PREFIX) + 24
 
     def test_compute_file_hash_empty_file(self):
         """Hash computation for an empty file returns a valid content id."""
@@ -530,4 +528,3 @@ class TestBatchValidateSymlinks:
         """Test batch validation with empty symlink list."""
         results = batch_validate_symlinks([])
         assert results == {}
-

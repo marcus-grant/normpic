@@ -10,6 +10,7 @@ from normpic.manager.manifest_manager import (
     load_existing_manifest,
     load_source_manifest,
 )
+from normpic.util.hash import content_id
 
 pytestmark = pytest.mark.skip(
     reason="content_id renamed to content_id; integration rename pending"
