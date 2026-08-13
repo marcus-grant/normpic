@@ -118,6 +118,12 @@ python main.py --config wedding-config.json --verbose
 | `--force` | Reprocess everything, ignoring cache | False |
 | `--help` | Show help message | - |
 
+>**Note:** `--dry-run`: it creates no symlinks and writes the copy
+>manifest as `manifest.dryrun.json`, but it still writes
+>`manifest.json` into the source directory.
+>This is a known bug tracked in `doc/ROADMAP.md`; a dry run is not
+>side-effect free.
+
 ## Output
 
 NormPic displays a summary after processing:
