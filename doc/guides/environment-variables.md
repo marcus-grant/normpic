@@ -127,7 +127,7 @@ The `clear=True` parameter ensures no real environment variables leak into tests
 ### Environment Variable Parsing
 
 ```python
-from src.manager.config_manager import get_env_config, load_config_with_env_override
+from normpic.manager.config_manager import get_env_config, load_config_with_env_override
 
 # Get only NORMPIC_* variables
 env_config = get_env_config()

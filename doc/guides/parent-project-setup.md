@@ -7,18 +7,21 @@ This guide provides specific instructions for setting up a parent project (Pelic
 ## Integration Approaches
 
 ### Option 1: CLI Integration (Recommended)
+
 Use NormPic as a command-line tool called from your parent project's build scripts.
 
 **Pros**: Simple, clean separation, no dependency conflicts
 **Cons**: Requires NormPic to be installed separately
 
 ### Option 2: Git Submodule Integration
+
 Include NormPic as a git submodule for version-locked integration.
 
 **Pros**: Version control integration, reproducible builds
 **Cons**: More complex git management
 
 ### Option 3: Package Dependency
+
 Include NormPic as a Python package dependency.
 
 **Pros**: Standard Python dependency management
@@ -55,6 +58,7 @@ uv init
 #### Step 3: Parent Project Dependencies
 
 **pyproject.toml**:
+
 ```toml
 [project]
 name = "my-wedding-site"
@@ -82,6 +86,7 @@ build-backend = "hatchling.build"
 #### Step 4: Build Script Integration
 
 **build.py**:
+
 ```python
 #!/usr/bin/env python3
 """Parent project build script with NormPic integration."""
@@ -198,6 +203,7 @@ chmod +x build.py
 ```
 
 **Updated pyproject.toml**:
+
 ```toml
 [project.scripts]
 build-site = "build:main"
@@ -231,6 +237,7 @@ git submodule update --init --recursive
 #### Step 2: Create Wrapper Script
 
 **tools/normpic_wrapper.py**:
+
 ```python
 #!/usr/bin/env python3
 """Wrapper for running NormPic from submodule."""
@@ -261,6 +268,7 @@ if __name__ == "__main__":
 #### Step 3: Build Script with Submodule
 
 **build.py**:
+
 ```python
 import subprocess
 from pathlib import Path
@@ -304,6 +312,7 @@ For when NormPic is published as a package.
 #### Step 1: Package Installation
 
 **pyproject.toml**:
+
 ```toml
 dependencies = [
     "normpic>=0.1.0",
@@ -315,6 +324,7 @@ dependencies = [
 #### Step 2: Programmatic Integration
 
 **build.py**:
+
 ```python
 from normpic import organize_photos, Config
 from pathlib import Path
@@ -338,7 +348,7 @@ def build_galleries():
         dry_run=False
     )
     
-    print(f"Processed {len(manifest.pics)} photos")
+    print(f"Processed {len(manifest.pic)} photos")
     return manifest
 ```
 
@@ -359,6 +369,7 @@ SITE_OUTPUT_DIR=./output
 ### Configuration Files
 
 **config/normpic.json**:
+
 ```json
 {
   "collections": {
@@ -375,6 +386,7 @@ SITE_OUTPUT_DIR=./output
 ```
 
 **pelicanconf.py**:
+
 ```python
 # Pelican configuration
 SITENAME = "Marcus & Partner's Wedding"
@@ -439,6 +451,7 @@ echo "✅ Build completed!"
 ### Development Server
 
 **dev_server.py**:
+
 ```python
 #!/usr/bin/env python3
 """Development server with auto-rebuild."""
@@ -485,6 +498,7 @@ if __name__ == "__main__":
 ### GitHub Actions Example
 
 **.github/workflows/build.yml**:
+
 ```yaml
 name: Build and Deploy Site
 
@@ -536,6 +550,7 @@ jobs:
 ### Common Setup Issues
 
 **Issue**: `uv run` fails to find NormPic
+
 ```bash
 # Solution: Verify NormPic path and installation
 ls -la /opt/normpic
@@ -543,12 +558,14 @@ cd /opt/normpic && uv sync
 ```
 
 **Issue**: Permission errors with photo directories
+
 ```bash
 # Solution: Check file permissions
 chmod -R 755 ~/Photos/
 ```
 
 **Issue**: Build script can't find executables
+
 ```bash
 # Solution: Add paths to environment
 export PATH="/opt/normpic/.venv/bin:$PATH"
@@ -557,6 +574,7 @@ export PATH="/opt/normpic/.venv/bin:$PATH"
 ### Integration Testing
 
 **test_integration.py**:
+
 ```python
 import unittest
 import subprocess
@@ -590,3 +608,4 @@ if __name__ == "__main__":
 5. See [Gallery Builder Integration](gallery-builder-integration.md) for creating gallery generators
 
 For additional help, consult the [Error Handling Guide](errors.md) and [Integration Guide](integration.md).
+

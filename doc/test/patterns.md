@@ -7,6 +7,7 @@
 Integration tests verify complete workflows and reveal missing implementations.
 
 **Complete Workflow Pattern:**
+
 ```python
 def test_photo_processing_workflow(create_photo_with_exif):
     """Test: Source photo → EXIF extraction → filename generation → result."""
@@ -24,13 +25,14 @@ def test_photo_processing_workflow(create_photo_with_exif):
     result = process_photo_complete_workflow(photo, collection="wedding")
     
     # Assert: Verify end-to-end behavior
-    assert result.source_path == photo
-    assert result.dest_filename == "wedding-20241005T143045-r5a-0.jpg"
+    assert result.relative_path.endswith( "wedding-20241005T143045-r5a-0.jpg")
+    assert result.hash.startswith("b3c32:")
     assert result.camera_info.make == "Canon"
     assert result.camera_info.model == "EOS R5"
 ```
 
 **Multi-Photo Scenario Pattern:**
+
 ```python
 def test_burst_sequence_workflow(create_photo_with_exif):
     """Test: Multiple photos → burst detection → sequential naming."""
@@ -62,6 +64,7 @@ def test_burst_sequence_workflow(create_photo_with_exif):
 Unit tests focus on individual functions and components.
 
 **Single Function Test Pattern:**
+
 ```python
 def test_extract_camera_info(create_photo_with_exif):
     """Test: Photo → camera info extraction."""
@@ -82,6 +85,7 @@ def test_extract_camera_info(create_photo_with_exif):
 ```
 
 **Data Transformation Test Pattern:**
+
 ```python
 def test_generate_camera_code():
     """Test: Camera info → camera code transformation."""
@@ -97,6 +101,7 @@ def test_generate_camera_code():
 ```
 
 **Edge Case Test Pattern:**
+
 ```python
 def test_extract_timestamp_no_exif(create_photo_with_exif):
     """Test: Photo without EXIF → graceful handling."""
@@ -114,6 +119,7 @@ def test_extract_timestamp_no_exif(create_photo_with_exif):
 ## TDD Discovery Pattern
 
 ### RED Phase: Write Failing Test
+
 ```python
 def test_feature_that_doesnt_exist_yet(create_photo_with_exif):
     """Test for functionality that doesn't exist yet."""
@@ -129,8 +135,9 @@ def test_feature_that_doesnt_exist_yet(create_photo_with_exif):
 **Expected Result:** ImportError or NameError - function doesn't exist
 
 ### GREEN Phase: Minimal Implementation
+
 ```python
-# src/util/example.py
+# normpic/util/example.py
 def function_that_doesnt_exist_yet(photo_path):
     """Minimal implementation to make test pass."""
     # Return just enough to satisfy the test
@@ -140,10 +147,17 @@ def function_that_doesnt_exist_yet(photo_path):
 **Expected Result:** Test passes
 
 ### REFACTOR Phase: Improve Implementation
+
 ```python  
-# src/util/example.py
+# normpic/util/example.py
 def function_that_doesnt_exist_yet(photo_path):
     """Improved implementation with proper logic."""
+    # Add real EXIF extraction, error handling, etc.
+    exif_data = extract_exif_from_file(photo_path)
+    return ProcessedResult(
+        expected_property=process_exif_data(exif_data),
+        additional_properties=...
+    )
     # Add real EXIF extraction, error handling, etc.
     exif_data = extract_exif_from_file(photo_path)
     return ProcessedResult(
@@ -155,6 +169,7 @@ def function_that_doesnt_exist_yet(photo_path):
 ## Common Test Scenarios
 
 ### Camera Diversity Testing
+
 ```python
 @pytest.mark.parametrize("camera_name", [
     "canon_r5", "canon_r6", "nikon_d850", "sony_a7r", "iphone_15"
@@ -173,6 +188,7 @@ def test_camera_support(create_photo_with_exif, sample_camera_data, camera_name)
 ```
 
 ### Timestamp Edge Cases
+
 ```python
 @pytest.mark.parametrize("timestamp,expected", [
     ("2024:01:01 00:00:00", datetime(2024, 1, 1, 0, 0, 0)),
@@ -187,6 +203,7 @@ def test_timestamp_parsing(create_photo_with_exif, timestamp, expected):
 ```
 
 ### Error Handling Pattern
+
 ```python
 def test_corrupted_file_handling(tmp_path):
     """Test handling of corrupted or invalid files."""
@@ -196,7 +213,6 @@ def test_corrupted_file_handling(tmp_path):
     
     # Should handle gracefully without crashing
     result = extract_exif_data(corrupted_file)
-    assert result.errors == ["corrupted_file"]
     assert result.camera_info is None
     assert result.timestamp is None
 ```
@@ -204,6 +220,7 @@ def test_corrupted_file_handling(tmp_path):
 ## Test Organization Best Practices
 
 ### File Naming
+
 ```
 test/integration/
 ├── test_complete_workflows.py      # End-to-end scenarios
@@ -218,6 +235,7 @@ test/unit/
 ```
 
 ### Test Function Naming
+
 ```python
 # Integration tests: describe complete scenario
 def test_canon_r5_wedding_photo_complete_processing()
@@ -229,3 +247,4 @@ def test_extract_timestamp_with_subsecond_precision()
 def test_generate_camera_code_for_unknown_camera()
 def test_format_filename_with_missing_collection()
 ```
+

@@ -28,6 +28,7 @@ Symlinks        Templates        Integration        with Galleries
 ### Core Gallery Generator
 
 **gallery_builder/generator.py**:
+
 ```python
 """Core gallery generation functionality."""
 
@@ -129,11 +130,11 @@ class GalleryGenerator:
         
         processed_photos = []
         
-        for pic in self.manifest.pics:
-            photo_path = self.config.photos_dir / pic.dest_path
+        for pic in self.manifest.pic:
+            photo_path = self.config.photos_dir / pic.relative_path
             
             if not photo_path.exists():
-                print(f"⚠️  Missing photo: {pic.dest_path}")
+                print(f"⚠️  Missing photo: {pic.relative_path}")
                 continue
             
             try:
@@ -142,7 +143,7 @@ class GalleryGenerator:
                 processed_photos.append(processed)
                 
             except Exception as e:
-                print(f"❌ Failed to process {pic.dest_path}: {e}")
+                print(f"❌ Failed to process {pic.relative_path}: {e}")
                 continue
         
         return processed_photos
@@ -166,7 +167,7 @@ class GalleryGenerator:
         
         # Create processed photo metadata
         return {
-            'original': pic.dest_path,
+original': pic.relative_path,
             'thumbnail': f"thumbnails/{thumbnail_path.name}",
             'medium': f"medium/{medium_path.name}",
             'timestamp': pic.timestamp,
@@ -369,6 +370,7 @@ class GalleryGenerator:
 ### Base Template Structure
 
 **templates/base.html**:
+
 ```html
 <!DOCTYPE html>
 <html lang="en">
@@ -439,6 +441,7 @@ class GalleryGenerator:
 ### Gallery Index Template
 
 **templates/gallery_index.html**:
+
 ```html
 {% extends "base.html" %}
 
@@ -502,6 +505,7 @@ class GalleryGenerator:
 ### Timeline Template
 
 **templates/gallery_timeline.html**:
+
 ```html
 {% extends "base.html" %}
 
@@ -572,6 +576,7 @@ class GalleryGenerator:
 ### Gallery Styles
 
 **templates/assets/gallery.css**:
+
 ```css
 /* Gallery Base Styles */
 .gallery-header {
@@ -770,6 +775,7 @@ class GalleryGenerator:
 ### Lightbox JavaScript
 
 **templates/assets/lightbox.js**:
+
 ```javascript
 // Simple lightbox implementation
 class GalleryLightbox {
@@ -906,6 +912,7 @@ document.addEventListener('DOMContentLoaded', () => {
 ### Gallery Plugin
 
 **pelican_plugins/gallery_integration.py**:
+
 ```python
 """Pelican plugin for NormPic gallery integration."""
 
@@ -977,6 +984,7 @@ def register():
 ### Complete Gallery Builder Script
 
 **build_galleries.py**:
+
 ```python
 #!/usr/bin/env python3
 """Build all galleries from NormPic manifests."""
@@ -1029,3 +1037,4 @@ if __name__ == '__main__':
 4. Test with your NormPic manifests and photo collections
 
 For troubleshooting gallery generation issues, see the [Error Handling Guide](errors.md) and [Integration Guide](integration.md).
+

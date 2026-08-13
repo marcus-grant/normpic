@@ -19,7 +19,7 @@ Raw Images → Normalized → HTML/CSS/JS → Full Site → Live Site
 
 1. **NormPic** (this project): Photo organization and manifest generation
    - EXIF extraction and temporal ordering
-   - Normalized filename generation 
+   - Normalized filename generation
    - Symlink creation with consistent naming
    - JSON manifest output with comprehensive metadata
 
@@ -43,18 +43,21 @@ Raw Images → Normalized → HTML/CSS/JS → Full Site → Live Site
 ## Integration Benefits
 
 ### For Photo Management
+
 - **Consistent naming**: Predictable photo URLs for gallery builders
 - **Temporal accuracy**: EXIF-based timeline verification and ordering
 - **Change detection**: Manifest comparison enables incremental processing
 - **Performance optimization**: Symlinks avoid duplicate storage during development
 
 ### For Site Generation
+
 - **Separation of concerns**: Photo management independent of site generation
 - **Incremental builds**: Only regenerate changed galleries
 - **Multi-format support**: Same source photos for full-res and web-optimized versions
 - **Deployment efficiency**: Upload only modified content to CDN
 
 ### For Deployment Pipeline
+
 - **Dual bucket strategy**: Photos vs site content with different cache settings
 - **Selective uploads**: Hash-based change detection prevents unnecessary transfers
 - **Rollback capability**: Versioned manifests enable deployment rollbacks
@@ -63,6 +66,7 @@ Raw Images → Normalized → HTML/CSS/JS → Full Site → Live Site
 ## Integration Workflow
 
 ### Phase 1: Photo Organization
+
 ```bash
 # Run NormPic to normalize photo collections
 uv run --project /path/to/normpic python main.py \
@@ -72,11 +76,13 @@ uv run --project /path/to/normpic python main.py \
     --verbose
 ```
 
-**Output**: 
+**Output**:
+
 - Normalized symlinks: `content/photos/wedding/full/wedding-20250809T132034-r5a.JPG`
 - Manifest: `content/photos/wedding/full/manifest.json`
 
 ### Phase 2: Gallery Generation
+
 ```python
 # Custom gallery builder consumes NormPic output
 from gallery_builder import GalleryGenerator
@@ -90,22 +96,26 @@ gallery_metadata = generator.generate()
 ```
 
 **Output**:
+
 - Gallery HTML: `content/galleries/wedding/index.html`
 - Optimized images: `content/galleries/wedding/thumbnails/`
 - Gallery manifest: `content/galleries/wedding/gallery.json`
 
 ### Phase 3: Site Generation
+
 ```bash
 # Pelican generates complete site including galleries
 pelican content/ -o output/ -s pelicanconf.py
 ```
 
 **Output**:
+
 - Complete static site: `output/`
 - Gallery pages integrated with main site navigation
 - All content ready for CDN deployment
 
 ### Phase 4: Deployment
+
 ```bash
 # Deploy to Bunny CDN with dual bucket strategy
 ./deploy.sh --photos-only    # Upload only changed photos
@@ -116,24 +126,24 @@ pelican content/ -o output/ -s pelicanconf.py
 ## Change Detection Strategy
 
 ### Photo Collection Changes
+
 NormPic manifests enable efficient change detection:
 
 ```python
 def detect_photo_changes(old_manifest, new_manifest):
     """Compare manifests to identify changes requiring gallery rebuild."""
-    
-    old_pics = {pic['dest_path']: pic for pic in old_manifest['pics']}
-    new_pics = {pic['dest_path']: pic for pic in new_manifest['pics']}
-    
+    old_pics = {pic['relative_path']: pic for pic in old_manifest['pic']}
+    new_pics = {pic['relative_path']: pic for pic in new_manifest['pic']}
+
     added = set(new_pics.keys()) - set(old_pics.keys())
     removed = set(old_pics.keys()) - set(new_pics.keys())
-    
+
     # Check for hash changes (modified photos)
     modified = {
         path for path in old_pics.keys() & new_pics.keys()
         if old_pics[path]['hash'] != new_pics[path]['hash']
     }
-    
+
     return {
         'added': list(added),
         'removed': list(removed), 
@@ -143,6 +153,7 @@ def detect_photo_changes(old_manifest, new_manifest):
 ```
 
 ### Incremental Build Pipeline
+
 ```bash
 #!/bin/bash
 # Smart rebuild script
@@ -172,6 +183,7 @@ fi
 ### Dual Bucket Strategy
 
 **Photos Bucket** (`photos.example.com`):
+
 ```json
 {
     "name": "photos-bucket",
@@ -184,6 +196,7 @@ fi
 ```
 
 **Site Bucket** (`www.example.com`):
+
 ```json
 {
     "name": "site-bucket", 
@@ -196,6 +209,7 @@ fi
 ```
 
 ### Benefits of Separation
+
 - **Performance**: Photos cached longer, reducing CDN costs
 - **Flexibility**: Update site content without affecting photo URLs
 - **Scalability**: Photo bucket can use different optimization settings
@@ -204,6 +218,7 @@ fi
 ## Integration Examples
 
 ### Example Parent Project Structure
+
 ```
 my-wedding-site/
 ├── pyproject.toml              # Parent project dependencies
@@ -229,6 +244,7 @@ my-wedding-site/
 ```
 
 ### Integration Configuration Example
+
 ```json
 {
   "normpic": {
@@ -283,3 +299,4 @@ For detailed implementation guidance, see:
 **Solution**: Implement dual bucket strategy with proper cache headers
 
 For additional support, see the [Error Handling Guide](errors.md) and project documentation.
+

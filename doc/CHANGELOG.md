@@ -2,6 +2,19 @@
 
 ## 2026-08-12
 
+### doc/phase-c-finish
+
+Completed Phase C documentation downstream of the contract. Rewrote
+guides/manifest-integration.md and guides/errors.md to the frozen
+contract (pic singular, b3c32 hash, relative_path, ordering is
+significant, diagnostics are logs-only). Updated modules/manifest.md
+and guides/gallery-builder-integration.md examples to real contract
+fields. Purged stale src/ import paths and dead contract fields
+(source_path, dest_path, sha256, processing_status, errors-in-manifest)
+across module, guide, and test docs. Removed pre-release migration
+scaffolding from package-structure.md. Phase C section removed from
+TODO; Phase D is now next.
+
 ### doc/purge-schema-v0
 
 Purged all stale schema_v0.py references from the docs now that the

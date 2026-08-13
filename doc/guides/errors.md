@@ -2,141 +2,84 @@
 
 ## Overview
 
-NormPic provides comprehensive error handling to ensure photo processing continues gracefully even when individual files have issues. This guide explains how to interpret error messages, understand severity levels, and troubleshoot common problems.
+NormPic handles per-file problems gracefully so photo processing
+continues even when individual files have issues.
+Diagnostics are emitted to the producer's runtime logs, not written
+into the manifest.
+The manifest is contract-pure: it describes only the collection's
+pics and carries no error, warning, or status fields.
+See [manifest-contract.md](../architecture/manifest-contract.md).
 
-## Error Categories and Severity
+## Error categories and severity
 
-Errors in NormPic have intrinsic severity levels based on their type:
+Errors have intrinsic severity based on type.
 
-### Info Level Errors
-These are informational messages about files that are intentionally skipped:
+### Info level
 
-- **`unsupported_format`** - File formats not supported for photo processing (e.g., `.pdf`, `.txt`, `.cr2`)
-  - Files are skipped but processing continues normally
-  - Common with mixed-content directories
+Files intentionally skipped; processing continues normally.
 
-### Warning Level Errors  
-These indicate problems with individual files that don't stop overall processing:
+- `unsupported_format`: format not processed (e.g. `.pdf`, `.txt`,
+  `.cr2`).
+  Common in mixed-content directories.
 
-- **`corrupted_file`** - Photo files with corrupted or invalid data
-  - File is skipped but processing continues
-  - Often caused by incomplete downloads or storage corruption
+### Warning level
 
-- **`exif_error`** - EXIF metadata extraction failures
-  - NormPic attempts fallback to filesystem timestamps
-  - File may still be processed with reduced metadata accuracy
+Individual-file problems that do not stop overall processing.
 
-### Error Level Errors
-These are serious issues that may halt processing:
+- `corrupted_file`: corrupted or invalid image data.
+  The file is skipped and processing continues.
+- `exif_error`: EXIF extraction failed.
+  NormPic falls back to a filesystem timestamp; the file may still be
+  processed with reduced metadata accuracy.
 
-- **`filesystem_error`** - File system access problems
-  - Permission denied, disk full, or I/O errors
-  - May indicate broader system issues requiring attention
+### Error level
 
-- **`validation_error`** - Manifest or configuration validation failures
-  - Usually indicates corrupted configuration or manifest files
-  - Processing typically cannot continue
+Serious issues that may halt processing.
 
-## Error Structure
+- `filesystem_error`: permission denied, disk full, or I/O error.
+  May indicate a broader system problem.
+- `validation_error`: manifest or configuration validation failure.
+  Processing typically cannot continue.
 
-Errors are stored in a simplified, structured format:
+## Where diagnostics go
 
-```json
-{
-  "error_type": "corrupted_file",
-  "source_file": "photo.jpg",
-  "details": "Invalid EXIF data: unexpected end of file"
-}
-```
+Diagnostics are written to the producer's logs at runtime.
+They are not serialized into the manifest, and there is no
+`errors`, `warnings`, or `processing_status` field in the manifest
+schema.
+A structured diagnostics sidecar may be added in a future version;
+until then, the live log is the record.
+See the anticipated-additions list in
+[manifest-contract.md](../architecture/manifest-contract.md).
 
-### Fields
+## Troubleshooting common issues
 
-- **`error_type`** - The category of error (determines severity)
-- **`source_file`** - Filename that caused the error (not full path for security)
-- **`details`** - Optional additional context about the error
+### "Permission denied"
 
-## Reading Error Output
-
-### In Manifest Files
-
-Errors are recorded in the generated `manifest.json` file:
-
-```json
-{
-  "warnings": [
-    {
-      "error_type": "corrupted_file",
-      "source_file": "IMG_001.jpg", 
-      "details": "EXIF data corrupted"
-    }
-  ],
-  "errors": [
-    {
-      "error_type": "filesystem_error",
-      "source_file": "IMG_002.jpg",
-      "details": "Permission denied"
-    }
-  ]
-}
-```
-
-### Processing Status
-
-The manifest includes overall processing status:
-
-```json
-{
-  "processing_status": {
-    "status": "completed_with_warnings",
-    "total_files": 150,
-    "processed_successfully": 147,
-    "warnings_count": 3,
-    "errors_count": 0,
-    "files_skipped": 3
-  }
-}
-```
-
-Status values:
-- **`completed`** - All files processed successfully
-- **`completed_with_warnings`** - Some files skipped but processing completed
-- **`failed`** - Critical errors prevented completion
-
-## Troubleshooting Common Issues
-
-### "Permission denied" errors
-- Check file/directory permissions
-- Ensure NormPic has read access to source directory
-- Ensure NormPic has write access to destination directory
+- Check file and directory permissions.
+- Ensure NormPic can read the source directory.
+- Ensure NormPic can write the destination directory.
 
 ### "Corrupted file" warnings
-- Files may be incomplete downloads
-- Try re-downloading or recovering from backup
-- Files are safely skipped, processing continues
+
+- Files may be incomplete downloads.
+- Re-download or recover from backup.
+- Files are safely skipped; processing continues.
 
 ### "EXIF error" with fallback
-- File processed using filesystem timestamp instead
-- Results may have less accurate temporal ordering
-- Consider using tools to repair EXIF data if accuracy is critical
 
-### Multiple "unsupported_format" messages
-- Normal in directories with mixed file types
-- Use `--source-dir` to point to photo-only directories
-- Consider pre-filtering source directory
+- The file is processed using a filesystem timestamp instead.
+- Temporal ordering may be less accurate.
+- Repair EXIF data if accuracy is critical.
 
-## Performance Considerations
+### Repeated "unsupported_format" messages
 
-The simplified error handling system provides:
+- Normal in directories with mixed file types.
+- Point `source_dir` at a photo-only directory.
+- Consider pre-filtering the source directory.
 
-- **Fast Processing** - Minimal overhead during photo organization
-- **Memory Efficient** - ~60% reduction in memory usage vs. previous versions
-- **Structured Data** - Enables future CLI tools for error filtering and analysis
+## Future enhancements
 
-## Future Enhancements
-
-Planned error handling improvements:
-
-- CLI commands for filtering and analyzing errors by type
-- Automated error recovery suggestions
-- Integration with photo repair tools
-- Enhanced error context and debugging information
+- CLI commands to filter and analyze diagnostics by type.
+- A structured diagnostics sidecar alongside the manifest.
+- Integration with photo-repair tools.

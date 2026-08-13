@@ -2,7 +2,8 @@
 
 ## Overview
 
-This document explains NormPic's package structure and the architectural decisions behind the import system, including the major restructuring completed in November 2025.
+This document explains NormPic's package structure and the
+architectural decisions behind the import system.
 
 ## Package Layout
 
@@ -143,69 +144,11 @@ from ..manager.photo_manager import organize_photos
 - Internal code remains properly encapsulated
 - Clear distinction between public API and implementation
 
-## Implementation History
+## Related documentation
 
-### Phase 1: Internal Import Fixes
-
-- Converted `from src.X` to `from ..X` in all core modules
-- Fixed relative import issues within the package
-- Maintained test compatibility during transition
-
-### Phase 2: Structure Reorganization  
-
-- Moved `src/` directory to `normpic/` for conventional layout
-- Updated pyproject.toml package discovery configuration
-- Simplified build system requirements
-
-### Phase 3: Test Import Updates
-
-- Updated all test files from `from src.X` to `from normpic.X`
-- Verified package installation and import resolution
-- Validated CLI functionality with new structure
-
-### Phase 4: API Finalization
-
-- Created clean API exports in `normpic/__init__.py`
-- Tested parent project integration patterns
-- Documented canonical import syntax
-
-## Validation Results
-
-**Package Installation:**
-
-- ✅ `uv pip install -e .` successful
-- ✅ `from normpic import organize_photos` functional
-- ✅ All main exports accessible
-
-**Quality Assurance:**
-
-- ✅ All 200 tests pass with new structure
-- ✅ Ruff linting clean on all code
-- ✅ CLI functional with `uv run python cli/main.py`
-
-**Integration Ready:**
-
-- ✅ Package structure supports parent project import
-- ✅ API surface appropriate for external consumption  
-- ✅ Documentation reflects new structure
-
-## Migration Guide for Contributors
-
-### For New Development
-
-- Use relative imports (`from ..module`) for intra-package references
-- Use package imports (`from normpic.module`) in tests and CLI
-- Follow the established pattern in existing modules
-
-### For External Projects
-
-- Install with `uv pip install -e path/to/normpic` or similar
-- Import with `from normpic import organize_photos`
-- Refer to integration guides for complete workflow examples
-
-## Related Documentation
-
-- [Integration Guide](../guides/integration.md) - Complete parent project setup
-- [Module Documentation](../modules/README.md) - Individual module details  
-- [Testing Patterns](../test/README.md) - Test structure and conventions
-
+- [module-organization.md](module-organization.md): how modules are
+  grouped by responsibility.
+- [template-util-split.md](template-util-split.md): the generic-vs-
+  domain split within the package.
+- [data-models.md](data-models.md): the data structures the package
+  exposes.

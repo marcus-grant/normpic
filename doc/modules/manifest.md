@@ -12,14 +12,14 @@ This document will need updates.
 
 ## Manifest Operations
 
-Regular manifest creation (implemented in `src/manager/photo_manager.py`):
+Regular manifest creation (implemented in `normpic/manager/photo_manager.py`):
 
 ```python
 manifest = Manifest(
     version="0.1.0",
     collection_name=collection_name,
     generated_at=datetime.now(),
-    pics=pics,
+    pic=pic,
     collection_description=collection_description,
     config={"collection_name": collection_name}
 )
@@ -49,10 +49,10 @@ manifest_file = dest_dir / manifest_filename
 
 ## Manifest Loading
 
-Loading existing manifests for validation and reuse (implemented in `src/manager/manifest_manager.py`):
+Loading existing manifests for validation and reuse (implemented in `normpic/manager/manifest_manager.py`):
 
 ```python
-from src.manager.manifest_manager import load_existing_manifest, ManifestManager
+from normpic.manager.manifest_manager import load_existing_manifest, ManifestManager
 from pathlib import Path
 
 # Using standalone function (recommended for one-time loading)
@@ -61,7 +61,7 @@ manifest = load_existing_manifest(manifest_path)
 
 if manifest is not None:
     print(f"Loaded manifest for collection: {manifest.collection_name}")
-    print(f"Contains {len(manifest.pics)} photos")
+    print(f"Contains {len(manifest.pic)} photos")
     print(f"Generated at: {manifest.generated_at}")
 else:
     print("Manifest not found or invalid")
@@ -95,7 +95,7 @@ This enables incremental processing workflows where existing manifests can be lo
 Safe manifest writing to prevent corruption (implemented in `ManifestManager.save_manifest()`):
 
 ```python
-from src.manager.manifest_manager import ManifestManager
+from normpic.manager.manifest_manager import ManifestManager
 
 manager = ManifestManager(manifest_path)
 
@@ -145,11 +145,16 @@ Galleria consumes NormPic manifests to generate static photo galleries:
   "version": "0.1.0",
   "collection_name": "wedding-photos",
   "generated_at": "2025-11-07T10:30:00Z",
-  "pics": [
+  "collection_root": ".",
+  "pic": [
     {
-      "source_path": "/photos/raw/IMG_001.jpg",
-      "dest_path": "wedding-photos-25-11-07T103045-r5a.jpg", 
+      "hash": "b3c32:NW9MKEFNZ6GTD8209QN3DQ69",
+      "relative_path": "2025/11/wedding-251107T103045-r5a.jpg",
+      "original_filename": "IMG_001.jpg",
+      "size_bytes": 1024000,
+      "mtime": "2025-11-07T10:30:45Z",
       "timestamp": "2025-11-07T10:30:45Z",
+      "timestamp_source": "exif",
       "camera": "Canon EOS R5",
       "gps": {"lat": 40.7128, "lon": -74.0060}
     }
@@ -260,9 +265,9 @@ except OSError as e:
 
 **Manifest Operations:**
 
-- `src/manager/manifest_manager.py`
+- `normpic/manager/manifest_manager.py`
   - ManifestManager class and load_existing_manifest() function
-- `src/serializer/manifest.py`
+- `normpic/serializer/manifest.py`
   - ManifestSerializer for JSON serialization/validation
 
 **Current Implementation:**
@@ -276,4 +281,3 @@ except OSError as e:
 - Change detection for incremental updates
 - Dry-run manifest cleanup
 - Manifest version migration system
-

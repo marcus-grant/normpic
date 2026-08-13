@@ -8,20 +8,26 @@ NormPic performs minimal filesystem operations, primarily focused on symlink cre
 
 ### Symlink Creation
 
-Current implementation in `src/manager/photo_manager.py`:
+Current implementation in `normpic/manager/photo_manager.py`:
 
 ```python
-# Create symlinks for organized photos
-for pic in pics:
-    dest_path = dest_dir / pic.dest_path
-    dest_path.parent.mkdir(parents=True, exist_ok=True)
-    
-    if not dest_path.exists():
-        source_path = Path(pic.source_path)
-        dest_path.symlink_to(source_path.resolve())
+# Create symlinks for organized photos. Source and copy manifests are
+# reconciled by content hash; each pic addresses its file by
+# relative_path, not a stored source path.
+for pic in copy_manifest.pic:
+    link = dest_dir / pic.relative_path
+    link.parent.mkdir(parents=True, exist_ok=True)
+
+    if not link.exists():
+        source = (
+            source_dir / source_manifest.collection_root
+            / source_pic.relative_path
+        )
+        link.symlink_to(source.resolve())
 ```
 
 **Key behaviors:**
+
 - Creates parent directories as needed
 - Uses absolute path resolution for symlinks
 - Skips existing symlinks (no overwrite)
@@ -46,6 +52,7 @@ destination/
 ### Supported Extensions
 
 Case-insensitive matching:
+
 - `.jpg`, `.jpeg` - JPEG images
 - `.png` - PNG images  
 - `.heic` - iPhone HEIC format
@@ -63,6 +70,7 @@ for file_path in source_dir.iterdir():
 ```
 
 **Characteristics:**
+
 - Flat directory scanning only (no recursion)
 - Filters by file extension
 - Ignores non-photo files
@@ -95,7 +103,7 @@ def validate_paths(self) -> None:
 
 ## Filesystem Utilities Module
 
-The `src/util/filesystem.py` module provides low-level filesystem operations for photo organization.
+The `normpic/util/filesystem.py` module provides low-level filesystem operations for photo organization.
 
 ### Symlink Operations
 
@@ -104,22 +112,27 @@ The `src/util/filesystem.py` module provides low-level filesystem operations for
 Creates symlinks with atomic operations by default:
 
 ```python
-from src.util.filesystem import create_symlink
+from normpic.util.filesystem import create_symlink
+
+# source is the real file; link is where the symlink is created
+source = source_dir / source_pic.relative_path
+link = dest_dir / pic.relative_path
 
 # Basic usage
-create_symlink(source_path, dest_path)
+create_symlink(source, link)
 
 # With progress reporting
 def progress_handler(message):
     print(f"Progress: {message}")
 
-create_symlink(source_path, dest_path, progress_callback=progress_handler)
+create_symlink(source, link, progress_callback=progress_handler)
 
 # Non-atomic operation (faster but not crash-safe)
-create_symlink(source_path, dest_path, atomic=False)
+create_symlink(source, link, atomic=False)
 ```
 
 **Features:**
+
 - **Atomic operations**: Uses temporary file + rename for crash safety
 - **Progress reporting**: Optional callback for UI integration
 - **Parent directory creation**: Creates destination directories as needed
@@ -130,7 +143,7 @@ create_symlink(source_path, dest_path, atomic=False)
 Validates symlink targets exist:
 
 ```python
-from src.util.filesystem import validate_symlink_integrity
+from normpic.util.filesystem import validate_symlink_integrity
 
 is_valid = validate_symlink_integrity(symlink_path)
 # Returns True if symlink exists and points to valid file
@@ -141,7 +154,7 @@ is_valid = validate_symlink_integrity(symlink_path)
 Recursively finds broken symlinks with performance optimizations:
 
 ```python
-from src.util.filesystem import detect_broken_symlinks
+from normpic.util.filesystem import detect_broken_symlinks
 
 # Basic usage
 broken_links = detect_broken_symlinks(dest_directory)
@@ -156,6 +169,7 @@ broken_links = detect_broken_symlinks(dest_directory, progress_callback=scan_pro
 ```
 
 **Enhanced Features:**
+
 - **Progress reporting**: Callback with scanned count and total items
 - **Permission error handling**: Gracefully skips inaccessible files/directories
 - **Performance optimization**: Two-pass scanning for accurate progress tracking
@@ -165,7 +179,7 @@ broken_links = detect_broken_symlinks(dest_directory, progress_callback=scan_pro
 Comprehensive directory analysis with file type categorization:
 
 ```python
-from src.util.filesystem import scan_directory_symlinks
+from normpic.util.filesystem import scan_directory_symlinks
 
 # Basic directory analysis
 results = scan_directory_symlinks(directory)
@@ -182,6 +196,7 @@ results = scan_directory_symlinks(directory, progress_callback=detailed_progress
 ```
 
 **Return Format:**
+
 ```python
 {
     'valid': [Path, ...],      # Working symlinks
@@ -196,7 +211,7 @@ results = scan_directory_symlinks(directory, progress_callback=detailed_progress
 Efficient batch validation of multiple symlinks:
 
 ```python
-from src.util.filesystem import batch_validate_symlinks
+from normpic.util.filesystem import batch_validate_symlinks
 
 symlinks = [path1, path2, path3]
 
@@ -217,10 +232,10 @@ results = batch_validate_symlinks(symlinks, progress_callback=validation_progres
 
 #### `compute_file_hash(file_path, chunk_size=65536, progress_callback=None)`
 
-Optimized SHA-256 hash computation:
+Optimized BLAKE3-120 hash computation via the b3c32 library:
 
 ```python
-from src.util.filesystem import compute_file_hash
+from normpic.util.filesystem import compute_file_hash
 
 # Basic usage
 file_hash = compute_file_hash(file_path)
@@ -237,6 +252,7 @@ file_hash = compute_file_hash(file_path, chunk_size=1024*1024)  # 1MB chunks
 ```
 
 **Optimizations:**
+
 - **64KB default chunks**: Optimal for most file sizes and storage types
 - **Progress reporting**: Callback for long-running operations
 - **Large file handling**: Efficient memory usage for multi-GB files
@@ -254,12 +270,13 @@ The filesystem utilities provide low-level operations, while photo manager provi
 
 | Component | Responsibility |
 |-----------|---------------|
-| `src/util/filesystem.py` | Atomic symlinks, hash computation, broken link detection |
-| `src/manager/photo_manager.py` | Photo discovery, EXIF extraction, filename generation |
+| `normpic/util/filesystem.py` | Atomic symlinks, hash computation, broken link detection |
+| `normpic/manager/photo_manager.py` | Photo discovery, EXIF extraction, filename generation |
 
 ## Future Enhancements
 
 **Recursive Directory Scanning:**
+
 ```python
 def find_photos_recursive(source_dir: Path) -> List[Path]:
     """Recursively find photos in directory tree."""
@@ -267,6 +284,7 @@ def find_photos_recursive(source_dir: Path) -> List[Path]:
 ```
 
 **Flat Structure Validation:**
+
 ```python
 def warn_nested_structure(source_dir: Path) -> List[str]:
     """Warn if source directory contains nested subdirectories."""
@@ -279,9 +297,9 @@ def warn_nested_structure(source_dir: Path) -> List[str]:
 
 ```python
 try:
-    dest_path.symlink_to(source_path.resolve())
+    link.symlink_to(source.resolve())
 except PermissionError:
-    logger.error(f"Permission denied creating symlink: {dest_path}")
+    logger.error(f"Permission denied creating symlink: {link}")
 except OSError as e:
     logger.error(f"Failed to create symlink: {e}")
 ```
@@ -296,6 +314,7 @@ except OSError as e:
 ## Testing Approach
 
 Current filesystem operations are tested with:
+
 - Real temporary directories (`tempfile.TemporaryDirectory`)
 - Real file creation and symlink operations
 - Path validation with actual filesystem checks
@@ -308,3 +327,4 @@ No mocking of filesystem operations in main test suite for integration confidenc
 - No modification of source files (read-only approach)
 - Destination directory creation respects user permissions
 - No following of existing symlinks during source scanning
+

@@ -6,7 +6,7 @@ The EXIF module provides structured extraction of photo metadata using a combina
 
 ## Components
 
-### Data Models (`src/model/exif.py`)
+### Data Models (`normpic/model/exif.py`)
 
 **CameraInfo**
 ```python
@@ -34,7 +34,7 @@ class ExifData:
 - Helper methods: `has_gps()`, `has_timestamp()`, `has_subsecond_precision()`
 - Preserves raw EXIF data for extensibility
 
-### Extraction Utilities (`src/util/exif.py`)
+### Extraction Utilities (`normpic/util/exif.py`)
 
 **extract_exif_data(photo_path) → ExifData**
 - Extracts structured EXIF metadata from photo files
@@ -85,7 +85,7 @@ except (FileNotFoundError, OSError, piexif.InvalidImageDataError, ValueError):
 
 ### Basic Extraction
 ```python
-from src.util.exif import extract_exif_data, extract_camera_info
+from normpic.util.exif import extract_exif_data, extract_camera_info
 
 exif_data = extract_exif_data(photo_path)
 camera_info = extract_camera_info(photo_path)
@@ -96,7 +96,7 @@ if exif_data.has_timestamp():
 
 ### Integration with Templates
 ```python
-from src.template.filename import generate_filename
+from normpic.template.filename import generate_filename
 
 filename = generate_filename(
     camera_info=camera_info,

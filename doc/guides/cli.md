@@ -38,6 +38,7 @@ python main.py --config my-config.json --collection-name "override-name"
 The following CLI options override configuration file and environment variables:
 
 ### --source-dir
+
 Override source directory containing original photos.
 
 ```bash
@@ -45,6 +46,7 @@ python main.py --source-dir /path/to/raw/photos
 ```
 
 ### --dest-dir
+
 Override destination directory for organized photos.
 
 ```bash
@@ -52,6 +54,7 @@ python main.py --dest-dir /path/to/organized/photos
 ```
 
 ### --collection-name
+
 Override collection name used in generated filenames.
 
 ```bash
@@ -139,4 +142,3 @@ In verbose mode, you'll see:
 - Advanced filtering options
 
 This guide will be updated as the CLI evolves.
-
