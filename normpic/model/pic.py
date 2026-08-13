@@ -52,6 +52,7 @@ class Pic:
         """Convert Pic to dictionary for JSON serialization."""
         d: Dict[str, Any] = {
             "hash": self.hash,
+            "relative_path": self.relative_path,
             "size_bytes": self.size_bytes,
             "mtime": self.mtime,
         }
@@ -67,6 +68,4 @@ class Pic:
             d["original_filename"] = self.original_filename
         if self.tag is not None:
             d["tag"] = self.tag
-        if self.relative_path is not None:
-            d["relative_path"] = self.relative_path
         return d
