@@ -10,6 +10,27 @@ from test.helpers.conformance import (
 from normpic.util.hash import PREFIX
 
 
+@pytest.mark.parametrize(
+    "subdir",
+    ["valid", "invalid", "invalid/impl", "consumer-lenient"],
+)
+def test_fixture_discovery_matches_disk(subdir):
+    """Guard that parametrized discovery sees every fixture on disk.
+
+    The suite discovers fixtures with a non-recursive glob, so an empty
+    directory yields zero cases and passes vacuously, and a fixture in
+    the wrong directory disappears from its intended check.
+    Counting with iterdir keeps this derivation independent of the
+    glob the other tests use.
+    """
+    directory = CONFORMANCE_DIR / subdir
+    assert directory.is_dir(), f"{subdir}: fixture directory is missing"
+    on_disk = [p for p in directory.iterdir() if p.is_file() and p.suffix == ".json"]
+    assert on_disk, f"{subdir}: no fixtures, dependent tests pass vacuously"
+    discovered = sorted(directory.glob("*.json"))
+    assert sorted(on_disk) == discovered, f"{subdir}: discovery and disk disagree"
+
+
 @pytest.mark.parametrize("path", sorted((CONFORMANCE_DIR / "valid").glob("*.json")))
 def test_valid_fixture_passes_schema(path):
     manifest = load_fixture(path)
