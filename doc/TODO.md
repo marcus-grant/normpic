@@ -105,25 +105,6 @@ The list shrinks to zero before v0.1.0 is published.
 Each task carries an explicit upstream trigger so a developer
 picking this up knows what to do and when.
 
-### Phase D: Verification
-
-Triggered by Phase B and Phase C merged.
-
-- [ ] Bootstrap root `Justfile` per project convention.
-  Task aliases for `uv run pytest`, `uv run ruff check`, schema
-  check, etc.
-  Deferred until manifest is ready for galleria consumption.
-- [ ] All Python tests pass against the new contract.
-- [ ] Conformance fixtures pass against the Python implementation,
-      with the layer (schema or implementation) catching each
-      invalid case matching `architecture/conformance.md`.
-- [ ] Producer-conformance: every emitted manifest validates
-      against `schema/v0.1.0.json`, with no separate code schema in
-      the validation path.
-- [ ] Wedding archive processes successfully end-to-end.
-- [ ] Galleria consumes a v0.1.0 manifest and produces a working
-      gallery.
-
 ### Phase E: Cleanup and Release
 
 Triggered by Phase D verified.
@@ -135,6 +116,10 @@ Triggered by Phase D verified.
       then run the full quality gate green.
       Coordinate with chr/pyright-clean so stale-code deletions are
       not claimed twice.
+- [ ] Stale-artifact sweep.
+      `deleteme-normpic-modules/` is already gone; confirm no other
+      stale code or artifacts remain, prune merged local branches,
+      then run the full quality gate green.
 - [ ] Final stale-content sweep across all docs.
 - [ ] v0.1.0 stable release tag and `CHANGELOG.md` entry.
 - [ ] Confirm "Decide before v0.1 ships" list is empty.

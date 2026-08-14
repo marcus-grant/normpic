@@ -1,5 +1,39 @@
 # NormPic Development Changelog
 
+## 2026-08-13
+
+### chr/bootstrap-justfile
+
+Completed Phase D verification.
+Bootstrapped the root Justfile with recipes for test, lint, typecheck,
+schema, and check; check runs the three commands CONTRIBUTE defines as
+the pre-commit gate, in that order.
+No recipe wraps the CLI, so downstream callers invoke the CLI directly
+and a recipe rename cannot break them.
+
+Added a conformance fixture discovery guard asserting each fixture
+directory exists, is non-empty, and that glob discovery matches what is
+on disk.
+The parametrized suites discover fixtures by glob, so an empty or
+misfiled directory previously passed vacuously.
+
+Verified producer-conformance on the real wedding archive, both the web
+and full collections, 645 photos each.
+Every emitted manifest validates against schema/v0.1.0.json and the
+implementation layer with zero errors, all hashes carry the b3c32:
+prefix, no symlinks dangle, and files open through them.
+A stale pre-changeover source manifest was correctly rejected and
+rebuilt.
+Variant pairing by generated filename matched all 645 across both
+collections.
+
+Documented that `just check` runs the gate, corrected the stale claim
+that pyright is not yet blocking, and noted in guides/cli.md that
+`--dry-run` still writes the source manifest.
+Deferred four items to ROADMAP: populating original_filename, making
+dry-run side-effect free, writing the copy manifest atomically, and
+isolating NORMPIC_* environment variables in the CLI tests.
+
 ## 2026-08-12
 
 ### doc/phase-c-finish

@@ -107,13 +107,15 @@ For the Python code today, in this order:
 2. `uv run pyright`
 3. `uv run pytest` (the full suite, not a single file)
 
-ruff and the full pytest suite are enforced now.
-pyright is part of the gate and becomes blocking once the tree is
-brought to green under it.
+All three are enforced now; the tree is green under each.
 When code in another language lands, that code's own checks join the
 gate and must also pass.
 
-Use `uv run`, not a bare interpreter.
+`just check` runs these three in this order.
+The list above is the definition; the recipe follows it, so a change
+here requires the same change in the Justfile.
+
+Use `uv run`, not a bare interpreter, or `just` which wraps it.
 Run a focused file with `uv run pytest test/unit/test_name.py -v`
 during development, but always run the full suite before committing.
 

@@ -60,6 +60,12 @@ Each is described more fully in the deferred section of
   - Robust replacement: the pixel-content hash above gives a
     variant-stable identity that does not depend on timestamp
     coincidence.
+- Populate `original_filename` in emitted manifests.
+  The field is specified in `architecture/manifest-contract.md` and
+  validated in the Pic model, but no producer path ever sets it, so
+  every v0.1.0 manifest omits it.
+  Legal, since the field is optional, but it means the photographer's
+  source filename is unrecoverable from a manifest.
 - normpic operation config (needs a planning pass before scheduling).
   A persisted config describing a symlink-copy operation (source and
   copy manifest locations, the rename heuristic, the derivation link
@@ -90,6 +96,20 @@ Each is described more fully in the deferred section of
 
 No contract impact; producer-internal improvements to NormPic.
 
+- Make `--dry-run` side-effect free.
+  The source collection manifest is written before the dry-run branch
+  is taken, so a dry run creates no symlinks but still writes
+  `manifest.json` into the source directory.
+  Documented as a caveat in `guides/cli.md` until fixed.
+- Write the copy manifest atomically.
+  The copy manifest is serialized and written directly rather than
+  through `ManifestManager.save_manifest`, so it misses the
+  temp-file-then-rename path the source manifest gets.
+  An interrupted write can leave a partial manifest on disk.
+- Isolate `NORMPIC_*` environment variables in the CLI tests.
+  `test/integration/test_cli.py` does not clear the environment, so
+  five tests fail for any developer who has `NORMPIC_SOURCE_DIR` or
+  `NORMPIC_DEST_DIR` set in their shell.
 - Rich CLI with Textual TUI.
 - Multithreading with speedup documentation in `analysis/`.
 - EXIF caching with speedup documentation.
