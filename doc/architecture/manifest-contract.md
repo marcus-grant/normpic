@@ -672,26 +672,7 @@ section wins.
   by `timestamp`, `camera`, or `relative_path`).
   See [Ordering](#ordering).
 
-## Decide before v0.1 ships
-
-This section tracks contract-level decisions that remain to be
-resolved before v0.1.0 is published as a stable release.
-Items here block the v0.1.0 version stamp from going stable.
-The list shrinks to zero as decisions land.
-
-At v0.1.0 publication, this section can either remain as a record of
-what was settled, or be archived to the changelog and removed from
-the contract document.
-
-### Open decisions
-
-None.
-All prior open decisions are resolved.
-Pre-hiatus field-name reconciliation resolved in Phase B: the
-implementation was aligned to this contract.
-See CHANGELOG 2026-06-10 through 2026-07-10.
-
-### Decisions resolved during drafting
+## Decisions resolved during drafting
 
 Items resolved during the drafting of this document have been folded
 into the relevant sections rather than left here.
