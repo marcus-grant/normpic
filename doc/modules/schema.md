@@ -3,7 +3,7 @@
 ## What this is
 
 The manifest schema is a single JSON Schema (Draft 2020-12) artifact
-at [`schema/v0.1.0.json`](../../schema/v0.1.0.json).
+at [`normpic/schema/v0.1.0.json`](../../normpic/schema/v0.1.0.json).
 It is the mechanical-validation half of the two-layer contract: the
 schema enforces structure and canonical forms that JSON Schema can
 express, and the implementation enforces the rest.

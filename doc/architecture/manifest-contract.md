@@ -27,7 +27,7 @@ The contract has two artifact layers, intentionally split:
 - This document (`manifest-contract.md`): semantic equivalence rules,
   producer and consumer behavior, rationale, and forward-compatibility
   intent.
-- The JSON Schema artifact at `schema/v0.1.0.json`: mechanically
+- The JSON Schema artifact at `normpic/schema/v0.1.0.json`: mechanically
   enforced validation rules.
 
 Where the two overlap (field types, required-or-not, value ranges),
@@ -109,7 +109,7 @@ This section defines the manifest's shape: what fields exist, their
 types, and their presence rules.
 Semantics live in dedicated sections cross-referenced below.
 
-The JSON Schema artifact at `schema/v0.1.0.json` is the mechanical
+The JSON Schema artifact at `normpic/schema/v0.1.0.json` is the mechanical
 encoding of this schema.
 
 ### Top-level fields
@@ -282,7 +282,7 @@ path-separator errors instead of a clean type error. Use either a
 positive `pattern` (for simple single-field cases like
 `original_filename`) or an `if: {type: string} / then: {allOf: [...]}`
 wrapper (for multi-constraint sets like `relative_path` and
-`collection_root`) — both forms are in `schema/v0.1.0.json`.
+`collection_root`) — both forms are in `normpic/schema/v0.1.0.json`.
 
 Valid examples: `.`, `..`, `../..`, `../photos`,
 `../../shared/wedding`, `subdir`, `subdir/more`.
@@ -445,7 +445,7 @@ Examples: `2025-11-24T15:30:45Z` or `2025-11-24T15:30:45.123Z`.
 
 This section defines the behavioral rules that fall outside JSON
 Schema validation.
-The JSON Schema artifact at `schema/v0.1.0.json` encodes which
+The JSON Schema artifact at `normpic/schema/v0.1.0.json` encodes which
 fields are required, which accept null, and the type of each.
 This section covers what schema validation cannot enforce: how
 consumers should treat the distinction (or non-distinction) between
@@ -655,7 +655,7 @@ section wins.
 ### SHOULD
 
 - Validate manifests against the JSON Schema artifact
-  (`schema/v0.1.0.json`) before relying on contents.
+  (`normpic/schema/v0.1.0.json`) before relying on contents.
 - Accept lowercase Crockford Base32 encoding on hash reads.
   See [Hash identity](#hash-identity).
 

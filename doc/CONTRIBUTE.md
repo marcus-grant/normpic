@@ -62,9 +62,9 @@ A well-formed plan has this shape:
   because a named boundary test is what allows to evaluate the plan &
   what review verifies directly.
 - The plan cites the spec source each cycle satisfies
-  (doc/architecture/manifest-contract.md,
-  doc/architecture/conformance.md, schema/v0.1.0.json), so tests pin
-  the documented contract and not an interpretation of it.
+  (`doc/architecture/manifest-contract.md`,
+  `doc/architecture/conformance.md`, `normpic/schema/v0.1.0.json`),
+  so tests pin the documented contract, not an interpretation of it.
 - The plan states scope concretely: which files change and roughly how
   much.
   A later diff that is disproportionate to this is a signal of drift.
@@ -102,7 +102,7 @@ Broken code is never committed: every commit leaves the suite green.
 The conformance fixtures under test/fixture/conformance/ are a
 language-agnostic artifact.
 They are exercised through the Python suite today, but they are meant
-to validate against schema/v0.1.0.json directly so that other
+to validate against normpic/schema/v0.1.0.json directly so that other
 implementations can run them.
 Do not bake Python-only assumptions into a fixture.
 
@@ -378,7 +378,7 @@ A fact lives in exactly one place.
 The manifest's fields, semantics, and canonical forms live in
 doc/architecture/manifest-contract.md.
 Conformance rules live in doc/architecture/conformance.md.
-The machine-readable schema is schema/v0.1.0.json.
+The machine-readable schema is normpic/schema/v0.1.0.json.
 Do not restate these in other documents.
 Point to them, so they cannot drift out of agreement.
 

@@ -21,7 +21,7 @@ Updates here follow contract revisions, never the reverse.
 
 ## Schema artifact
 
-The JSON Schema at `schema/v0.1.0.json` is the canonical,
+The JSON Schema at `normpic/schema/v0.1.0.json` is the canonical,
 machine-readable schema and the single source of truth.
 There is no Python schema module.
 An earlier design kept a parallel Python schema module for in-Python
@@ -89,7 +89,7 @@ Consumers handle older versions via the migration system.
   This document is its implementation-side counterpart.
 - [conformance.md](./conformance.md): the conformance requirement
   that defines consumer-facing version-handling responsibilities.
-- `schema/v0.1.0.json`:
+- `normpic/schema/v0.1.0.json`:
   - the canonical schema artifact loaded and validated against directly.
   module mirrors.
 - **galleria** (planned, design documented): future consumer that

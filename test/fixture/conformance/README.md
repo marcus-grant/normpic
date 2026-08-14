@@ -1,6 +1,5 @@
 # Conformance Fixtures
 
-
 ## Purpose
 
 This directory contains manifest fixtures used as the
@@ -18,7 +17,7 @@ anticipated Rust port, future Static Site Generator plugins) MUST:
 The contract these fixtures encode lives in
 [doc/architecture/manifest-contract.md](../../../doc/architecture/manifest-contract.md).
 The machine-readable schema is at
-[schema/v0.1.0.json](../../../schema/v0.1.0.json).
+[normpic/schema/v0.1.0.json](../../../normpic/schema/v0.1.0.json).
 
 ## Directory Structure
 
@@ -62,7 +61,7 @@ Each filename names the violated rule.
 Two layers of rejection are possible:
 
 - **JSON Schema layer**: rejected by validating against
-  `schema/v0.1.0.json`.
+  `normpic/schema/v0.1.0.json`.
 - **Implementation layer**: rejected by additional checks beyond
   what the JSON Schema can express (e.g. `..` segments after the
   leading run in `collection_root`).
@@ -188,8 +187,8 @@ When adding a fixture:
 
 - [Manifest contract](../../../doc/architecture/manifest-contract.md):
   authoritative semantic contract.
-- [JSON Schema artifact](../../../schema/v0.1.0.json): mechanical
-  validation rules.
+- [JSON Schema artifact](../../../normpic/schema/v0.1.0.json):
+  mechanical validation rules.
 - [Schema versioning](../../../doc/architecture/schema-versioning.md):
   implementation-side migration mechanics (distinct from the
   consumer-facing contract).

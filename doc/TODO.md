@@ -21,7 +21,7 @@ Authoritative planning artifacts for v0.1:
 - [Conformance Requirement](architecture/conformance.md): defines the
   fixture spec all implementations must satisfy to claim v0.1
   conformance.
-- `schema/v0.1.0.json`: machine-readable schema artifact.
+- `normpic/schema/v0.1.0.json`: machine-readable schema artifact.
 - `test/fixture/conformance/`: fixtures implementing the conformance
   spec.
   Built per Phase B.

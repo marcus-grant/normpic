@@ -31,7 +31,7 @@ detection) without touching the models themselves.
 
 The separation between model and serializer is covered in detail
 in [schema-versioning.md](schema-versioning.md).
-That document also covers how `schema/v0.1.0.json` is loaded and
+That document also covers how `normpic/schema/v0.1.0.json` is loaded and
 validated against as the single canonical schema.
 
 ## Module organization
@@ -155,7 +155,7 @@ in [schema-versioning.md](schema-versioning.md).
 - [conformance.md](conformance.md): the conformance requirement
   that this data model layer must satisfy when used as part of a
   conforming producer or consumer.
-- `schema/v0.1.0.json`: canonical schema artifact; the data model
+- `normpic/schema/v0.1.0.json`: canonical schema artifact; the data model
   layer validates against this.
 - **future Rust port of normpic** (planned): will have its own
   data-model document with native Rust types.
