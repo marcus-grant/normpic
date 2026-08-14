@@ -21,6 +21,7 @@ dev = [
     "pytest>=8.4.2",
     "ruff>=0.14.3",
     "psutil>=6.1.0",
+    "pyright>=1.1.389",
 ]
 
 [tool.setuptools.packages.find]
