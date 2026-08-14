@@ -37,3 +37,6 @@ venvPath = "."
 venv = ".venv"
 include = ["normpic", "test", "script"]
 exclude = ["deleteme-normpic-modules", "**/__pycache__", ".venv"]
+
+[project.scripts]
+normpic = "normpic.cli:main"

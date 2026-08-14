@@ -1,5 +1,6 @@
 """Integration tests for CLI functionality."""
 
+from importlib.metadata import entry_points
 import json
 from pathlib import Path
 import subprocess
@@ -282,3 +283,10 @@ class TestModuleInvocation:
         result = subprocess.run(argv, **kwargs)
         assert result.returncode == 0
         assert "Usage:" in result.stdout
+
+    def test_console_script_entry_point_declared(self):
+        """Distribution must expose a normpic executable."""
+        scripts = entry_points(group="console_scripts")
+        names = {ep.name: ep.value for ep in scripts}
+        assert "normpic" in names
+        assert names["normpic"] == "normpic.cli:main"
