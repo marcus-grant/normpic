@@ -4,13 +4,14 @@ from pathlib import Path
 from b3c32 import CROCKFORD32_ALPHABET
 from jsonschema import Draft202012Validator
 
+import normpic
 from normpic.util.hash import PREFIX
 from normpic.util.manifest_validate import consumer_normalize as consumer_normalize
 from normpic.util.manifest_validate import impl_validate as impl_validate
 
 _TEST_DIR = Path(__file__).parent.parent
 CONFORMANCE_DIR = _TEST_DIR / "fixture" / "conformance"
-SCHEMA_PATH = _TEST_DIR.parent / "schema" / "v0.1.0.json"
+SCHEMA_PATH = Path(normpic.__file__).resolve().parent / "schema" / "v0.1.0.json"
 
 
 def load_schema() -> dict:

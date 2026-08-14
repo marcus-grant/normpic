@@ -11,6 +11,7 @@ from normpic.model.manifest import Manifest
 from normpic.model.pic import Pic
 from normpic.serializer.manifest import ManifestSerializer
 from normpic.util.hash import PREFIX
+from test.helpers.conformance import SCHEMA_PATH
 
 
 class TestPhotoOrganizationWorkflow:
@@ -88,7 +89,7 @@ class TestPhotoOrganizationWorkflow:
             ),  # 14:30:47.456 (same timestamp but different camera from nikon)
         ]
 
-        for i, (expected_filename, _source_photo) in enumerate(expected_order):
+        for i, (expected_filename, _) in enumerate(expected_order):
             pic = manifest.pic[i]
             assert pic.relative_path == expected_filename
             assert pic.timestamp_source == "exif"
@@ -578,12 +579,10 @@ class TestProducerConformance:
         """Producer output must validate against schema/v0.1.0.json."""
         import json as _json
         from jsonschema import validate as _validate
-        from pathlib import Path as _Path
 
         manifest_text, _ = self._organize(create_photo_with_exif, tmp_path)
         data = _json.loads(manifest_text)
-        schema_path = _Path(__file__).parent.parent.parent / "schema" / "v0.1.0.json"
-        schema = _json.loads(schema_path.read_text())
+        schema = _json.loads(SCHEMA_PATH.read_text())
         _validate(instance=data, schema=schema)
 
 
@@ -607,7 +606,6 @@ class TestCutoverAcceptanceGate:
         """
         import json as _json
         from jsonschema import validate as _validate
-        from pathlib import Path as _Path
 
         source_dir = tmp_path / "source"
         dest_dir = tmp_path / "dest"
@@ -651,8 +649,7 @@ class TestCutoverAcceptanceGate:
             assert link.is_symlink()
         assert len(symlinks) == 2
 
-        schema_path = _Path(__file__).parent.parent.parent / "schema" / "v0.1.0.json"
-        schema = _json.loads(schema_path.read_text())
+        schema = _json.loads(SCHEMA_PATH.read_text())
         _validate(instance=data, schema=schema)
 
         manifest2 = organize_photos(

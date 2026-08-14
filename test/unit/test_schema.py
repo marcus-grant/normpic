@@ -1,15 +1,10 @@
 """Tests for JSON schema validation."""
 
-import json
-from pathlib import Path
-
 import pytest
 from jsonschema import validate, ValidationError
 
+from normpic.serializer.manifest import _MANIFEST_SCHEMA as MANIFEST_SCHEMA
 from normpic.util.hash import PREFIX
-
-_SCHEMA_PATH = Path(__file__).resolve().parent.parent.parent / "schema" / "v0.1.0.json"
-MANIFEST_SCHEMA = json.loads(_SCHEMA_PATH.read_text())
 
 _VALID_PIC = {
     "hash": f"{PREFIX}AAAAAAAAAAAAAAAAAAAAAAAA",

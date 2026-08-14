@@ -10,9 +10,7 @@ from ..model.manifest import Manifest
 from ..model.pic import Pic, MISSING
 
 _MANIFEST_SCHEMA = json.loads(
-    (
-        Path(__file__).resolve().parent.parent.parent / "schema" / "v0.1.0.json"
-    ).read_text()
+    (Path(__file__).resolve().parent.parent / "schema" / "v0.1.0.json").read_text()
 )
 
 
@@ -101,4 +99,3 @@ class ManifestSerializer:
         """
         manifest_dict = manifest.to_dict()
         validate(instance=manifest_dict, schema=_MANIFEST_SCHEMA)
-
