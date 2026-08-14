@@ -8,29 +8,50 @@ organizing photo collections using JSON configuration files.
 >**⚠️ Note**: This CLI is in rapid development and will change significantly.
 >This guide will need frequent updates.
 
+## Installation
+
+Install from git as a tool, which puts `normpic` on your PATH:
+
+```bash
+uv tool install git+https://github.com/marcus-grant/normpic@v0.1.1
+```
+
+Three invocation forms, all equivalent:
+
+```bash
+normpic --help
+python -m normpic --help
+uv run python -m normpic --help
+```
+
+The console script is the normal form.
+Use `python -m normpic` from a pinned install when a consumer
+pipeline needs the module path rather than a PATH lookup.
+
 ## Basic Usage
 
 ```bash
 # Organize photos using default config (./config.json)
-python main.py
+normpic
 
 # Use custom config file
-python main.py --config /path/to/my-config.json
+normpic --config /path/to/my-config.json
 
 # Dry run mode (no symlinks created)
-python main.py --dry-run
+normpic --dry-run
 
 # Verbose output
-python main.py --verbose
+normpic --verbose
 
 # Force reprocessing (ignore existing results)  
-python main.py --force
+normpic --force
 
 # Override configuration with CLI arguments
-python main.py --source-dir /path/to/photos --dest-dir /path/to/output --collection-name "my-photos"
+normpic --source-dir /path/to/photos --dest-dir /path/to/output \
+  --collection-name "my-photos"
 
 # Mix config file and CLI overrides
-python main.py --config my-config.json --collection-name "override-name"
+normpic --config my-config.json --collection-name "override-name"
 ```
 
 ## CLI Configuration Options
@@ -42,7 +63,7 @@ The following CLI options override configuration file and environment variables:
 Override source directory containing original photos.
 
 ```bash
-python main.py --source-dir /path/to/raw/photos
+normpic --source-dir /path/to/raw/photos
 ```
 
 ### --dest-dir
@@ -50,7 +71,7 @@ python main.py --source-dir /path/to/raw/photos
 Override destination directory for organized photos.
 
 ```bash
-python main.py --dest-dir /path/to/organized/photos
+normpic --dest-dir /path/to/organized/photos
 ```
 
 ### --collection-name
@@ -58,7 +79,7 @@ python main.py --dest-dir /path/to/organized/photos
 Override collection name used in generated filenames.
 
 ```bash
-python main.py --collection-name "wedding-2024"
+normpic --collection-name "wedding-2024"
 ```
 
 ## Configuration Precedence
@@ -102,10 +123,10 @@ Create a `config.json` file in your project directory:
 
 ```bash
 # Preview what will happen
-python main.py --config wedding-config.json --dry-run --verbose
+normpic --config wedding-config.json --dry-run --verbose
 
 # Actually organize the photos
-python main.py --config wedding-config.json --verbose
+normpic --config wedding-config.json --verbose
 ```
 
 ## CLI Flags

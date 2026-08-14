@@ -26,7 +26,12 @@ normpic/                    # Root project directory
 |   |-- template/           # Filename generation
 |   `-- util/               # Utilities (EXIF, filesystem, errors)
 |-- test/                   # Test suite (unchanged)
-|-- cli/                    # CLI interface (unchanged)
+|   |-- cli.py              # Click CLI interface
+|   |-- __main__.py         # python -m normpic entry
+|   |-- serializer/         # JSON serialization
+|   |-- template/           # Filename generation
+|   `-- util/               # Utilities (EXIF, filesystem, errors)
+|-- test/                   # Test suite (unchanged)
 `-- doc/                    # Documentation (unchanged)
 ```
 
