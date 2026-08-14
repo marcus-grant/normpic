@@ -134,8 +134,6 @@ was moved or renamed.
 
 ## Related guides
 
-- [gallery-builder-integration.md](gallery-builder-integration.md):
-  full gallery generation from a manifest.
 - [integration.md](integration.md): broader parent-project
   integration patterns.
 - [errors.md](errors.md): how producer diagnostics are surfaced.

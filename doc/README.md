@@ -74,8 +74,6 @@ This documentation follows a hierarchical linking structure:
   instructions for uv integration with parent projects.
 - [Manifest Integration](guides/manifest-integration.md): working
   with NormPic manifest data in custom applications.
-- [Gallery Builder Integration](guides/gallery-builder-integration.md):
-  building custom gallery generators that consume NormPic output.
 
 ### Analysis
 
@@ -110,3 +108,4 @@ alignment work, [ROADMAP.md](ROADMAP.md) for post-v0.1 planning, and
 See the [Related projects](architecture/manifest-contract.md#related-projects)
 section of the manifest contract for the full ecosystem map with
 current statuses.
+

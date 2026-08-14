@@ -601,11 +601,12 @@ if __name__ == "__main__":
 
 ## Next Steps
 
-1. Choose your integration approach (CLI recommended for most cases)
-2. Set up the build scripts and configuration files
-3. Test the integration with a small photo collection
-4. See [Manifest Integration Guide](manifest-integration.md) for working with NormPic output data
-5. See [Gallery Builder Integration](gallery-builder-integration.md) for creating gallery generators
+- Choose your integration approach (CLI recommended for most cases)
+- Set up the build scripts and configuration files
+- Test the integration with a small photo collection
+- See [Manifest Integration Guide](manifest-integration.md)
+  - Working with NormPic output data
 
-For additional help, consult the [Error Handling Guide](errors.md) and [Integration Guide](integration.md).
-
+For additional help,
+consult the [Error Handling Guide](errors.md) and
+[Integration Guide](integration.md).
