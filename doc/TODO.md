@@ -118,6 +118,41 @@ marcustack's stage contract requires output atomicity.
 - [ ] Confirm the dry-run manifest filename is preserved.
 - [ ] Delete the ROADMAP entry.
 
+### Stabilize pic array ordering across runs
+
+Reported by marcustack: two runs on identical input produce manifests
+whose `pic` arrays differ in order.
+Content is identical once sorted by `relative_path`, with the same 645
+entries and the same hashes, so this is ordering only and no photo is
+lost.
+Manifests cannot be diffed or byte-compared between runs.
+
+Isolated to the cache path.
+Two cold runs into fresh destinations are byte-identical; a warm run
+into a populated destination reorders.
+The likely cause is the reassembly of stat-skipped and reprocessed
+photos in `normpic/manager/photo_manager.py`, not the temporal sort
+key, which is deterministic on both branches.
+Observed on the copy manifest; the source manifest is untested.
+
+Sorting by `relative_path` before serialization would fix it, but it
+would also reorder cold runs, which are currently temporal.
+Whether `pic` array order is semantically meaningful or incidental is
+a contract question and must be settled first.
+
+- [ ] Read `doc/architecture/manifest-contract.md` for whether `pic`
+      order carries meaning. Settle it with the maintainer if the
+      contract is silent.
+- [ ] Branch `fix/stable-pic-ordering` from main.
+- [ ] Failing test: a warm run over a populated destination emits the
+      same `pic` order as a cold run over the same input.
+- [ ] Fix the reassembly order, or sort before serialization if the
+      contract permits reordering cold runs.
+- [ ] Failing test: the source manifest holds the same ordering
+      guarantee as the copy manifest.
+- [ ] Record the ordering guarantee in the contract document if one
+      is established.
+
 ### Streaming file hashing
 
 `compute_file_hash` reads the whole file into memory and delegates to
