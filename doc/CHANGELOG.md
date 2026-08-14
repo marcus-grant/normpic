@@ -1,5 +1,32 @@
 # NormPic Development Changelog
 
+## 2026-08-14
+
+### doc/drop-gallery-builder-guide
+
+Deleted guides/gallery-builder-integration.md and its five inbound
+links.
+It was a Pelican gallery tutorial predating the b3c32 changeover, never
+cited the contract or schema, and prescribed design decisions belonging
+to the consumer rather than to NormPic.
+guides/manifest-integration.md already covers manifest consumption.
+Also removed a dead link to a deployment-integration.md that never
+existed.
+
+Documented variant collection pairing in guides/manifest-integration.md:
+NormPic does not pair variants, a consumer holding a mirrored pair
+matches on relative_path, and the mirror should be verified rather than
+assumed.
+Noted that original_filename is never populated in v0.1.0 and that the
+same-second ordinal suffix holds only while both collections hold the
+same files.
+Corrected the ROADMAP cross-variant entry, which still described the
+stopgap as time-stamp matching.
+
+Declared pyright as a dev dependency; it was previously undeclared and
+its version uncontrolled.
+Resolves to 1.1.411 with the tree still green.
+
 ## 2026-08-13
 
 ### chr/bootstrap-justfile
