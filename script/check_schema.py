@@ -18,6 +18,7 @@ If jsonschema is missing as a dependency:
 A passing run prints "ALL CHECKS PASSED" and exits 0. A failing run
 prints which samples behaved unexpectedly and exits 1.
 """
+
 from __future__ import annotations
 
 import json
@@ -31,7 +32,8 @@ except ImportError:
     sys.exit(1)
 
 
-SCHEMA_PATH = Path(__file__).resolve().parent.parent / "schema" / "v0.1.0.json"
+PROJECT_ROOT_PATH = Path(__file__).resolve().parent.parent
+SCHEMA_PATH = PROJECT_ROOT_PATH / "normpic" / "schema" / "v0.1.0.json"
 
 
 VALID_SAMPLES: dict[str, dict] = {
@@ -282,3 +284,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
+
