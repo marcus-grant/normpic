@@ -15,6 +15,11 @@ Reading them risks leaking secrets into logs, command output, commits,
 or generated files, and recovering from a leak means rotating live
 credentials.
 There is no contribution that requires reading the environment.
+The single exception is a `NORMPIC_*` path variable named explicitly
+by the maintainer for a specific task, such as pointing a run at a
+photo collection.
+Never enumerate the environment, never read a variable the maintainer
+has not named, and never echo one whose value is not a path.
 
 ## Ways of working
 
@@ -63,14 +68,19 @@ A well-formed plan has this shape:
 - The plan states scope concretely: which files change and roughly how
   much.
   A later diff that is disproportionate to this is a signal of drift.
-- The final task is the documentation-and-planning update commit,
-  described under Documentation discipline, leaving the change ready to
-  submit.
+- The change closes with two commits by default: a `Doc:` commit for
+  any reference documentation the work added, changed, or invalidated,
+  then a `Pln:` commit updating `doc/TODO.md`, `doc/CHANGELOG.md`, and
+  `doc/ROADMAP.md`.
+  Either is skipped when the change genuinely touched nothing in its
+  scope, but both are the default and their absence should be
+  deliberate.
+  The `Pln:` commit is last, leaving the change ready to submit.
 
 When a planned change is recorded in doc/TODO.md, it takes the same
 shape: a branch-named section, a short framing of the work, an ordered
 task list that opens with the branch task, runs the cycles through the
-middle, and closes with the documentation update.
+middle, and closes with the Doc and Pln commits described above.
 A reader should be able to execute the section without reconstructing
 the plan.
 
@@ -294,6 +304,11 @@ the maintainer merges.
   and the commit message as separate blocks, so the message can be
   pasted without being embedded in a command.
 - The coordinator writes commit messages; the author does not.
+- Every proposed code or text change is delivered in a fenced block
+  with its destination stated adjacent to the fence: the file path in
+  backticks, and enough surrounding context to place it (the section
+  name, or the exact lines it replaces).
+  A fence with no stated destination is incomplete.
 
 ### Per-commit sign-off on fragile changes
 
@@ -386,10 +401,10 @@ Find the section with `grep -n`, view a few lines around it, and edit
 surgically.
 
 After each commit, append one concise line to doc/CHANGELOG.md under
-today's date header, and mark the corresponding doc/TODO.md item done
-in place without deleting it yet.
+today's date header.
 
-The final commit of a change consolidates the per-commit CHANGELOG
-lines under today's date into one summary block, deletes the granular
-lines, removes the now-complete task lines from doc/TODO.md, and updates
-any reference document the change affected.
+The final commit consolidates those lines into one summary block under
+today's date, deletes the granular lines, and deletes the completed
+task lines from doc/TODO.md.
+A completed task is deleted rather than marked done: the CHANGELOG is
+the record, so a checked-off item is only noise.

@@ -3,15 +3,15 @@
 ## Overview
 
 This document captures post-v0.1 planning: features, extensions, and
-strategic directions that are intentionally out of scope for the v0.1
-contract alignment work tracked in [TODO.md](TODO.md).
+strategic directions not yet scheduled.
+Scheduled work lives in [TODO.md](TODO.md).
 
 Items move between this document and `TODO.md` as scope is decided:
 
 - Items here are anticipated but not yet scheduled.
 - When an item is scoped for an upcoming release, it moves to
   `TODO.md` with concrete sequencing and triggers.
-- Completed items are recorded in `CHANGELOG.md`.
+- Completed items are recorded in `CHANGELOG.md` or its archives.
 
 Status labels mirror the convention used in the Related projects
 section of `architecture/manifest-contract.md`:
@@ -22,8 +22,10 @@ section of `architecture/manifest-contract.md`:
 - anticipated: foreseen as a likely future direction, not formally
   scoped.
 
-The ordering within each section below is not prioritized; treat the
-content as a catalog of intent, not a sequence.
+Ordering is weakly organized:
+roughly nearer-term first,
+but expect to pick and choose rather than work top to bottom.
+Where a section is explicitly sequenced, it says so.
 
 ## v0.x Contract Extensions
 
@@ -35,13 +37,18 @@ Each is described more fully in the deferred section of
   Records the temporal-reconstruction strategy and tiebreaking chain
   used to produce pic order; resolves cross-implementation ordering
   reproducibility.
-- URI schemes in `collection_root` (for example `s3://`, `https://`,
-  `ssh://`).
-  Lets manifests reference non-filesystem-local collections.
+- URI schemes in `collection_root`:
+  - *(for example `s3://`, `https://`, `ssh://`)*.
+  - Lets manifests reference non-filesystem-local collections.
+  - Depends on the remote origin record question below.
+  - Lets manifests reference non-filesystem-local collections.
 - Variant collection roots (for example `thumbnail_root`,
   `web_root`, `raw_root`).
   Sibling fields to `collection_root`, each carrying its own
   location.
+  If progressive loading (see Long-Term) is ever pursued, it would
+  build on this: a resolution ladder is variant roots with an implied
+  order.
 - Diagnostics sidecar (working name `manifest.report.json`).
   Structured archive for warnings, errors, and processing context.
 - Pixel-content hash.
@@ -91,172 +98,151 @@ Each is described more fully in the deferred section of
 - Provenance file mapping hash to source location.
   Reconsider if remote sources or multi-source merging make it
   valuable.
+- Remote origin record.
+  Whether manifests record where remote collections live
+  - And in what field.
+  Origin is durable history; access details are environment-specific
+  and go stale, so a manifest carrying them stops being portable.
+  A third option is that neither belongs in the manifest and
+  resolution is the pipeline's job.
+  Unscheduled: revisit when a consumer needs it, not before.
 
 ## Implementation-Side Enhancements
 
 No contract impact; producer-internal improvements to NormPic.
+Good grab bag of fairly isolated PR-sized improvements.
 
-- Make `--dry-run` side-effect free.
-  The source collection manifest is written before the dry-run branch
-  is taken, so a dry run creates no symlinks but still writes
-  `manifest.json` into the source directory.
-  Documented as a caveat in `guides/cli.md` until fixed.
-- Write the copy manifest atomically.
-  The copy manifest is serialized and written directly rather than
-  through `ManifestManager.save_manifest`, so it misses the
-  temp-file-then-rename path the source manifest gets.
-  An interrupted write can leave a partial manifest on disk.
-- Isolate `NORMPIC_*` environment variables in the CLI tests.
-  `test/integration/test_cli.py` does not clear the environment, so
-  five tests fail for any developer who has `NORMPIC_SOURCE_DIR` or
-  `NORMPIC_DEST_DIR` set in their shell.
-- Rich CLI with Textual TUI.
-- Multithreading with speedup documentation in `analysis/`.
-- EXIF caching with speedup documentation.
-- Configurable symlink versus copy behavior.
-- Streaming file hashing via a b3c32 streaming API.
-  The v0.1 content-id cutover made compute_file_hash read the whole
-  file into memory and delegate to b3c32's one-shot hash_b32, because
-  b3c32 exposes no incremental hasher.
-  This is fine at wedding-gallery scale but loads large originals
-  (RAW files can be tens of MB) entirely into memory.
-  - Depends on b3c32 gaining a streaming or update-style entry point;
-    coordinate with the b3c32 maintainer, this is a library request
-    first and a normpic change second.
-  - When available, restore compute_file_hash's chunked read loop and
-    its progress_callback, delegating chunks to the streaming hasher
-    instead of reading all bytes.
-  - Re-enable the two skipped tests in test_filesystem_utils:
-    test_compute_file_hash_custom_chunk_size and
-    test_compute_file_hash_progress_callback.
-  - The compute_file_hash signature already carries chunk_size and
-    progress_callback as accepted-but-unused params, reserved for this
-    work, so restoring streaming is not a signature change.
-  - Distinct from the collection-level "streaming processing for very
-    large collections" under Long-Term; this is per-file hash
-    streaming, that is whole-collection.
-- UTC offset support (EXIF, GPS, config).
-- Timestamp systematic correction via config.
-- RAW format support.
-- Mirror variant handling (web-optimized versions).
-- EXIF modification and copy creation.
-- Camera name mapping configuration.
+### Correctness and robustness
+
+- Deletion detection and safe cleanup.
 - Multiple error tracking per pic.
 - Resume capability for failed builds.
-- Webhook notifications on completion.
+- Re-hash heuristic refinement.
+  Deterministic stat-skip is implemented: when name, mtime, and size
+  match the prior manifest entry, the stored hash is reused; `--force`
+  bypasses it.
+  A full re-hash of the wedding collection is about 22 seconds for the
+  originals and 2.6 for the web set, so the skip is worth real time.
+  The refinement is a probabilistic audit that re-hashes a
+  stat-matched file with some probability, catching in-place edits
+  that preserve mtime and size.
+  A flat per-run probability is stateless and contract-free; a bounded
+  variant (guarantee a re-hash within N runs) needs a per-pic
+  last-verified field, which is a contract extension.
+
+### Timestamps and ordering
+
+- UTC offset support (EXIF, GPS, config).
+- Timestamp systematic correction via config.
+- Sub-second ordering refinements: camera sequence tag parsing, burst
+  detection, multi-camera sync, clock-drift correction, and manual
+  reordering of problem sequences.
+- Configurable filename counter: base, digit count, and
+  lexical-ordering option, for burst capture exceeding the current
+  default of 32 photos per timestamp per camera.
+
+### Input handling
+
+- RAW format support.
 - Subdirectory handling with tagging.
-- Deletion detection and safe cleanup.
 - Ignore file for excluding pics.
+- Camera name mapping configuration.
+- EXIF modification and copy creation.
+
+### Performance
+
+- Multithreading, with speedup documentation in `analysis/`.
+- EXIF caching, with speedup documentation.
+
+### Interface
+
+- Rich CLI with Textual TUI.
 - Progress reporting.
-- Dry-run preview mode.
-- Configurable filename counter.
-  - Counter base, digit count, and lexical-ordering option.
-    - Useful for high-frequency burst capture.
-    - Exceeding the current default of 32 photos per time-stamp per camera.
-- Enhanced sub-second-ordering refinements.
-  - Camera sequence tag parsing, automatic burst detection, multi-camera sync
-  - Clock-drift correction, and manual reordering of problem sequences.
-- Re-hash heuristic (hash-reuse on stat match).
-  Deterministic stat-skip is implemented in v0.1: when a source
-  file's name, mtime, and size match its prior manifest entry, the
-  stored hash is reused instead of re-reading and re-hashing the
-  file; `--force` bypasses it.
-  - Measured motivation: a full re-hash of the wedding collection is
-    about 22 seconds for the full-size originals and 2.6 seconds for
-    the web-compressed set; the stat-skip removes that cost on
-    unchanged files.
-  - Future refinement: a probabilistic audit that re-hashes a
-    stat-matched file with some probability, catching in-place edits
-    that preserve mtime and size.
-    A flat per-run probability is stateless and contract-free.
-    A bounded variant (guarantee a re-hash within N runs) needs a
-    per-pic last-verified field, which is a v0.x contract extension,
-    not an implementation-only change.
+- Webhook notifications on completion.
 
 ## Rust Rewrite and Multi-Implementation Distribution
 
-Anticipated reimplementation of NormPic in Rust, motivated by
-multi-context distribution and performance.
+Anticipated reimplementation in Rust, motivated by memory and
+distribution.
 The manifest contract's implementation-agnostic design exists to make
 this transition mechanical rather than a redesign.
 
-- Rust core implementing the current manifest contract.
+The approach is incremental: port the smallest pieces with the largest
+memory win first, rather than attempting a full port.
+Memory is the primary criterion, CPU time the secondary one.
+
+Sequenced:
+
+- Data models (Pic, Manifest).
+  A Python object per pic is expensive at collection scale; Rust
+  structs are the largest single win available.
+  Self-contained, and the natural home for the manifest validators.
+- Aggregation over collections.
+  A collection type carrying its own CRUD plus map, filter, reduce,
+  and sort, so one call operates over many pics rather than crossing
+  the FFI boundary per element.
+  Per-element crossing would erase the gain.
+- Further hot paths as measurement identifies them.
+- Content hashing, once b3c32 has a Rust implementation.
+  Not an early target, so b3c32 has time; the data models and
+  aggregation come first regardless.
+
+Standing requirement for every Rust addition: ship a compute and memory
+benchmark against the pure-Python baseline it replaces, with
+methodology and results recorded in `analysis/` so comparisons are
+reproducible and accumulate.
+A full pure-Python baseline exists to measure against, which makes
+normpic the best testbed across the active projects.
+These are intended for external writeup; capture them at each addition
+rather than reconstructing later.
+
+Distribution targets, once a core exists:
+
+- PyO3 module to replace or supplement the current implementation.
 - WASM module for browser and Node consumers.
-- Native binary for static distribution (`curl | install` style).
-- PyO3 Python module to replace or supplement the current
-  implementation.
+- Native binary for static distribution.
 - C-ABI library for other integrations.
 - Cross-compilation to `linux/amd64` and `linux/arm64`.
-
-### First Rust module: Pic and Pic collections
-
-The chosen entry point for Rust, ahead of a full port.
-Pic (the deserialized manifest record) and collections of Pic are the
-low-hanging fruit: self-contained, memory-heavy at scale, and the
-natural home for the manifest validators.
-
-Rationale:
-
-- Memory is the primary expected win: Rust structs for large Pic
-  collections instead of Python objects.
-  Compute gains are likely secondary but real.
-- The win compounds if the Rust collection type carries its own CRUD
-  plus map/filter/reduce/sort, so a single Python-to-Rust call
-  operates over many Pics at once rather than crossing the FFI
-  boundary per element.
-  Design the module around bulk operations, not per-Pic calls.
-- This is the best experimental testbed across the active projects for
-  measuring Rust-versus-Python compute and memory, because a full
-  pure-Python baseline already exists to compare against.
-
-Practice for every Rust addition (standing requirement):
-
-- Each Rust module or function that goes into use ships with a
-  compute-and-memory benchmark against the pure-Python baseline it
-  replaces or supplements.
-- Record the methodology and results in `analysis/`, versioned, so the
-  comparison is reproducible and accumulates over time.
-- These measurements are intended for external writeup (blog, social);
-  capture them at the point of each addition rather than
-  reconstructing later.
-
-### SSG Integrations (post-Rust-port)
-
-These ride on top of the Rust core via WASM or native integration.
-
-- 11ty plugin (npm package wrapping WASM core).
-- Hugo plugin (WASM or native Go integration).
-- Astro plugin.
-- Zola plugin.
-- Galleria as an SSG plugin rather than a separate Python program.
+- SSG plugin adapters, once a WASM build exists.
+  A JS-based generator could consume normpic as a package rather than
+  shelling out to a binary.
 
 ## Remote and Adapter Integrations
 
-Producer-side adapters letting NormPic read from and write to
-non-local sources.
-At the contract level, these surface through the future
-`collection_root` URI schemes; at the implementation level, they are
-new producer code paths.
+Producer-side adapters letting NormPic read from non-local sources.
+The motivation is running the pipeline against a collection that never
+lives on the machine doing the work.
+Credentials come from config, CLI, or environment, never a manifest.
+Whether a manifest records a remote origin is an open contract
+question, listed under v0.x Contract Extensions.
 
-- S3-compatible source and destination adapter.
-- SSH/SFTP adapter.
-- Proton Drive integration.
-- Direct upload from source to object storage with no local intermediate.
-- Streaming processing for very large collections.
-- Operation entirely from remote storage.
-  Originals live in a remote archive, are downloaded for processing
-  only as needed, and are uploaded to the public destination without
-  keeping local copies.
-- Automated archive upload command for originals.
-  Preserves source directory structure and filenames, idempotent
-  (skips already-uploaded), resumable, with checksum verification.
-- Async processing pipeline.
-  Per pic: download, process, upload.
-  Parallel across pics so the next download runs while the current
-  one processes and uploads.
-  Handles collections that exceed local storage.
-- Backblaze B2 integration.
-- Cloudflare R2 integration.
+Sequenced; each step depends on the one above:
+
+- Source abstraction.
+  Extract the walk, stat, and file read behind an interface with the
+  local filesystem as the only implementation.
+  Pure refactor, fixes the shape before any network code exists.
+- SSH source (SFTP), read-only.
+  First remote: SFTP gives real mtime, so stat-skip works unchanged.
+  Depends on streaming file hashing.
+  The manifest lives in a local cache keyed by remote identity, since
+  a read-only source cannot host one and a manifest is derived data.
+- Symlink versus copy for remote sources.
+  Nothing local to symlink to, so output is a local cache of pulled
+  files or manifest-only.
+- Direct source-to-destination transfer.
+  One file at a time, so peak local storage is the largest file rather
+  than the collection.
+- Shared pull cache across pipeline stages.
+  Each stage otherwise pulls every photo independently.
+- Async pipeline: download, process, upload, overlapped across pics.
+- S3-compatible sources (covers B2 and R2).
+  No filesystem mtime, and ETag is unreliable as content identity, so
+  stat-skip needs a different basis.
+- WebDAV sources.
+- Proton Drive.
+- Archive upload command for originals: idempotent, resumable,
+  checksum-verified.
 
 ## Long-Term and Speculative
 

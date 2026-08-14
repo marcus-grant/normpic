@@ -28,16 +28,9 @@ Authoritative planning artifacts for v0.1:
 - [Schema Versioning](architecture/schema-versioning.md):
   implementation-side migration mechanics (distinct from the
   contract).
-- [ROADMAP.md](ROADMAP.md): post-v0.1 planning.
-- [CHANGELOG.md](CHANGELOG.md): development history.
-
-## Working Discipline
-
-The workflow, planning, TDD, commit, QA, style, and
-document-maintenance rules for every PR below live in
-[doc/CONTRIBUTE.md](CONTRIBUTE.md).
-That document is the source of truth for how work is done here.
-This file does not restate those rules, so they cannot drift.
+- [ROADMAP.md](ROADMAP.md): future planning.
+- [CHANGELOG.md](CHANGELOG.md): development history;
+  earlier releases archived alongside.
 
 ## Development rules
 
@@ -47,3 +40,118 @@ Domain rules specific to normpic, not covered there:
 
 - Lazy processing by default: skip unchanged pics.
 - Warnings continue; errors stop.
+
+## Tasks
+
+### Isolate NORMPIC_ environment variables in the CLI tests
+
+`test/integration/test_cli.py` does not clear the environment, so five
+tests fail for any developer with `NORMPIC_SOURCE_DIR` or
+`NORMPIC_DEST_DIR` set in their shell.
+Env sits above config in the precedence chain, so a live variable
+overrides the config the tests set up.
+
+- [ ] Branch `tst/isolate-cli-env` from main.
+- [ ] Failing test: confirm the five failures reproduce with the
+      variables set, and pass without them.
+- [ ] Clear all `NORMPIC_*` variables in a fixture applied to the
+      module.
+- [ ] Confirm the suite passes both with and without the variables set
+      in the shell.
+
+### Clean up the manager modules
+
+`organize_photos` in `normpic/manager/photo_manager.py` is 162 lines
+covering source manifest resolution, directory walking, change
+detection, hashing, ordering, symlink creation, and manifest writing.
+`ManifestManager` mixes manifest I/O with reprocessing decisions and
+carries dead methods.
+Pure refactor: no behavior change, suite green at every commit.
+
+- [ ] Branch `ref/clean-manager-modules` from main.
+- [ ] Delete `needs_reprocessing`, `config_affects_reprocessing`, and
+      `destination_file_missing`; no production caller exists for any
+      of them.
+      Confirm each before deleting.
+- [ ] Delete `ManifestManager.compute_file_hash`; it duplicates the
+      function in `normpic/util/filesystem.py` and is called only from
+      tests.
+      Redirect those tests to the util function.
+- [ ] Extract source photo discovery from `organize_photos` (walk plus
+      extension filter).
+- [ ] Extract change detection (stat-skip plus hash reuse).
+- [ ] Extract symlink creation.
+- [ ] Extract manifest writing.
+- [ ] `organize_photos` reduces to orchestration over the extracted
+      functions.
+- [ ] Full gate green at each commit.
+
+### Fix dry-run side effects
+
+`--dry-run` writes `manifest.json` into the source directory because
+the source manifest write at `normpic/manager/photo_manager.py` happens
+before the dry-run branch is taken.
+A dry run creates no symlinks but is not side-effect free.
+
+- [ ] Branch `fix/dry-run-side-effects` from main.
+- [ ] Failing test: a dry run against a source directory with no
+      manifest leaves no `manifest.json` behind.
+- [ ] Move the source manifest write inside the non-dry-run path, or
+      guard it.
+- [ ] Failing test: a dry run against a source directory with an
+      existing manifest leaves it unmodified.
+- [ ] Remove the caveat note from `doc/guides/cli.md`.
+- [ ] Delete the ROADMAP entry.
+
+### Write the copy manifest atomically
+
+The copy manifest is serialized and written directly in
+`normpic/manager/photo_manager.py` rather than through
+`ManifestManager.save_manifest`, so it misses the temp-file-then-rename
+path the source manifest gets.
+An interrupted write can leave a partial manifest on disk.
+marcustack's stage contract requires output atomicity.
+
+- [ ] Branch `fix/atomic-copy-manifest` from main.
+- [ ] Failing test: an interrupted write leaves no partial manifest.
+- [ ] Route the copy manifest write through `save_manifest`.
+- [ ] Confirm the dry-run manifest filename is preserved.
+- [ ] Delete the ROADMAP entry.
+
+### Streaming file hashing
+
+`compute_file_hash` reads the whole file into memory and delegates to
+b3c32's one-shot `hash_b32`, because b3c32 exposes no incremental
+hasher.
+Fine at wedding-gallery scale, but it loads large originals entirely
+into memory and makes remote sources impossible: a NAS file cannot be
+buffered whole to be hashed.
+Blocked on b3c32 gaining a streaming or update-style entry point.
+
+- [ ] Raise the streaming API request with the b3c32 maintainer.
+- [ ] Branch `ft/streaming-file-hash` from main once it lands.
+- [ ] Restore `compute_file_hash`'s chunked read loop, delegating
+      chunks to the streaming hasher.
+- [ ] Restore `progress_callback`.
+      The signature already carries `chunk_size` and
+      `progress_callback` as accepted-but-unused params, so this is
+      not a signature change.
+- [ ] Re-enable `test_compute_file_hash_custom_chunk_size` and
+      `test_compute_file_hash_progress_callback`.
+- [ ] Delete the ROADMAP entry.
+
+### Detect config changes that affect output
+
+Reprocessing decisions currently key on file identity alone.
+A config change that alters output (filename pattern, collection name,
+symlink versus copy) leaves existing output stale while every stat and
+hash check still matches, so nothing regenerates.
+`ManifestManager.config_affects_reprocessing` was written toward this
+and never wired up.
+
+- [ ] Branch `ft/config-change-detection` from main.
+- [ ] Decide which config fields affect output; document the list.
+- [ ] Failing test: changing an output-affecting field forces
+      reprocessing; changing an unrelated field does not.
+- [ ] Hash the output-affecting fields and store the digest.
+- [ ] Compare on run and reprocess on mismatch.

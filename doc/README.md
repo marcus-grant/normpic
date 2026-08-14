@@ -44,7 +44,8 @@ This documentation follows a hierarchical linking structure:
   Rust rewrite, remote adapters, long-term direction).
 - [CONTRIBUTE.md](CONTRIBUTE.md): contribution guidelines (MUST READ
   for developers).
-- [CHANGELOG.md](CHANGELOG.md): daily development log.
+- [CHANGELOG.md](CHANGELOG.md): development log; links to archived
+  changelogs for earlier releases.
 
 ### Architecture
 
@@ -81,20 +82,6 @@ This documentation follows a hierarchical linking structure:
   real-world performance benchmarks, timestamp accuracy analysis,
   and systematic offset documentation.
 
-## Project Status
-
-**v0.1 Contract Redesign In Progress**
-
-The manifest contract has been redesigned post-hiatus.
-The existing Python implementation (200+ tests passing against the
-pre-hiatus contract) is being aligned to the new contract.
-
-See
-[architecture/manifest-contract.md](architecture/manifest-contract.md)
-for the durable v0.1 contract, [TODO.md](TODO.md) for the sequenced
-alignment work, [ROADMAP.md](ROADMAP.md) for post-v0.1 planning, and
-[CHANGELOG.md](CHANGELOG.md) for detailed development progress.
-
 ## Related Projects
 
 - **Galleria**: static gallery builder that consumes NormPic
@@ -108,4 +95,3 @@ alignment work, [ROADMAP.md](ROADMAP.md) for post-v0.1 planning, and
 See the [Related projects](architecture/manifest-contract.md#related-projects)
 section of the manifest contract for the full ecosystem map with
 current statuses.
-
