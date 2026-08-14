@@ -116,6 +116,14 @@ Good grab bag of fairly isolated PR-sized improvements.
 
 - Deletion detection and safe cleanup.
 - Multiple error tracking per pic.
+- Readable errors for invalid configuration.
+  A config that fails schema validation surfaces the raw
+  `jsonschema` traceback to the user.
+  An empty `collection_name`, for example, prints the failing
+  schema fragment and the offending instance rather than saying
+  what to fix.
+  The fix is to catch validation errors at the CLI boundary and
+  report the field and the constraint in plain language.
 - Resume capability for failed builds.
 - Re-hash heuristic refinement.
   Deterministic stat-skip is implemented: when name, mtime, and size

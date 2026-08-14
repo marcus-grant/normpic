@@ -43,7 +43,7 @@ Conforming implementations MUST apply both.
 
 ### Schema layer
 
-The JSON Schema at `schema/v0.1.0.json` mechanically validates the
+The JSON Schema at `normpic/schema/v0.1.0.json` mechanically validates the
 structural rules expressible in JSON Schema Draft 2020-12: required
 fields, types, enum membership, regex patterns, numeric ranges, array
 shape.
@@ -224,8 +224,7 @@ the reference suite where format permits.
 - **manifest-contract.md**: source of truth for the contract rules
   this document verifies.
   Conformance is conformance to that document.
-- **schema/v0.1.0.json**: machine-readable schema for the schema
-  layer.
+- **normpic/schema/v0.1.0.json**: machine-readable schema for the schema
 - **galleria** (planned, design documented): first downstream
   consumer.
   Will be validated against the consumer responsibilities here once it
@@ -236,4 +235,3 @@ the reference suite where format permits.
   behavior from both normpic and galleria.
 - **future Rust port of normpic** (planned): primary motivation for
   the cross-implementation safety net this document specifies.
-

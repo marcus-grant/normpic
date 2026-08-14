@@ -24,7 +24,7 @@ Manifest validity is enforced at two layers.
 The harness exercises both.
 
 **Schema layer.**
-`jsonschema.Draft202012Validator` validates against `schema/v0.1.0.json`.
+`jsonschema.Draft202012Validator` validates against `normpic/schema/v0.1.0.json`.
 A manifest that fails the schema is invalid; no further interpretation
 is permitted.
 
@@ -71,7 +71,7 @@ Import as `from test.helpers.conformance import ...`.
 
 ```
 CONFORMANCE_DIR   Path to test/fixture/conformance/
-SCHEMA_PATH       Path to schema/v0.1.0.json
+SCHEMA_PATH       Path to normpic/schema/v0.1.0.json
 
 load_schema()     -> dict
 load_fixture(path: Path) -> dict

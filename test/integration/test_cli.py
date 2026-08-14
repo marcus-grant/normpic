@@ -1,13 +1,17 @@
 """Integration tests for CLI functionality."""
 
+from importlib.metadata import entry_points
 import json
 from pathlib import Path
+import subprocess
+import sys
 from tempfile import TemporaryDirectory, NamedTemporaryFile
+from typing import Any
 from unittest.mock import patch
 
 from click.testing import CliRunner
 
-from cli.main import main
+from normpic.cli import main
 
 
 class TestCLIConfigHandling:
@@ -267,3 +271,22 @@ class TestCLIIntegrationWithPhotoManager:
         assert "--dry-run" in result.output
         assert "--verbose" in result.output
         assert "--force" in result.output
+
+
+class TestModuleInvocation:
+    """Test that the CLI is reachable as an installed entry point."""
+
+    def test_module_invocation_runs_cli(self):
+        """python -m normpic must reach the CLI, not just import."""
+        argv = [sys.executable, "-m", "normpic", "--help"]
+        kwargs: dict[str, Any] = {"capture_output": True, "text": True}
+        result = subprocess.run(argv, **kwargs)
+        assert result.returncode == 0
+        assert "Usage:" in result.stdout
+
+    def test_console_script_entry_point_declared(self):
+        """Distribution must expose a normpic executable."""
+        scripts = entry_points(group="console_scripts")
+        names = {ep.name: ep.value for ep in scripts}
+        assert "normpic" in names
+        assert names["normpic"] == "normpic.cli:main"

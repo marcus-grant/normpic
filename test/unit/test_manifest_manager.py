@@ -16,6 +16,7 @@ from normpic.manager.manifest_manager import (
 from normpic.model.manifest import Manifest
 from normpic.model.pic import Pic
 from normpic.util.hash import PREFIX
+from test.helpers.conformance import SCHEMA_PATH
 
 
 class TestManifestManager:
@@ -740,14 +741,10 @@ class TestCopyManifestRelativePath:
 
     def test_schema_rejects_non_canonical_relative_path(self):
         import json
-        from pathlib import Path
         from jsonschema import validate, ValidationError
         import pytest
 
-        _schema_path = (
-            Path(__file__).resolve().parent.parent.parent / "schema" / "v0.1.0.json"
-        )
-        _manifest_schema = json.loads(_schema_path.read_text())
+        _manifest_schema = json.loads(SCHEMA_PATH.read_text())
 
         bad_values = [
             "./wedding-20241005T143045-r5a.jpg",  # leading ./

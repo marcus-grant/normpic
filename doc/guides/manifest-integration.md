@@ -48,7 +48,7 @@ See the contract for the full required and optional split.
 ## Loading a manifest
 
 Read the JSON and validate it against the schema artifact the producer
-loads, `schema/v0.1.0.json`.
+loads, `normpic/schema/v0.1.0.json`.
 Address each pic's file by `relative_path` under the collection root;
 the pic stores no source or destination path.
 
@@ -79,7 +79,7 @@ def photo_paths(manifest: dict, collection_root: Path) -> list[Path]:
 ```
 
 For schema-level validation, use a JSON Schema library
-(Draft 2020-12) against `schema/v0.1.0.json` rather than hand-rolled
+(Draft 2020-12) against `normpic/schema/v0.1.0.json` rather than hand-rolled
 field checks.
 
 ## Pic ordering is significant

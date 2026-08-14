@@ -24,9 +24,15 @@ dev = [
     "pyright>=1.1.389",
 ]
 
+[project.scripts]
+normpic = "normpic.cli:main"
+
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["normpic*"]
+
+[tool.setuptools.package-data]
+normpic = ["schema/*.json"]
 
 [tool.pytest.ini_options]
 pythonpath = "."
@@ -37,3 +43,4 @@ venvPath = "."
 venv = ".venv"
 include = ["normpic", "test", "script"]
 exclude = ["deleteme-normpic-modules", "**/__pycache__", ".venv"]
+

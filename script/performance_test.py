@@ -277,7 +277,9 @@ def run_normpic_with_monitoring(
         "uv",
         "run",
         "python",
-        "main.py",
+        "-m",
+        "normpic",
+        "--source-dir",
         "--source-dir",
         str(source_dir),
         "--dest-dir",
@@ -556,4 +558,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
