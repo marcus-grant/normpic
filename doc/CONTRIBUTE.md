@@ -400,11 +400,17 @@ Do not read either file end to end to make an edit.
 Find the section with `grep -n`, view a few lines around it, and edit
 surgically.
 
-After each commit, append one concise line to doc/CHANGELOG.md under
-today's date header.
+Where the CHANGELOG entry is written depends on the change's span.
+A change spanning multiple sessions appends one concise line after
+each commit, under today's date header, so the record survives a
+session ending mid-change.
+The final commit then consolidates those lines into one summary block
+and deletes the granular ones.
 
-The final commit consolidates those lines into one summary block under
-today's date, deletes the granular lines, and deletes the completed
-task lines from doc/TODO.md.
-A completed task is deleted rather than marked done: the CHANGELOG is
-the record, so a checked-off item is only noise.
+A change completed within a single session skips the running lines and
+writes its CHANGELOG entry once, in the final commit.
+Writing lines only to delete them in the same sitting is churn, not a
+record.
+
+The final commit also deletes the completed task lines from
+doc/TODO.md.
