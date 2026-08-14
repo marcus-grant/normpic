@@ -277,10 +277,10 @@ my-wedding-site/
 
 For detailed implementation guidance, see:
 
-1. [Parent Project Setup Guide](parent-project-setup.md) - Specific setup instructions including uv integration
-2. [Manifest Consumption Guide](manifest-integration.md) - Working with NormPic manifest data
-3. [Gallery Builder Integration](gallery-builder-integration.md) - Building custom gallery generators  
-4. [Deployment Integration](deployment-integration.md) - CDN deployment strategies
+- [Parent Project Setup Guide](parent-project-setup.md)
+  - Specific setup instructions including uv integration
+- [Manifest Consumption Guide](manifest-integration.md)
+  - Working with NormPic manifest data
 
 ## Troubleshooting Integration Issues
 
@@ -299,4 +299,3 @@ For detailed implementation guidance, see:
 **Solution**: Implement dual bucket strategy with proper cache headers
 
 For additional support, see the [Error Handling Guide](errors.md) and project documentation.
-

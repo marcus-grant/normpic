@@ -51,12 +51,12 @@ Each is described more fully in the deferred section of
   A source shot and its compressed mirror are separate collections
   with separate manifests; their content hashes differ by design, so
   b3c32 identity cannot link them.
-  - v0.1 stopgap (consumer-side, no contract change): galleria maps a
-    web pic to its full counterpart by timestamp across the two
-    manifests.
-    This holds only while EXIF timestamp and sub-second precision
-    survive the pipeline unchanged into both manifests; verify that
-    invariant when relying on it.
+  - v0.1 stopgap (consumer-side, no contract change): a consumer
+    holding a mirrored pair matches on `relative_path`, which derives
+    from EXIF timestamp and camera and so agrees across collections.
+    Documented in `guides/manifest-integration.md`, including the
+    same-second ordinal caveat that makes it reliable only while both
+    collections hold the same set of files.
   - Robust replacement: the pixel-content hash above gives a
     variant-stable identity that does not depend on timestamp
     coincidence.
