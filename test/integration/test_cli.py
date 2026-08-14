@@ -7,7 +7,7 @@ from unittest.mock import patch
 
 from click.testing import CliRunner
 
-from cli.main import main
+from normpic.cli import main
 
 
 class TestCLIConfigHandling:
