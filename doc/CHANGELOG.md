@@ -16,6 +16,14 @@ Each entry filed under a date header with the branch that produced it.
   `script/performance_test.py` at `python -m normpic`.
 - Corrected `doc/architecture/package-structure.md` and documented
   installation and all invocation forms in `doc/guides/cli.md`.
+- Moved `schema/` to `normpic/schema/` so it ships with the package.
+  The installed CLI crashed on a missing schema file, since the root
+  `schema/` directory was never part of the distribution.
+- Repointed all schema path resolution at the package location:
+  the serializer, the test helper's exported `SCHEMA_PATH`, and
+  `script/check_schema.py`.
+- Verified from a real `uv tool install`: the `normpic` executable
+  runs and loads the schema from the installed package.
 
 ## Archive
 
