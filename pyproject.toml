@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "normpic"
-version = "0.1.0"
+version = "0.1.1"
 description = "Organize and rename photo collections with a consistent schema"
 readme = "README.md"
 requires-python = ">=3.12"
