@@ -84,10 +84,10 @@ field checks.
 
 ## Pic ordering is significant
 
-NormPic orders pics at organize time by EXIF timestamp, falling back
+NormPic orders pics at organize time by EXIF time-stamp, falling back
 to filename then mtime, and preserves burst sequences so that
 consecutive shots from one camera are not interleaved with another
-camera's shots sharing the same timestamp.
+camera's shots sharing the same time-stamp.
 This ordering is baked into the manifest: the order of the `pic`
 array is the intended presentation order.
 
@@ -131,6 +131,57 @@ def compare(old: dict, new: dict) -> dict:
 Two hashes differing means the file content changed.
 Two hashes matching means the content is identical, even if the file
 was moved or renamed.
+
+## Pairing variant collections
+
+NormPic does not pair variant collections.
+The source collection and its compressed derivative are processed independently,
+each producing its own manifest.
+The manifests do not link corresponding pictures yet.
+A future version will implement some kind of linking of related pictures.
+
+A consumer that knows it holds a mirrored pair can match on
+`relative_path`.
+The generated name derives from EXIF time-stamp and camera, both of
+which survive compression, so corresponding photos receive the same
+name in both collections.
+
+```python
+def pair(full: dict, web: dict) -> dict:
+    """Match pics across two manifests of the same photo set."""
+    full_pics = {p["relative_path"]: p for p in full["pic"]}
+    web_pics = {p["relative_path"]: p for p in web["pic"]}
+    shared = full_pics.keys() & web_pics.keys()
+    return {path: (full_pics[path], web_pics[path]) for path in shared}
+```
+
+This holds only for a genuinely mirrored set.
+Verify it rather than assuming it.
+Compare the source filenames:
+
+```bash
+diff <(ls /path/to/full) <(ls /path/to/web)
+```
+
+Then assert the pair count against both manifests, and fail loudly on
+a mismatch rather than pairing silently wrong:
+
+```python
+assert len(paired) == len(full["pic"]) == len(web["pic"])
+```
+
+Two caveats.
+`original_filename` is optional in version `0.1.0` and
+no producer path populates it,
+so it cannot be used as a pairing key.
+And photos sharing a time-stamp to the second receive a `-0`/`-1`
+ordinal suffix assigned by processing order, so their names agree
+across collections only while both hold the same set of files.
+Losing one member of a same-second group from one collection shifts
+that group's suffixes and incorrectly pairs them.
+
+Automated variant pairing is likely to become a NormPic feature.
+The approach is not settled, so version `0.1.0` leaves pairing to consumers.
 
 ## Related guides
 
