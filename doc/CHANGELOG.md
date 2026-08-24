@@ -3,6 +3,29 @@
 Entries for post-v0.1.0 development.
 Each entry filed under a date header with the branch that produced it.
 
+## 2026-08-24
+
+### Planning
+
+- Consolidated the dry-run side effects and source-manifest EXIF
+  gaps into one TODO item, placed first.
+  They compound: a stray source manifest lacking the optional fields
+  reads as a copy manifest produced by a broken producer, and a
+  consumer reported exactly that.
+  Verified against the wedding collection: copy manifests carry
+  `timestamp`, `timestamp_source` and `camera` on 645 of 645
+  records, all `timestamp_source: exif`; source manifests carry
+  none.
+- Added a regression guard to that item asserting the copy path
+  populates those fields, since the gap was found by inspecting a
+  manifest by hand rather than by a failing test.
+- Dropped the `original_filename` TODO item.
+  The field is unpopulated because relating renditions to originals
+  is an open scope question, not because the implementation is
+  missing.
+- Recorded identity, provenance and collection-level claims as one
+  ROADMAP entry under contract extensions.
+
 ## 2026-08-14
 
 ### fix/cli-entry

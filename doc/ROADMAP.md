@@ -106,6 +106,57 @@ Each is described more fully in the deferred section of
   A third option is that neither belongs in the manifest and
   resolution is the pipeline's job.
   Unscheduled: revisit when a consumer needs it, not before.
+- Identity, provenance, and collection-level claims.
+  One knot, recorded together because splitting them loses the
+  connections between them.
+  Every field in a pic record except `original_filename` is
+  verifiable from the artifact: `hash` recomputes, `size_bytes` and
+  `mtime` stat, `timestamp` re-reads from EXIF.
+  `original_filename` is true only because a producer asserted it,
+  and no consumer can distinguish it from a stale or invented value.
+  That is why it is unpopulated: a scope question, not a missing
+  implementation.
+  - Identity is measurable and belongs in the manifest.
+    The favored direction is perceptual hashing, so that relation
+    between renditions is a property of the pixels rather than of
+    recorded lineage, derivable by any consumer.
+    Matching threshold is consumer-owned.
+    The load-bearing unknown is crop scope: a small DCT-style hash is
+    cheap and survives scaling and re-encoding, while crop robustness
+    needs either many local descriptors or a large learned embedding.
+    Both push identity out of the manifest and into an index or a
+    model, which is a category change rather than a parameter change.
+    Needs real research when opened, not recollection.
+  - Provenance is not measurable and may not belong in the manifest.
+    Its one argument is that the user sometimes knows it and it has
+    nowhere else to live.
+    If it is recorded at all it wants to be an explicit assertion,
+    attributed, rather than a field sitting among measurements.
+    What artifact should hold it is unknown.
+  - Collection-level human claims are a third axis.
+    Statements like "these are the photographer's originals for this
+    event", or that a web set is hand-tuned rather than generated,
+    are underived and unrecomputable.
+    This connects to the unscheduled remote origin record question,
+    where origin as durable history is one of the standing positions.
+    The same instinct: a manifest that rides along and carries what
+    cannot be regenerated.
+  - Tension to preserve: a purely derived manifest is regenerable and
+    disposable, which is a good property.
+    One carrying hand-authored assertions is neither.
+    The two kinds of content may want separating, or at least
+    explicit marking.
+  - Constraint on any answer, from the director: deliberate absence
+    must be distinguishable from a dropped value in the artifact
+    itself, not only in prose.
+    A reader holding a manifest without the contract document cannot
+    tell them apart today, which is how a source manifest was
+    misreported as a producer bug.
+    Note this collides with prefer-absence-over-null, which currently
+    makes the two identical by construction.
+    Satisfying it means either carving an exception to that rule or
+    carrying the signal elsewhere, such as a manifest-level record of
+    which optional fields the producer populates.
 
 ## Implementation-Side Enhancements
 

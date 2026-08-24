@@ -43,6 +43,65 @@ Domain rules specific to normpic, not covered there:
 
 ## Tasks
 
+### Fix the source manifest: side effects and missing fields
+
+Two defects that compound.
+`--dry-run` writes `manifest.json` into the source directory, because
+the source manifest write in `normpic/manager/photo_manager.py` happens
+before the dry-run branch is taken.
+A dry run creates no symlinks but is not side-effect free.
+Separately, `build_source_manifest` in
+`normpic/manager/manifest_manager.py` constructs each `Pic` with only
+the four required fields.
+It never calls `extract_exif_data`, so `timestamp`, `timestamp_source`,
+`camera` and `gps` are absent from every source manifest record even
+when the file carries EXIF.
+The copy path already populates all four.
+
+Together these produced a false producer-bug report.
+A stray source manifest in a collection directory is indistinguishable
+from a copy manifest until its contents are read closely, and lacking
+the optional fields it reads as a producer that discards EXIF.
+The tell was `relative_path` holding a raw camera filename rather than
+a generated name.
+Verified against the wedding collection: copy manifests carry the
+fields on 645 of 645 records, all `timestamp_source: exif`; the source
+manifest carries none.
+
+This is first in the list because it is the only item with a
+demonstrated downstream cost.
+
+- [ ] Branch `fix/source-manifest` from main.
+- [ ] Add a suite assertion that a copy manifest built from
+      EXIF-bearing photos carries `timestamp`, `timestamp_source` and
+      `camera` on every record.
+      This passes on the current tree; it is a regression guard, not a
+      red test.
+      It exists because this gap was found by inspecting a manifest by
+      hand rather than by a failing test.
+- [ ] Failing test: a dry run against a source directory with no
+      manifest leaves no `manifest.json` behind.
+- [ ] Move the source manifest write inside the non-dry-run path, or
+      guard it.
+- [ ] Failing test: a dry run against a source directory with an
+      existing manifest leaves it unmodified.
+- [ ] Failing test: a source manifest built from an EXIF-bearing photo
+      carries `timestamp`, `timestamp_source` and `camera`.
+- [ ] Extract EXIF in `build_source_manifest` and pass the fields
+      through, matching the copy path.
+- [ ] Failing test: a photo without EXIF omits the fields rather than
+      emitting nulls, per prefer-absence-over-null.
+- [ ] Failing test: `gps` is populated when a photo carries both
+      coordinates and omitted when it carries neither.
+      Unverified on either path; the wedding collection has no GPS
+      EXIF, so this is currently untested rather than known-correct.
+- [ ] Document in `doc/architecture/manifest-contract.md` how a source
+      manifest is distinguished from a copy manifest.
+      A consumer needs a reliable check, not close reading of
+      `relative_path`.
+- [ ] Remove the dry-run caveat note from `doc/guides/cli.md`.
+- [ ] Delete the ROADMAP entry.
+
 ### Isolate NORMPIC_ environment variables in the CLI tests
 
 `test/integration/test_cli.py` does not clear the environment, so five
@@ -86,22 +145,18 @@ Pure refactor: no behavior change, suite green at every commit.
       functions.
 - [ ] Full gate green at each commit.
 
-### Fix dry-run side effects
+### Populate original_filename on both producer paths
 
-`--dry-run` writes `manifest.json` into the source directory because
-the source manifest write at `normpic/manager/photo_manager.py` happens
-before the dry-run branch is taken.
-A dry run creates no symlinks but is not side-effect free.
+`original_filename` is defined in the schema and validated on the
+model, but no producer path sets it.
+Consumers pair variant collections on `relative_path` because of this.
 
-- [ ] Branch `fix/dry-run-side-effects` from main.
-- [ ] Failing test: a dry run against a source directory with no
-      manifest leaves no `manifest.json` behind.
-- [ ] Move the source manifest write inside the non-dry-run path, or
-      guard it.
-- [ ] Failing test: a dry run against a source directory with an
-      existing manifest leaves it unmodified.
-- [ ] Remove the caveat note from `doc/guides/cli.md`.
-- [ ] Delete the ROADMAP entry.
+- [ ] Branch `ft/original-filename` from main.
+- [ ] Failing test: a copy manifest record carries the source file's
+      name in `original_filename`.
+- [ ] Set it on the copy path, where the source name is in hand.
+- [ ] Failing test: a source manifest record carries it too.
+- [ ] Confirm the field is omitted, never null, when unavailable.
 
 ### Write the copy manifest atomically
 
